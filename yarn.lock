@@ -2747,6 +2747,11 @@ fault@^1.0.0:
   dependencies:
     format "^0.2.0"
 
+fetch-retry@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/fetch-retry/-/fetch-retry-5.0.1.tgz#d46d6d9607b075383693b104383e30e430db59bf"
+  integrity sha512-ENMet8exSRjJO8I5PoKChm0psngw0VrBOD9fUH4YO7sE7Dpqnb0/iFEGHZn633z6MPNVJv4zZNrGgQ4lmQt1nw==
+
 filelist@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/filelist/-/filelist-1.0.2.tgz#80202f21462d4d1c2e214119b1807c1bc0380e5b"
