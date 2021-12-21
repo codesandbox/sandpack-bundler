@@ -1,7 +1,8 @@
 import * as babel from "@babel/standalone";
 import { fetchSandboxData } from "./api/sandbox";
 
-import { collectDependencies } from "./transformers/js/dep-collector";
+import { collectDependencies } from "./bundler/transforms/js/dep-collector";
+import { Bundler } from "./bundler/bundler";
 
 async function run() {
   let parsedUrl = new URL(location.href);
@@ -14,7 +15,11 @@ async function run() {
   let sandboxData = await fetchSandboxData(sandboxId);
   console.log("Fetched sandbox data");
 
-  console.log(sandboxData);
+  const bundler = new Bundler();
+
+  console.log("Started bundling");
+  await bundler.run(sandboxData.files);
+  console.log("Finished bundling");
 
   // const CODE = `import ReactDOM from 'react-dom';
 
