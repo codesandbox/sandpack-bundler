@@ -1,12 +1,19 @@
 import { fetch } from "../utils/fetch";
 
-export interface SandboxData {}
+export interface ISandboxFile {
+  path: string;
+  code: string;
+}
+
+export interface ISandboxData {
+  files: ISandboxFile[];
+}
 
 export async function fetchSandboxData(
   sandboxId: string
-): Promise<SandboxData> {
+): Promise<ISandboxData> {
   const response = await fetch(
-    `https://codesandbox.io/api/v1/sandboxes/${sandboxId}`,
+    `http://localhost:1234/api/v1/sandboxes/${sandboxId}`,
     {
       method: "GET",
       retries: 5,
@@ -19,5 +26,27 @@ export async function fetchSandboxData(
     throw new Error(text);
   }
 
-  return JSON.parse(text);
+  const data = JSON.parse(text).data;
+  const directories: Map<string, any> = new Map(
+    data.directories.map((d: any) => [d.shortid, d])
+  );
+  const modules = data.modules;
+  let files: ISandboxFile[] = [];
+  for (let module of modules) {
+    let currNode = {
+      directory_shortid: module.directory_shortid,
+      title: module.title,
+    };
+    let path = [];
+    while (currNode) {
+      path.unshift(currNode.title);
+      currNode = directories.get(currNode.directory_shortid);
+    }
+    path.unshift("");
+    files.push({
+      path: path.join("/"),
+      code: module.code,
+    });
+  }
+  return { files };
 }

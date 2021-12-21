@@ -14,7 +14,7 @@ async function run() {
   let sandboxData = await fetchSandboxData(sandboxId);
   console.log("Fetched sandbox data");
 
-  // CSB API Endpoint: https://codesandbox.io/api/v1/sandboxes/37mwp
+  console.log(sandboxData);
 
   // const CODE = `import ReactDOM from 'react-dom';
 
