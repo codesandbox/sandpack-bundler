@@ -1,0 +1,21 @@
+{
+  "name": "sandpack-v2-mvp",
+  "version": "1.0.0",
+  "description": "Sandpack V2 MVP",
+  "scripts": {
+    "start": "parcel ./src/index.html --open",
+    "build": "parcel build ./src/index.html"
+  },
+  "dependencies": {
+    "@babel/standalone": "7.16.6",
+    "@types/babel__standalone": "7.1.3"
+  },
+  "devDependencies": {
+    "typescript": "4.4.4",
+    "parcel": "^2.0.1"
+  },
+  "resolutions": {
+    "@babel/preset-env": "7.13.8"
+  },
+  "keywords": []
+}
