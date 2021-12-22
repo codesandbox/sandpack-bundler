@@ -15,10 +15,10 @@ async function run() {
   let sandboxData = await fetchSandboxData(sandboxId);
   console.log("Fetched sandbox data");
 
-  const bundler = new Bundler();
+  const bundler = new Bundler(sandboxData.files);
 
   console.log("Started bundling");
-  await bundler.run(sandboxData.files);
+  await bundler.run();
   console.log("Finished bundling");
 
   // const CODE = `import ReactDOM from 'react-dom';
