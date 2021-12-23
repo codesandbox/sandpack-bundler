@@ -12,10 +12,16 @@ export interface IResolvedDependency {
   d: number;
 }
 
+const CDN_VERSION = 0;
+
+function encodePayload(payload: string): string {
+  return btoa(`${CDN_VERSION}(${payload})`);
+}
+
 export async function fetchManifest(
   deps: DepMap
 ): Promise<IResolvedDependency[]> {
-  const encoded_manifest = btoa(JSON.stringify(deps));
+  const encoded_manifest = encodePayload(JSON.stringify(deps));
   const result = await fetch(
     urlJoin(CDN_ROOT, `/dep_tree/${encoded_manifest}`)
   );
@@ -42,7 +48,7 @@ export interface ICDNModule {
 
 export async function fetchModule(name: string, version: string) {
   const specifier = `${name}@${version}`;
-  const encoded_specifier = btoa(specifier);
+  const encoded_specifier = encodePayload(specifier);
   const result = await fetch(
     urlJoin(CDN_ROOT, `/package/${encoded_specifier}`)
   );
