@@ -1,4 +1,4 @@
-import * as pathUtils from '@codesandbox/common/lib/utils/path';
+import * as pathUtils from '../../utils/path';
 
 export function normalizeAliasFilePath(
   specifier: string,
