@@ -12,6 +12,7 @@
     "fetch-retry": "^5.0.1",
     "gensync": "^1.0.0-beta.2",
     "micromatch": "^4.0.4",
+    "p-queue": "^6.6.2",
     "strip-json-comments": "^4.0.0",
     "url-join": "^4.0.1"
   },

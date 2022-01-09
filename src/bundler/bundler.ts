@@ -4,6 +4,9 @@ import { FileSystem } from "./FileSystem";
 import { Module } from "./Module";
 import { ICDNModuleFile } from "./module-registry/module-cdn";
 import { ResolverCache, resolveSync } from "../resolver/resolver";
+import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
+
+export type TransformationQueue = NamedPromiseQueue<Module>;
 
 interface IPackageJSON {
   main: string;
@@ -15,7 +18,7 @@ export class Bundler {
   moduleRegistry: ModuleRegistry;
   fs: FileSystem;
   modules: Map<string, Module> = new Map();
-
+  transformationQueue: TransformationQueue;
   resolverCache: ResolverCache = new Map();
 
   constructor(files: ISandboxFile[]) {
@@ -24,6 +27,7 @@ export class Bundler {
       this.fs.writeFileSync(file.path, file.code);
     }
     this.moduleRegistry = new ModuleRegistry();
+    this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 
   processPackageJSON(): void {
@@ -44,13 +48,14 @@ export class Bundler {
     }
   }
 
-  addPrecompiledNodeModule(path: string, file: ICDNModuleFile): void {
+  addPrecompiledNodeModule(
+    path: string,
+    file: ICDNModuleFile
+  ): (() => Promise<void>)[] {
     this.fs.writeFileSync(path, file.c);
-    const module = new Module(path, file.c, true);
-    for (let dep of file.d) {
-      module.addDependency(dep);
-    }
+    const module = new Module(path, file.c, true, this);
     this.modules.set(path, module);
+    return file.d.map((dep) => () => module.addDependency(dep));
   }
 
   async loadNodeModules() {
@@ -62,37 +67,112 @@ export class Bundler {
     if (dependencies) {
       await this.moduleRegistry.fetchNodeModules(dependencies);
 
+      const depPromises = [];
       for (let [moduleName, nodeModule] of this.moduleRegistry.modules) {
         for (let [fileName, file] of Object.entries(nodeModule.files)) {
           if (typeof file === "object") {
-            this.addPrecompiledNodeModule(
+            const promises = this.addPrecompiledNodeModule(
               `/node_modules/${moduleName}/${fileName}`,
               file
             );
+            depPromises.push(...promises);
           }
         }
       }
+      await Promise.all(depPromises.map((fn) => fn()));
     }
   }
 
   resolveSync(specifier: string, filename: string): string {
-    const resolved = resolveSync(specifier, {
-      filename,
-      extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
-      isFile: this.fs.isFile,
-      readFile: this.fs.readFile,
-      resolverCache: this.resolverCache,
-    });
-    return resolved;
+    try {
+      const resolved = resolveSync(specifier, {
+        filename,
+        extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
+        isFile: this.fs.isFile,
+        readFile: this.fs.readFile,
+        resolverCache: this.resolverCache,
+      });
+      return resolved;
+    } catch (err) {
+      console.error(err);
+      console.error(Array.from(this.modules));
+      console.error(Array.from(this.fs.files));
+      throw err;
+    }
+  }
+
+  private async _transformModule(path: string): Promise<Module> {
+    let module = this.modules.get(path);
+    if (module) {
+      if (module.compiled != null) {
+        return Promise.resolve(module);
+      }
+    } else {
+      const content = this.fs.readFileSync(path);
+      module = new Module(path, content, false, this);
+      this.modules.set(path, module);
+    }
+    await module.compile();
+    for (let dep of module.dependencies) {
+      const resolvedDependency = this.resolveSync(dep, module.filepath);
+      this.transformModule(resolvedDependency);
+    }
+    return module;
+  }
+
+  /** Transform file at a certain absolute path */
+  async transformModule(path: string): Promise<Module> {
+    let module = this.modules.get(path);
+    if (module && module.compiled != null) {
+      return Promise.resolve(module);
+    }
+    return this.transformationQueue.addEntry(path, () =>
+      this._transformModule(path)
+    );
+  }
+
+  async moduleFinishedPromise(
+    id: string,
+    moduleIds: Set<string> = new Set()
+  ): Promise<any> {
+    if (moduleIds.has(id)) return;
+
+    moduleIds.add(id);
+
+    const foundPromise = this.transformationQueue.getItem(id);
+    if (foundPromise) {
+      await foundPromise;
+    }
+
+    const asset = this.modules.get(id);
+    if (!asset) {
+      throw new Error("Somethings up");
+    }
+
+    for (const dep of asset.dependencies) {
+      if (!moduleIds.has(dep)) {
+        await this.moduleFinishedPromise(dep, moduleIds);
+      }
+    }
   }
 
   async run() {
+    console.log("Loading node modules");
     this.processPackageJSON();
     await this.loadNodeModules();
 
+    // Resolve entrypoints
     const entryPoint = this.getEntryPoint();
-    console.log({ entryPoint, modules: this.modules, fs: this.fs });
     const resolvedEntryPont = this.resolveSync(entryPoint, "/index.js");
-    console.log({ resolvedEntryPont });
+    console.log("Resolved entrypoint:", resolvedEntryPont);
+
+    // Transform entrypoint and deps
+    await this.transformModule(resolvedEntryPont);
+    await this.moduleFinishedPromise(resolvedEntryPont);
+    console.log("Bundling finished, manifest:");
+    console.log(this.modules);
+
+    // Evaluate
+    console.log("Evaluating...");
   }
 }

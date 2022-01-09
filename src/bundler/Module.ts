@@ -1,4 +1,9 @@
+import { Bundler } from "./bundler";
 import { getTransformers } from "./transforms";
+
+export interface IDependencyEvent {
+  specifier: string;
+}
 
 export class Module {
   filepath: string;
@@ -6,20 +11,32 @@ export class Module {
 
   source: string;
   compiled: string | null;
+  bundler: Bundler;
 
-  constructor(filepath: string, source: string, isCompiled: boolean = false) {
+  constructor(
+    filepath: string,
+    source: string,
+    isCompiled: boolean = false,
+    bundler: Bundler
+  ) {
     this.filepath = filepath;
     this.source = source;
     this.compiled = isCompiled ? source : null;
     this.dependencies = new Set();
+    this.bundler = bundler;
   }
 
   /** Add dependency and emit event to queue transpilation of dep */
-  addDependency(dep: string): void {
-    this.dependencies.add(dep);
+  async addDependency(depSpecifier: string): Promise<void> {
+    const resolved = this.bundler.resolveSync(depSpecifier, this.filepath);
+    this.dependencies.add(resolved);
   }
 
-  async _compile(): Promise<void> {
+  async compile(): Promise<void> {
+    if (this.compiled) {
+      return;
+    }
+
     const transformers = getTransformers();
     let input = this.source;
     for (const transformer of transformers) {
@@ -28,13 +45,5 @@ export class Module {
       dependencies.forEach((d) => this.addDependency(d));
     }
     this.compiled = input;
-  }
-
-  async compile(): Promise<void> {
-    if (this.compiled) {
-      return;
-    }
-
-    await this._compile();
   }
 }

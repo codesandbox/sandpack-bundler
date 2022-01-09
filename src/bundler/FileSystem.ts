@@ -2,7 +2,7 @@ import gensync, { Gensync } from "gensync";
 
 export class FileSystem {
   // path => content
-  private files: Map<string, string>;
+  files: Map<string, string>;
   readFile: Gensync<(filepath: string) => string>;
   isFile: Gensync<(filepath: string) => boolean>;
 

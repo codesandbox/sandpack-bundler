@@ -1,7 +1,7 @@
 import urlJoin from "url-join";
 import { DepMap } from ".";
 
-const CDN_ROOT = "https://sandpack-cdn-staging.blazingly.io/";
+const CDN_ROOT = "http://localhost:8080/"; // "https://sandpack-cdn-staging.blazingly.io/";
 
 export interface IResolvedDependency {
   // name
