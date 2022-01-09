@@ -22,7 +22,7 @@ export class ModuleRegistry {
     // TODO: Use priority queue with the depth
     await Promise.all(
       dependencies.map((d) => {
-        this.fetchNodeModule(d.n, d.v);
+        return this.fetchNodeModule(d.n, d.v);
       })
     );
   }
