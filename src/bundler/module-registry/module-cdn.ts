@@ -1,7 +1,7 @@
 import urlJoin from "url-join";
 import { DepMap } from ".";
 
-const CDN_ROOT = "http://localhost:8080/"; // "https://sandpack-cdn-staging.blazingly.io/";
+const CDN_ROOT = "https://sandpack-cdn-staging.blazingly.io/";
 
 export interface IResolvedDependency {
   // name
@@ -12,7 +12,7 @@ export interface IResolvedDependency {
   d: number;
 }
 
-const CDN_VERSION = 0;
+const CDN_VERSION = 1;
 
 function encodePayload(payload: string): string {
   return btoa(`${CDN_VERSION}(${payload})`);
