@@ -1,5 +1,6 @@
-import { Bundler } from "./bundler";
-import { getTransformers } from "./transforms";
+import { Bundler } from "../bundler";
+import { getTransformers } from "../transforms";
+import { Evaluation } from "./Evaluation";
 
 export interface IDependencyEvent {
   specifier: string;
@@ -8,10 +9,13 @@ export interface IDependencyEvent {
 export class Module {
   filepath: string;
   dependencies: Set<string>;
+  // Keeping this seperate from dependencies as there might be duplicates otherwise
+  dependencyMap: Map<string, string>;
 
   source: string;
   compiled: string | null;
   bundler: Bundler;
+  evaluation: Evaluation | null = null;
 
   constructor(
     filepath: string,
@@ -23,6 +27,7 @@ export class Module {
     this.source = source;
     this.compiled = isCompiled ? source : null;
     this.dependencies = new Set();
+    this.dependencyMap = new Map();
     this.bundler = bundler;
   }
 
@@ -30,6 +35,7 @@ export class Module {
   async addDependency(depSpecifier: string): Promise<void> {
     const resolved = this.bundler.resolveSync(depSpecifier, this.filepath);
     this.dependencies.add(resolved);
+    this.dependencyMap.set(depSpecifier, resolved);
   }
 
   async compile(): Promise<void> {
@@ -45,5 +51,14 @@ export class Module {
       dependencies.forEach((d) => this.addDependency(d));
     }
     this.compiled = input;
+  }
+
+  evaluate(): Evaluation {
+    if (this.evaluation) {
+      return this.evaluation;
+    }
+    
+    this.evaluation = new Evaluation(this);
+    return this.evaluation;
   }
 }

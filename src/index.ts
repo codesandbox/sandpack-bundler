@@ -14,9 +14,10 @@ async function run() {
 
   const bundler = new Bundler(sandboxData.files);
 
+  const startTime = Date.now();
   console.log("Started bundling");
   await bundler.run();
-  console.log("Finished bundling");
+  console.log(`Finished bundling in ${Date.now() - startTime}ms`);
 }
 
 run().catch(console.error);

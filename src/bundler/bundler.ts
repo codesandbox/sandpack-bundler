@@ -1,7 +1,7 @@
 import { ISandboxFile } from "../api/sandbox";
 import { DepMap, ModuleRegistry } from "./module-registry";
 import { FileSystem } from "./FileSystem";
-import { Module } from "./Module";
+import { Module } from "./module/Module";
 import { ICDNModuleFile } from "./module-registry/module-cdn";
 import { ResolverCache, resolveSync } from "../resolver/resolver";
 import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
@@ -28,6 +28,10 @@ export class Bundler {
     }
     this.moduleRegistry = new ModuleRegistry();
     this.transformationQueue = new NamedPromiseQueue(true, 50);
+  }
+
+  getModule(filepath: string): Module | undefined {
+    return this.modules.get(filepath);
   }
 
   processPackageJSON(): void {
@@ -167,12 +171,13 @@ export class Bundler {
     console.log("Resolved entrypoint:", resolvedEntryPont);
 
     // Transform entrypoint and deps
-    await this.transformModule(resolvedEntryPont);
+    const entryModule = await this.transformModule(resolvedEntryPont);
     await this.moduleFinishedPromise(resolvedEntryPont);
     console.log("Bundling finished, manifest:");
     console.log(this.modules);
 
     // Evaluate
     console.log("Evaluating...");
+    entryModule.evaluate();
   }
 }
