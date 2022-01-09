@@ -19,6 +19,7 @@ export class ModuleRegistry {
 
     const sortedDeps = sortObj(deps);
     const dependencies = await fetchManifest(sortedDeps);
+    console.log("fetched manifest", dependencies);
     // TODO: Use priority queue with the depth
     await Promise.all(
       dependencies.map((d) => {
@@ -30,5 +31,6 @@ export class ModuleRegistry {
   async fetchNodeModule(name: string, version: string): Promise<void> {
     const module = await fetchModule(name, version);
     this.modules.set(name, new NodeModule(name, version, module.f, module.m));
+    console.log("fetched module", name, version, module);
   }
 }

@@ -10,7 +10,7 @@ async function run() {
 
   console.log("Fetching sandbox data");
   let sandboxData = await fetchSandboxData(sandboxId);
-  console.log("Fetched sandbox data");
+  console.log("Fetched sandbox data", sandboxData);
 
   const bundler = new Bundler(sandboxData.files);
 
