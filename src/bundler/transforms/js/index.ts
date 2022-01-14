@@ -8,6 +8,7 @@ export async function transform(code: string): Promise<ITranspilationResult> {
   const transformed = babel.transform(code, {
     presets: [
       "env",
+      "typescript",
       [
         "react",
         {
