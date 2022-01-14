@@ -3,4 +3,9 @@ export interface ITranspilationResult {
   dependencies: Set<string>;
 }
 
-export type TransformerFn = (code: string) => Promise<ITranspilationResult>;
+export interface ITranspilationContext {
+  filepath: string;
+  code: string;
+}
+
+export type TransformerFn = (ctx: ITranspilationContext) => Promise<ITranspilationResult>;

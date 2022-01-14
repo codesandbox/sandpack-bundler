@@ -35,6 +35,11 @@ export class Evaluation {
   require(specifier: string): any {
     const resolved = this.module.dependencyMap.get(specifier);
     if (!resolved) {
+      console.log("Require", {
+        dependencies: this.module.dependencyMap,
+        specifier,
+      });
+
       throw new Error("Module not found");
     }
     const m = this.module.bundler.getModule(resolved);

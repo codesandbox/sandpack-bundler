@@ -49,9 +49,14 @@ export class Module {
     const transformers = getTransformers();
     let input = this.source;
     for (const transformer of transformers) {
-      const { code, dependencies } = await transformer(input);
+      const { code, dependencies } = await transformer({
+        filepath: this.filepath,
+        code: input,
+      });
       input = code;
-      dependencies.forEach((d) => this.addDependency(d));
+      await Promise.all(
+        Array.from(dependencies).map((d) => this.addDependency(d))
+      );
     }
     this.compiled = input;
   }

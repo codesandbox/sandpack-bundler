@@ -5,6 +5,8 @@ import { Module } from "./module/Module";
 import { ICDNModuleFile } from "./module-registry/module-cdn";
 import { ResolverCache, resolveAsync } from "../resolver/resolver";
 import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
+import { MemoryFSLayer } from "./FileSystem/layers/MemoryFSLayer";
+import { NodeModuleFSLayer } from "./FileSystem/layers/NodeModuleFSLayer";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -22,15 +24,19 @@ export class Bundler {
   resolverCache: ResolverCache = new Map();
 
   constructor(files: ISandboxFile[]) {
-    this.fs = new FileSystem();
+    this.moduleRegistry = new ModuleRegistry();
+    this.fs = new FileSystem([
+      new MemoryFSLayer(),
+      new NodeModuleFSLayer(this.moduleRegistry),
+    ]);
     for (let file of files) {
       this.fs.writeFile(file.path, file.code);
     }
-    this.moduleRegistry = new ModuleRegistry();
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 
   getModule(filepath: string): Module | undefined {
+    console.log('getModule', {filepath})
     return this.modules.get(filepath);
   }
 
@@ -56,7 +62,6 @@ export class Bundler {
     path: string,
     file: ICDNModuleFile
   ): (() => Promise<void>)[] {
-    this.fs.writeFile(path, file.c);
     const module = new Module(path, file.c, true, this);
     this.modules.set(path, module);
     return file.d.map((dep) => () => module.addDependency(dep));
@@ -100,7 +105,7 @@ export class Bundler {
     } catch (err) {
       console.error(err);
       console.error(Array.from(this.modules));
-      console.error(Array.from(this.fs.files));
+      // console.error(Array.from(this.fs.files));
       throw err;
     }
   }

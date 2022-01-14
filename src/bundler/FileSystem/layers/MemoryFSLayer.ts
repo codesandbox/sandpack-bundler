@@ -1,21 +1,10 @@
-import gensync, { Gensync } from "gensync";
+import { FSLayer } from "../FSLayer";
 
-export class FileSystem {
-  // path => content
-  files: Map<string, string>;
-  readFile: Gensync<(filepath: string) => string>;
-  isFile: Gensync<(filepath: string) => boolean>;
+export class MemoryFSLayer extends FSLayer {
+  files: Map<string, string> = new Map();
 
   constructor() {
-    this.files = new Map();
-    this.readFile = gensync({
-      sync: this.readFileSync.bind(this),
-      async: this.readFileAsync.bind(this),
-    });
-    this.isFile = gensync({
-      sync: this.isFileSync.bind(this),
-      async: this.isFileAsync.bind(this),
-    });
+    super("memory-fs");
   }
 
   writeFile(path: string, content: string): void {
