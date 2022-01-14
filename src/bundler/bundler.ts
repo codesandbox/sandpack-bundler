@@ -36,7 +36,6 @@ export class Bundler {
   }
 
   getModule(filepath: string): Module | undefined {
-    console.log('getModule', {filepath})
     return this.modules.get(filepath);
   }
 
