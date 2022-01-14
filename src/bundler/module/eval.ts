@@ -1,6 +1,8 @@
 /* eslint-disable no-eval */
 // import buildProcess from "./utils/process";
 
+import * as swcHelpers from "@swc/helpers";
+
 const g = typeof window === "undefined" ? self : window;
 
 const hasGlobalDeclaration = /^const global/m;
@@ -14,7 +16,11 @@ export default function (
   globals: Object = {}
 ) {
   const global = g;
-  // const process = buildProcess(env);
+  const process = {
+    env: {
+      NODE_ENV: "development",
+    },
+  }; // buildProcess(env);
   // @ts-ignore
   g.global = global;
 
@@ -22,8 +28,9 @@ export default function (
     require,
     module: context,
     exports: context.exports,
-    // process,
+    process,
     global,
+    swcHelpers,
     ...globals,
   };
 
@@ -42,6 +49,8 @@ export default function (
 
     return context.exports;
   } catch (e) {
+    console.error(code);
+
     let error = e;
     if (typeof e === "string") {
       error = new Error(e);

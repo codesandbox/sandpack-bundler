@@ -18,6 +18,7 @@ export class ModuleRegistry {
     }
 
     const sortedDeps = sortObj(deps);
+    console.log("Fetching manifest", sortedDeps);
     const dependencies = await fetchManifest(sortedDeps);
     console.log("fetched manifest", dependencies);
     // TODO: Use priority queue with the depth

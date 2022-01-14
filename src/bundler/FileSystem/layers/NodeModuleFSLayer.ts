@@ -3,9 +3,67 @@ import { FSLayer } from "../FSLayer";
 
 const MODULE_PATH_RE = /^\/node_modules\/(@[^/]+\/[^/]+|[^@/]+)(.*)$/;
 
+function getUnpkgSpecifier(
+  moduleName: string,
+  moduleVersion: string,
+  path: string
+): string {
+  return `${moduleName}@${moduleVersion}/${path}`;
+}
+
 export class NodeModuleFSLayer extends FSLayer {
+  private unpkgPromises: Map<string, Promise<string>> = new Map();
+  private unpkgCache: Map<string, string | false> = new Map();
+
   constructor(private registry: ModuleRegistry) {
     super("node-module-fs");
+  }
+
+  async _fetchUnpkgFile(specifier: string): Promise<string> {
+    try {
+      const response = await window.fetch(`https://unpkg.com/${specifier}`);
+      if (!response.ok) {
+        throw new Error(`Could not fetch ${specifier} from unpkg`);
+      }
+      const content = await response.text();
+      this.unpkgCache.set(specifier, content);
+      return content;
+    } catch (err) {
+      this.unpkgCache.set(specifier, false);
+      throw err;
+    }
+  }
+
+  fetchUnpkgFile(
+    moduleName: string,
+    moduleVersion: string,
+    path: string
+  ): Promise<string> {
+    const specifier = getUnpkgSpecifier(moduleName, moduleVersion, path);
+    const cachedContent = this.unpkgCache.get(specifier);
+    if (typeof cachedContent === "string") {
+      return Promise.resolve(cachedContent);
+    } else if (cachedContent === false) {
+      return Promise.reject("unpkg file not found");
+    }
+
+    const promise =
+      this.unpkgPromises.get(specifier) || this._fetchUnpkgFile(specifier);
+    this.unpkgPromises.set(specifier, promise);
+    return promise;
+  }
+
+  getUnpkgFile(
+    moduleName: string,
+    moduleVersion: string,
+    path: string
+  ): string {
+    const specifier = getUnpkgSpecifier(moduleName, moduleVersion, path);
+    const cachedContent = this.unpkgCache.get(specifier);
+    if (typeof cachedContent === "string") {
+      return cachedContent;
+    }
+    throw new Error("File not found in unpkg cache");
   }
 
   /** Turns a path into [moduleName, relativePath] */
@@ -24,8 +82,12 @@ export class NodeModuleFSLayer extends FSLayer {
     const module = this.registry.modules.get(moduleName);
     if (module) {
       const foundFile = module.files[modulePath];
-      if (typeof foundFile === "object") {
-        return foundFile.c;
+      if (foundFile) {
+        if (typeof foundFile === "object") {
+          return foundFile.c;
+        } else {
+          return this.getUnpkgFile(moduleName, module.version, modulePath);
+        }
       }
     }
     throw new Error(`Module ${path} not found`);
@@ -36,8 +98,12 @@ export class NodeModuleFSLayer extends FSLayer {
     const module = this.registry.modules.get(moduleName);
     if (module) {
       const foundFile = module.files[modulePath];
-      if (typeof foundFile === "object") {
-        return foundFile.c;
+      if (foundFile) {
+        if (typeof foundFile === "object") {
+          return foundFile.c;
+        }
+
+        return this.fetchUnpkgFile(moduleName, module.version, modulePath);
       }
     }
     throw new Error(`Module ${path} not found`);

@@ -63,7 +63,13 @@ export class Bundler {
   ): (() => Promise<void>)[] {
     const module = new Module(path, file.c, true, this);
     this.modules.set(path, module);
-    return file.d.map((dep) => () => module.addDependency(dep));
+    return file.d.map((dep) => async () => {
+      await module.addDependency(dep);
+
+      for (let dep of module.dependencies) {
+        this.transformModule(dep);
+      }
+    });
   }
 
   async loadNodeModules() {
@@ -134,9 +140,9 @@ export class Bundler {
     if (module && module.compiled != null) {
       return Promise.resolve(module);
     }
-    return this.transformationQueue.addEntry(path, () =>
-      this._transformModule(path)
-    );
+    return this.transformationQueue.addEntry(path, () => {
+      return this._transformModule(path);
+    });
   }
 
   async moduleFinishedPromise(
@@ -145,8 +151,6 @@ export class Bundler {
   ): Promise<any> {
     if (moduleIds.has(id)) return;
 
-    moduleIds.add(id);
-
     const foundPromise = this.transformationQueue.getItem(id);
     if (foundPromise) {
       await foundPromise;
@@ -154,12 +158,20 @@ export class Bundler {
 
     const asset = this.modules.get(id);
     if (!asset) {
-      throw new Error("Somethings up");
+      throw new Error(`Did not compile module ${id}`);
     }
+
+    moduleIds.add(id);
 
     for (const dep of asset.dependencies) {
       if (!moduleIds.has(dep)) {
-        await this.moduleFinishedPromise(dep, moduleIds);
+        try {
+          await this.moduleFinishedPromise(dep, moduleIds);
+        } catch (err) {
+          console.log(`Failed awaiting transpilation ${dep} required by ${id}`);
+
+          throw err;
+        }
       }
     }
   }
