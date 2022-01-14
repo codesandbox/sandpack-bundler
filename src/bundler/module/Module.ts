@@ -33,7 +33,10 @@ export class Module {
 
   /** Add dependency and emit event to queue transpilation of dep */
   async addDependency(depSpecifier: string): Promise<void> {
-    const resolved = this.bundler.resolveSync(depSpecifier, this.filepath);
+    const resolved = await this.bundler.resolveAsync(
+      depSpecifier,
+      this.filepath
+    );
     this.dependencies.add(resolved);
     this.dependencyMap.set(depSpecifier, resolved);
   }
@@ -57,7 +60,7 @@ export class Module {
     if (this.evaluation) {
       return this.evaluation;
     }
-    
+
     this.evaluation = new Evaluation(this);
     return this.evaluation;
   }

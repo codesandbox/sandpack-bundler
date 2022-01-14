@@ -3,7 +3,7 @@ import { DepMap, ModuleRegistry } from "./module-registry";
 import { FileSystem } from "./FileSystem";
 import { Module } from "./module/Module";
 import { ICDNModuleFile } from "./module-registry/module-cdn";
-import { ResolverCache, resolveSync } from "../resolver/resolver";
+import { ResolverCache, resolveAsync } from "../resolver/resolver";
 import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
@@ -24,7 +24,7 @@ export class Bundler {
   constructor(files: ISandboxFile[]) {
     this.fs = new FileSystem();
     for (let file of files) {
-      this.fs.writeFileSync(file.path, file.code);
+      this.fs.writeFile(file.path, file.code);
     }
     this.moduleRegistry = new ModuleRegistry();
     this.transformationQueue = new NamedPromiseQueue(true, 50);
@@ -34,8 +34,8 @@ export class Bundler {
     return this.modules.get(filepath);
   }
 
-  processPackageJSON(): void {
-    const foundPackageJSON = this.fs.readFileSync("/package.json");
+  async processPackageJSON(): Promise<void> {
+    const foundPackageJSON = await this.fs.readFileAsync("/package.json");
     this.parsedPackageJSON = JSON.parse(foundPackageJSON);
   }
 
@@ -56,7 +56,7 @@ export class Bundler {
     path: string,
     file: ICDNModuleFile
   ): (() => Promise<void>)[] {
-    this.fs.writeFileSync(path, file.c);
+    this.fs.writeFile(path, file.c);
     const module = new Module(path, file.c, true, this);
     this.modules.set(path, module);
     return file.d.map((dep) => () => module.addDependency(dep));
@@ -87,9 +87,9 @@ export class Bundler {
     }
   }
 
-  resolveSync(specifier: string, filename: string): string {
+  async resolveAsync(specifier: string, filename: string): Promise<string> {
     try {
-      const resolved = resolveSync(specifier, {
+      const resolved = await resolveAsync(specifier, {
         filename,
         extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
         isFile: this.fs.isFile,
@@ -112,13 +112,13 @@ export class Bundler {
         return Promise.resolve(module);
       }
     } else {
-      const content = this.fs.readFileSync(path);
+      const content = await this.fs.readFileAsync(path);
       module = new Module(path, content, false, this);
       this.modules.set(path, module);
     }
     await module.compile();
     for (let dep of module.dependencies) {
-      const resolvedDependency = this.resolveSync(dep, module.filepath);
+      const resolvedDependency = await this.resolveAsync(dep, module.filepath);
       this.transformModule(resolvedDependency);
     }
     return module;
@@ -162,12 +162,12 @@ export class Bundler {
 
   async run() {
     console.log("Loading node modules");
-    this.processPackageJSON();
+    await this.processPackageJSON();
     await this.loadNodeModules();
 
     // Resolve entrypoints
     const entryPoint = this.getEntryPoint();
-    const resolvedEntryPont = this.resolveSync(entryPoint, "/index.js");
+    const resolvedEntryPont = await this.resolveAsync(entryPoint, "/index.js");
     console.log("Resolved entrypoint:", resolvedEntryPont);
 
     // Transform entrypoint and deps

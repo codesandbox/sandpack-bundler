@@ -10,13 +10,15 @@ export class FileSystem {
     this.files = new Map();
     this.readFile = gensync({
       sync: this.readFileSync.bind(this),
+      async: this.readFileAsync.bind(this),
     });
     this.isFile = gensync({
       sync: this.isFileSync.bind(this),
+      async: this.isFileAsync.bind(this),
     });
   }
 
-  writeFileSync(path: string, content: string): void {
+  writeFile(path: string, content: string): void {
     this.files.set(path, content);
   }
 
@@ -28,7 +30,19 @@ export class FileSystem {
     return content;
   }
 
+  readFileAsync(path: string): Promise<string> {
+    const content = this.files.get(path);
+    if (content == null) {
+      return Promise.reject(new Error(`File ${path} not found`));
+    }
+    return Promise.resolve(content);
+  }
+
   isFileSync(path: string): boolean {
     return this.files.has(path);
+  }
+
+  isFileAsync(path: string): Promise<boolean> {
+    return Promise.resolve(this.files.has(path));
   }
 }
