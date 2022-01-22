@@ -6,6 +6,7 @@
     "start": "parcel ./src/index.html",
     "build": "parcel build ./src/index.html"
   },
+  "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
     "@babel/standalone": "7.16.6",
     "@swc/helpers": "^0.3.2",
