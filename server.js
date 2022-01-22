@@ -1,22 +1,30 @@
-const fastify = require("fastify")();
+const fastify = require("fastify");
+const fastifyStatic = require("fastify-static");
 const path = require("path");
 
 const PORT = +(process.env.PORT || "4587");
 
-fastify.register(require("fastify-static"), {
+const app = fastify();
+
+app.register(fastifyStatic, {
   root: path.join(__dirname, "dist"),
   prefix: "/",
+  cacheControl: true,
+  dotfiles: "deny",
+  etag: true,
+  immutable: true,
+  maxAge: 31 * 24 * 60 * 60 * 1000,
 });
 
 // Fallback to index.html, it's a SPA
-fastify.setNotFoundHandler((req, reply) => {
-  return reply.sendFile("index.html");
+app.setNotFoundHandler((req, reply) => {
+  return reply.sendFile("index.html", { cacheControl: false });
 });
 
 // Run the server!
-fastify.listen(PORT, (err, address) => {
+app.listen(PORT, (err, address) => {
   if (err) {
-    fastify.log.error(err);
+    app.log.error(err);
     process.exit(1);
   }
 
