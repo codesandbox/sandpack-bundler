@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "Sandpack V2 MVP",
   "scripts": {
-    "start": "parcel ./src/index.html",
-    "build": "parcel build ./src/index.html"
+    "dev": "parcel ./src/index.html",
+    "start": "node ./server.js",
+    "build": "rm -rf public && parcel build ./src/index.html --dist-dir public"
   },
   "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
@@ -22,6 +23,8 @@
     "@types/jest": "^27.4.0",
     "@types/micromatch": "^4.0.2",
     "@types/url-join": "^4.0.1",
+    "fastify": "^3.27.0",
+    "fastify-static": "^4.5.0",
     "parcel": "^2.0.1",
     "typescript": "4.4.4"
   },
