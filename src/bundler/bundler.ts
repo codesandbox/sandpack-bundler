@@ -23,15 +23,12 @@ export class Bundler {
   transformationQueue: TransformationQueue;
   resolverCache: ResolverCache = new Map();
 
-  constructor(files: ISandboxFile[]) {
+  constructor() {
     this.moduleRegistry = new ModuleRegistry();
     this.fs = new FileSystem([
       new MemoryFSLayer(),
       new NodeModuleFSLayer(this.moduleRegistry),
     ]);
-    for (let file of files) {
-      this.fs.writeFile(file.path, file.code);
-    }
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 
@@ -176,7 +173,11 @@ export class Bundler {
     }
   }
 
-  async run() {
+  async compile(files: ISandboxFile[]) {
+    for (let file of files) {
+      this.fs.writeFile(file.path, file.code);
+    }
+
     console.log("Loading node modules");
     await this.processPackageJSON();
     await this.loadNodeModules();
