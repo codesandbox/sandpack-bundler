@@ -15,6 +15,11 @@ interface IPackageJSON {
   dependencies?: DepMap;
 }
 
+interface IFilesDiff {
+  updatedModules: string[];
+  createdModules: string[];
+}
+
 export class Bundler {
   parsedPackageJSON: IPackageJSON | null = null;
   moduleRegistry: ModuleRegistry;
@@ -171,6 +176,27 @@ export class Bundler {
         }
       }
     }
+  }
+
+  generateFilesDiff(files: ISandboxFile[]): IFilesDiff {
+    const res: IFilesDiff = {
+      updatedModules: [],
+      createdModules: [],
+    };
+
+    for (let file of files) {
+      try {
+        const content = this.fs.readFileSync(file.path);
+        if (content !== file.code) {
+          res.updatedModules.push(file.path);
+        }
+      } catch (err) {
+        // file does not exist
+        res.createdModules.push(file.path);
+      }
+    }
+
+    return res;
   }
 
   async compile(files: ISandboxFile[]) {

@@ -45,8 +45,16 @@ class SandpackInstance {
     });
 
     const startTime = Date.now();
+    const files = Object.values(compileRequest.modules);
+
+    if (!this.isFirstLoad) {
+      console.log("Generating diff");
+      const diff = this.bundler.generateFilesDiff(files);
+      console.log(diff);
+    }
+
     console.log("Started bundling");
-    await this.bundler.compile(Object.values(compileRequest.modules));
+    await this.bundler.compile(files);
     console.log(`Finished bundling in ${Date.now() - startTime}ms`);
 
     this.messageBus.sendMessage("done");
