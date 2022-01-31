@@ -140,6 +140,10 @@ export class Bundler {
     if (module) {
       if (module.compiled != null) {
         return Promise.resolve(module);
+      } else {
+        // compilation got reset, we re-read the source to ensure it's the latest version.
+        // reset happens mostly when we receive changes from the editor, so this ensures we actually output the changes...
+        module.source = await this.fs.readFileAsync(path);
       }
     } else {
       const content = await this.fs.readFileAsync(path);

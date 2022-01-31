@@ -37,6 +37,10 @@ export class Module {
     this.hot = new HotContext(this);
   }
 
+  get initiators() {
+    return this.bundler.getInitiators(this.id);
+  }
+
   /** Add dependency */
   async addDependency(depSpecifier: string): Promise<void> {
     const resolved = await this.bundler.resolveAsync(
@@ -80,8 +84,7 @@ export class Module {
     if (this.hot.hmrConfig && this.hot.hmrConfig.isHot()) {
       this.hot.hmrConfig.setDirty(true);
     } else {
-      const initiators = this.bundler.getInitiators(this.id);
-      for (let initiator of initiators) {
+      for (let initiator of this.initiators) {
         const module = this.bundler.getModule(initiator);
         module?.resetCompilation();
       }
