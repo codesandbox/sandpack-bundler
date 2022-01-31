@@ -1,10 +1,12 @@
+import { Module } from "../module/Module";
+
 export interface ITranspilationResult {
   code: string;
   dependencies: Set<string>;
 }
 
 export interface ITranspilationContext {
-  filepath: string;
+  module: Module;
   code: string;
 }
 

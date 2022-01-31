@@ -8,7 +8,7 @@ export async function transform(
 ): Promise<ITranspilationResult> {
   const requires: Set<string> = new Set();
   const transformed = babel.transform(ctx.code, {
-    filename: ctx.filepath,
+    filename: ctx.module.filepath,
     presets: [
       "env",
       "typescript",

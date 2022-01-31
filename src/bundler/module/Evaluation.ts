@@ -1,13 +1,16 @@
 import evaluate from "./eval";
+import { HotContext } from "./hot";
 import { Module } from "./Module";
 
 class EvaluationContext {
   exports: any;
   globals: any;
+  hot: HotContext;
 
-  constructor() {
+  constructor(evaluation: Evaluation) {
     this.exports = {};
     this.globals = {};
+    this.hot = evaluation.module.hot;
   }
 }
 
@@ -22,7 +25,7 @@ export class Evaluation {
       module.compiled +
       `\n//# sourceURL=${location.origin}${this.module.filepath}`;
 
-    this.context = new EvaluationContext();
+    this.context = new EvaluationContext(this);
     this.context.exports = evaluate(
       code,
       this.require.bind(this),
@@ -33,6 +36,7 @@ export class Evaluation {
   }
 
   require(specifier: string): any {
+    console.log("require", specifier);
     const resolved = this.module.dependencyMap.get(specifier);
     if (!resolved) {
       console.log("Require", {

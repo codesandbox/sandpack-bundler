@@ -11,7 +11,7 @@ const hasGlobalDeclaration = /^const global/m;
 export default function (
   code: string,
   require: Function,
-  context: { exports: any },
+  context: { exports: any; hot?: any },
   env: Object = {},
   globals: Object = {}
 ) {
@@ -48,12 +48,13 @@ export default function (
     (0, eval)(newCode).apply(allGlobals.global, globalsValues);
 
     return context.exports;
-  } catch (e) {
+  } catch (err) {
+    console.error(err);
     console.error(code);
 
-    let error = e;
-    if (typeof e === "string") {
-      error = new Error(e);
+    let error = err;
+    if (typeof err === "string") {
+      error = new Error(err);
     }
     // @ts-ignore
     error.isEvalError = true;

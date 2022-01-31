@@ -27,6 +27,8 @@ export class Bundler {
   modules: Map<string, Module> = new Map();
   transformationQueue: TransformationQueue;
   resolverCache: ResolverCache = new Map();
+  hasHMR = false;
+  isFirstLoad = true;
 
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
@@ -39,6 +41,10 @@ export class Bundler {
 
   getModule(filepath: string): Module | undefined {
     return this.modules.get(filepath);
+  }
+
+  enableHMR(): void {
+    this.hasHMR = true;
   }
 
   async processPackageJSON(): Promise<void> {
@@ -81,6 +87,10 @@ export class Bundler {
 
     const dependencies = this.parsedPackageJSON.dependencies;
     if (dependencies) {
+      if (dependencies["react"] && !dependencies["react-refresh"]) {
+        dependencies["react-refresh"] = "^0.11.0";
+      }
+
       await this.moduleRegistry.fetchNodeModules(dependencies);
 
       const depPromises = [];
@@ -178,35 +188,52 @@ export class Bundler {
     }
   }
 
-  generateFilesDiff(files: ISandboxFile[]): IFilesDiff {
-    const res: IFilesDiff = {
-      updatedModules: [],
-      createdModules: [],
-    };
+  /** writes any new files and returns a list of updated modules */
+  writeNewFiles(files: ISandboxFile[]): string[] {
+    const res: string[] = [];
 
     for (let file of files) {
       try {
         const content = this.fs.readFileSync(file.path);
         if (content !== file.code) {
-          res.updatedModules.push(file.path);
+          res.push(file.path);
         }
       } catch (err) {
         // file does not exist
-        res.createdModules.push(file.path);
       }
+
+      this.fs.writeFile(file.path, file.code);
     }
 
     return res;
   }
 
   async compile(files: ISandboxFile[]) {
-    for (let file of files) {
-      this.fs.writeFile(file.path, file.code);
+    // If it's a change and we don't have any hmr modules we simply reload the application
+    if (!this.isFirstLoad && !this.hasHMR) {
+      console.log("HMR is not enabled, doing a full page refresh");
+      window.location.reload();
+      return;
+    }
+
+    let changedFiles: string[] = [];
+    if (!this.isFirstLoad) {
+      changedFiles = this.writeNewFiles(files);
+    } else {
+      for (let file of files) {
+        this.fs.writeFile(file.path, file.code);
+      }
     }
 
     console.log("Loading node modules");
     await this.processPackageJSON();
     await this.loadNodeModules();
+
+    if (changedFiles.length) {
+      for (let changedFile of changedFiles) {
+        this.transformModule(changedFile).catch(console.error);
+      }
+    }
 
     // Resolve entrypoints
     const entryPoint = this.getEntryPoint();
@@ -222,5 +249,7 @@ export class Bundler {
     // Evaluate
     console.log("Evaluating...");
     entryModule.evaluate();
+
+    this.isFirstLoad = false;
   }
 }

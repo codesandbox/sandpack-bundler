@@ -7,7 +7,6 @@ import { DisposableStore } from "./utils/Disposable";
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
   private disposableStore = new DisposableStore();
-  private isFirstLoad = true;
   private bundler = new Bundler();
   private compileDebouncer = new Debouncer(50);
 
@@ -41,25 +40,17 @@ class SandpackInstance {
 
   async handleCompile(compileRequest: ICompileRequest) {
     this.messageBus.sendMessage("start", {
-      firstLoad: this.isFirstLoad,
+      firstLoad: this.bundler.isFirstLoad,
     });
 
     const startTime = Date.now();
     const files = Object.values(compileRequest.modules);
-
-    if (!this.isFirstLoad) {
-      console.log("Generating diff");
-      const diff = this.bundler.generateFilesDiff(files);
-      console.log(diff);
-    }
 
     console.log("Started bundling");
     await this.bundler.compile(files);
     console.log(`Finished bundling in ${Date.now() - startTime}ms`);
 
     this.messageBus.sendMessage("done");
-
-    this.isFirstLoad = false;
   }
 
   dispose() {

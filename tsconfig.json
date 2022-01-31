@@ -2,6 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "module": "commonjs",
+    "target": "esnext",
     "jsx": "preserve",
     "esModuleInterop": true,
     "sourceMap": true,
