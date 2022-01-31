@@ -237,10 +237,6 @@ export class Bundler {
       }
     }
 
-    console.log("Loading node modules");
-    await this.processPackageJSON();
-    await this.loadNodeModules();
-
     if (changedFiles.length) {
       for (let changedFile of changedFiles) {
         const module = this.getModule(changedFile);
@@ -250,6 +246,11 @@ export class Bundler {
           this.transformModule(changedFile).catch(console.error);
         }
       }
+    } else {
+      // TODO: Load only changed node modules and don't overwrite existing modules
+      console.log("Loading node modules");
+      await this.processPackageJSON();
+      await this.loadNodeModules();
     }
 
     // Resolve entrypoints
