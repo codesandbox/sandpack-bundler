@@ -8,19 +8,20 @@ export interface IDependencyEvent {
 }
 
 export class Module {
+  id: string;
   filepath: string;
   isEntry = false;
-  // These are modules that have this module as a dependency
-  initiators: Set<string>;
-  dependencies: Set<string>;
-  // Keeping this seperate from dependencies as there might be duplicates otherwise
-  dependencyMap: Map<string, string>;
-
   source: string;
   compiled: string | null;
   bundler: Bundler;
   evaluation: Evaluation | null = null;
   hot: HotContext;
+
+  // These are modules that have this module as a dependency
+  initiators: Set<string>;
+  dependencies: Set<string>;
+  // Keeping this seperate from dependencies as there might be duplicates otherwise
+  dependencyMap: Map<string, string>;
 
   constructor(
     filepath: string,
@@ -28,6 +29,7 @@ export class Module {
     isCompiled: boolean = false,
     bundler: Bundler
   ) {
+    this.id = filepath;
     this.filepath = filepath;
     this.source = source;
     this.compiled = isCompiled ? source : null;

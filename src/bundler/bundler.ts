@@ -231,7 +231,12 @@ export class Bundler {
 
     if (changedFiles.length) {
       for (let changedFile of changedFiles) {
-        this.transformModule(changedFile).catch(console.error);
+        const module = this.getModule(changedFile);
+        if (module) {
+          module.resetCompilation();
+        } else {
+          this.transformModule(changedFile).catch(console.error);
+        }
       }
     }
 
@@ -248,7 +253,18 @@ export class Bundler {
 
     // Evaluate
     console.log("Evaluating...");
-    entryModule.evaluate();
+    if (changedFiles.length) {
+      // Changes, so we evaluate changed modules to have hmr
+      for (let changedFile of changedFiles) {
+        const module = this.getModule(changedFile);
+        if (module) {
+          module.evaluate();
+        }
+      }
+    } else {
+      // No changes, aka first load
+      entryModule.evaluate();
+    }
 
     this.isFirstLoad = false;
   }

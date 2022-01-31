@@ -11,7 +11,7 @@ const hasGlobalDeclaration = /^const global/m;
 export default function (
   code: string,
   require: Function,
-  context: { exports: any; hot?: any },
+  context: { id: string; exports: any; hot?: any },
   env: Object = {},
   globals: Object = {}
 ) {

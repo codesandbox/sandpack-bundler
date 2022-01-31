@@ -6,11 +6,13 @@ class EvaluationContext {
   exports: any;
   globals: any;
   hot: HotContext;
+  id: string;
 
   constructor(evaluation: Evaluation) {
     this.exports = {};
     this.globals = {};
     this.hot = evaluation.module.hot;
+    this.id = evaluation.module.id;
   }
 }
 
@@ -36,7 +38,6 @@ export class Evaluation {
   }
 
   require(specifier: string): any {
-    console.log("require", specifier);
     const resolved = this.module.dependencyMap.get(specifier);
     if (!resolved) {
       console.log("Require", {
