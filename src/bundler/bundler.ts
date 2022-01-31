@@ -15,11 +15,6 @@ interface IPackageJSON {
   dependencies?: DepMap;
 }
 
-interface IFilesDiff {
-  updatedModules: string[];
-  createdModules: string[];
-}
-
 export class Bundler {
   parsedPackageJSON: IPackageJSON | null = null;
   moduleRegistry: ModuleRegistry;
@@ -29,6 +24,9 @@ export class Bundler {
   resolverCache: ResolverCache = new Map();
   hasHMR = false;
   isFirstLoad = true;
+
+  // Map from module id => parent module ids
+  initiators: Map<string, Set<string>> = new Map();
 
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
@@ -45,6 +43,16 @@ export class Bundler {
 
   enableHMR(): void {
     this.hasHMR = true;
+  }
+
+  getInitiators(id: string): Set<string> {
+    return this.initiators.get(id) ?? new Set();
+  }
+
+  addInitiator(moduleId: string, initiatorId: string): void {
+    const initiators = this.getInitiators(moduleId);
+    initiators.add(initiatorId);
+    this.initiators.set(moduleId, initiators);
   }
 
   async processPackageJSON(): Promise<void> {
@@ -251,20 +259,37 @@ export class Bundler {
     console.log("Bundling finished, manifest:");
     console.log(this.modules);
 
+    entryModule.isEntry = true;
+
     // Evaluate
     console.log("Evaluating...");
-    if (changedFiles.length) {
-      // Changes, so we evaluate changed modules to have hmr
-      for (let changedFile of changedFiles) {
-        const module = this.getModule(changedFile);
-        if (module) {
-          module.evaluate();
-        }
+    this.modules.forEach((module) => {
+      if (module.hot.hmrConfig?.isDirty()) {
+        module.evaluate();
       }
-    } else {
-      // No changes, aka first load
-      entryModule.evaluate();
-    }
+    });
+
+    entryModule.evaluate();
+
+    // if (this.webpackHMR) {
+    //   // Check if any module has been invalidated, because in that case we need to
+    //   // restart evaluation.
+
+    //   const invalidatedModules = this.getTranspiledModules().filter(t => {
+    //     if (t.hmrConfig?.invalidated) {
+    //       t.compilation = null;
+    //       t.hmrConfig = null;
+
+    //       return true;
+    //     }
+
+    //     return false;
+    //   });
+
+    //   if (invalidatedModules.length > 0) {
+    //     return this.evaluateModule(module, { force, globals });
+    //   }
+    // }
 
     this.isFirstLoad = false;
   }

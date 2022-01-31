@@ -17,8 +17,6 @@ export class Module {
   evaluation: Evaluation | null = null;
   hot: HotContext;
 
-  // These are modules that have this module as a dependency
-  initiators: Set<string>;
   dependencies: Set<string>;
   // Keeping this seperate from dependencies as there might be duplicates otherwise
   dependencyMap: Map<string, string>;
@@ -33,14 +31,13 @@ export class Module {
     this.filepath = filepath;
     this.source = source;
     this.compiled = isCompiled ? source : null;
-    this.initiators = new Set();
     this.dependencies = new Set();
     this.dependencyMap = new Map();
     this.bundler = bundler;
     this.hot = new HotContext(this);
   }
 
-  /** Add dependency and emit event to queue transpilation of dep */
+  /** Add dependency */
   async addDependency(depSpecifier: string): Promise<void> {
     const resolved = await this.bundler.resolveAsync(
       depSpecifier,
@@ -48,6 +45,7 @@ export class Module {
     );
     this.dependencies.add(resolved);
     this.dependencyMap.set(depSpecifier, resolved);
+    this.bundler.addInitiator(resolved, this.id);
   }
 
   async compile(): Promise<void> {
@@ -82,7 +80,8 @@ export class Module {
     if (this.hot.hmrConfig && this.hot.hmrConfig.isHot()) {
       this.hot.hmrConfig.setDirty(true);
     } else {
-      for (let initiator of this.initiators) {
+      const initiators = this.bundler.getInitiators(this.id);
+      for (let initiator of initiators) {
         const module = this.bundler.getModule(initiator);
         module?.resetCompilation();
       }
