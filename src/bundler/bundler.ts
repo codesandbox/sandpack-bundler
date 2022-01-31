@@ -271,24 +271,21 @@ export class Bundler {
 
     entryModule.evaluate();
 
-    // if (this.webpackHMR) {
-    //   // Check if any module has been invalidated, because in that case we need to
-    //   // restart evaluation.
+    // Check if any module has been invalidated, because in that case we need to
+    // restart evaluation.
+    // const invalidatedModules = this.modules.filter(t => {
+    //   if (t.hmrConfig?.invalidated) {
+    //     t.compilation = null;
+    //     t.hmrConfig = null;
 
-    //   const invalidatedModules = this.getTranspiledModules().filter(t => {
-    //     if (t.hmrConfig?.invalidated) {
-    //       t.compilation = null;
-    //       t.hmrConfig = null;
-
-    //       return true;
-    //     }
-
-    //     return false;
-    //   });
-
-    //   if (invalidatedModules.length > 0) {
-    //     return this.evaluateModule(module, { force, globals });
+    //     return true;
     //   }
+
+    //   return false;
+    // });
+
+    // if (invalidatedModules.length > 0) {
+    //   return this.evaluateModule(module, { force, globals });
     // }
 
     this.isFirstLoad = false;

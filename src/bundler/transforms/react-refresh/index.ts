@@ -22,10 +22,10 @@ function debounce(func, wait, immediate) {
 
 const enqueueUpdate = debounce(() => {
     try {
-        Refresh.performReactRefresh();
+      Refresh.performReactRefresh();
     } catch (e) {
-        module.hot.decline();
-        throw e;
+      module.hot.decline();
+      throw e;
     }
 }, 30);
 
