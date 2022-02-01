@@ -38,8 +38,8 @@ export class Evaluation {
   }
 
   require(specifier: string): any {
-    const resolved = this.module.dependencyMap.get(specifier);
-    if (!resolved) {
+    const moduleFilePath = this.module.dependencyMap.get(specifier);
+    if (!moduleFilePath) {
       console.log("Require", {
         dependencies: this.module.dependencyMap,
         specifier,
@@ -47,7 +47,10 @@ export class Evaluation {
 
       throw new Error("Module not found");
     }
-    const m = this.module.bundler.getModule(resolved);
-    return m?.evaluate().context.exports ?? {};
+    const module = this.module.bundler.getModule(moduleFilePath);
+    if (!module) {
+      throw new Error("Module not found");
+    }
+    return module.evaluate().context.exports ?? {};
   }
 }

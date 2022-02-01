@@ -1,7 +1,12 @@
 import * as babel from "@babel/standalone";
+import * as reactRefreshBabel from "react-refresh/babel";
 
 import { ITranspilationContext, ITranspilationResult } from "../types";
 import { collectDependencies } from "./dep-collector";
+
+const reactRefresh = reactRefreshBabel.default ?? reactRefreshBabel;
+
+babel.availablePlugins["react-refresh/babel"] = reactRefresh;
 
 export async function transform(
   ctx: ITranspilationContext
@@ -19,7 +24,10 @@ export async function transform(
         },
       ],
     ],
-    plugins: [collectDependencies(requires)],
+    plugins: [
+      collectDependencies(requires),
+      ["react-refresh/babel", { skipEnvCheck: true }],
+    ],
     ast: true,
   });
 

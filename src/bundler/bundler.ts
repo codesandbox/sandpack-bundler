@@ -274,6 +274,15 @@ export class Bundler {
       }
     });
 
+    // TODO: Add ability to add runtimes that run before entrypoints
+    // React refresh... currently worked around it, but should be native in the bundler...
+    // if (typeof window !== 'undefined') {
+    //   const runtime = require('react-refresh/runtime');
+    //   runtime.injectIntoGlobalHook(window);
+    //   window.$RefreshReg$ = () => {};
+    //   window.$RefreshSig$ = () => type => type;
+    // }
+
     entryModule.evaluate();
 
     // Check if any module has been invalidated, because in that case we need to

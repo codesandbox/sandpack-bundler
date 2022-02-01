@@ -21,12 +21,12 @@ function debounce(func, wait, immediate) {
 };
 
 const enqueueUpdate = debounce(() => {
-    try {
-      Refresh.performReactRefresh();
-    } catch (e) {
-      module.hot.decline();
-      throw e;
-    }
+  try {
+    Refresh.performReactRefresh();
+  } catch (e) {
+    module.hot.decline();
+    throw e;
+  }
 }, 30);
 
 function isReactRefreshBoundary(moduleExports) {
@@ -122,38 +122,38 @@ var registerExportsForReactRefresh = (moduleExports, moduleID) => {
 };
 
 function prelude(module) {
-    window.$RefreshReg$ = (type, id) => {
-        // Note module.id is webpack-specific, this may vary in other bundlers
-        const fullId = module.id + ' ' + id;
-        Refresh.register(type, fullId);
-    }
-    
-    window.$RefreshSig$ = Refresh.createSignatureFunctionForTransform;
+  window.$RefreshReg$ = (type, id) => {
+    // Note module.id is webpack-specific, this may vary in other bundlers
+    const fullId = module.id + ' ' + id;
+    Refresh.register(type, fullId);
+  }
+  
+  window.$RefreshSig$ = Refresh.createSignatureFunctionForTransform;
 }
 
 function postlude(module) {
-    const isHotUpdate = !!module.hot.data;
-    const prevExports = isHotUpdate ? module.hot.data.prevExports : null;
-    if (isReactRefreshBoundary) {
-        if (isReactRefreshBoundary(module.exports)) {
-            registerExportsForReactRefresh(module.exports, module.id)
-            const currentExports = { ...module.exports };
+  const isHotUpdate = !!module.hot.data;
+  const prevExports = isHotUpdate ? module.hot.data.prevExports : null;
+  if (isReactRefreshBoundary) {
+    if (isReactRefreshBoundary(module.exports)) {
+      registerExportsForReactRefresh(module.exports, module.id);
+      const currentExports = { ...module.exports };
 
-            module.hot.dispose(function hotDisposeCallback(data) {
-                data.prevExports = currentExports;
-            });
+      module.hot.dispose(function hotDisposeCallback(data) {
+        data.prevExports = currentExports;
+      });
 
-            if (isHotUpdate && shouldInvalidateReactRefreshBoundary(prevExports, currentExports)) {
-                module.hot.invalidate();
-            } else {
-                module.hot.accept();
-            }
+      if (isHotUpdate && shouldInvalidateReactRefreshBoundary(prevExports, currentExports)) {
+        module.hot.invalidate();
+      } else {
+        module.hot.accept();
+      }
 
-            enqueueUpdate();
-        } else if (isHotUpdate && isReactRefreshBoundary(prevExports)) {
-            module.hot.invalidate();
-        }
+      enqueueUpdate();
+    } else if (isHotUpdate && isReactRefreshBoundary(prevExports)) {
+      module.hot.invalidate();
     }
+  }
 }
 
 module.exports = {
