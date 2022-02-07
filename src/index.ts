@@ -56,15 +56,14 @@ class SandpackInstance {
         return val;
       })
       .catch((err) => {
-        console.error("compile error", err);
-
         this.messageBus.sendMessage("action", {
           action: "show-error",
-          title: "Could not bundle application",
+          title: "Compilation error",
           path: "/App.tsx",
           message: err.message,
           line: 1,
           column: 1,
+          payload: { frames: [] },
         });
 
         this.messageBus.sendMessage("done", {
@@ -85,11 +84,12 @@ class SandpackInstance {
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
           action: "show-error",
-          title: "Could not evaluate app",
+          title: "Evaluation error",
           path: "/App.tsx",
           message: err.message,
           line: 1,
           column: 1,
+          payload: { frames: [] },
         });
       }
     }

@@ -182,7 +182,13 @@ export class Bundler {
 
     const asset = this.modules.get(id);
     if (!asset) {
-      throw new Error(`Did not compile module ${id}`);
+      throw new Error(`Asset not in the compilation tree ${id}`);
+    } else {
+      if (asset.compilationError) {
+        throw asset.compilationError;
+      } else if (!asset.compiled) {
+        throw new Error(`Asset ${id} has not been compiled`);
+      }
     }
 
     moduleIds.add(id);
@@ -243,9 +249,8 @@ export class Bundler {
         const module = this.getModule(changedFile);
         if (module) {
           module.resetCompilation();
-        } else {
-          promises.push(this.transformModule(changedFile));
         }
+        promises.push(this.transformModule(changedFile));
       }
       await Promise.all(promises);
     } else {

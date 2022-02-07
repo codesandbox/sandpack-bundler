@@ -17,6 +17,8 @@ export class Module {
   evaluation: Evaluation | null = null;
   hot: HotContext;
 
+  compilationError: Error | null = null;
+
   dependencies: Set<string>;
   // Keeping this seperate from dependencies as there might be duplicates otherwise
   dependencyMap: Map<string, string>;
@@ -53,28 +55,35 @@ export class Module {
   }
 
   async compile(): Promise<void> {
-    if (this.compiled) {
+    if (this.compiled || this.compilationError) {
       return;
     }
 
-    const transformers = getTransformers();
-    let code = this.source;
-    for (const transformer of transformers) {
-      const transformationResult = await transformer({
-        module: this,
-        code,
-      });
-      code = transformationResult.code;
-      await Promise.all(
-        Array.from(transformationResult.dependencies).map((d) => {
-          return this.addDependency(d);
-        })
-      );
+    try {
+      const transformers = getTransformers();
+      let code = this.source;
+      for (const transformer of transformers) {
+        const transformationResult = await transformer({
+          module: this,
+          code,
+        });
+        code = transformationResult.code;
+        await Promise.all(
+          Array.from(transformationResult.dependencies).map((d) => {
+            return this.addDependency(d);
+          })
+        );
+      }
+      this.compiled = code;
+    } catch (err: any) {
+      this.compilationError = err;
     }
-    this.compiled = code;
   }
 
   resetCompilation(): void {
+    // We always reset compilation errors as this will be non-null while compilation is null
+    this.compilationError = null;
+
     // Skip modules that don't have any compilation
     if (this.compiled == null) return;
 
