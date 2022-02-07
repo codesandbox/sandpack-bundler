@@ -220,12 +220,12 @@ export class Bundler {
     return res;
   }
 
-  async compile(files: ISandboxFile[]) {
+  async compile(files: ISandboxFile[]): Promise<() => any> {
     // If it's a change and we don't have any hmr modules we simply reload the application
     if (!this.isFirstLoad && !this.hasHMR) {
       console.log("HMR is not enabled, doing a full page refresh");
       window.location.reload();
-      return;
+      return () => {};
     }
 
     let changedFiles: string[] = [];
@@ -238,14 +238,16 @@ export class Bundler {
     }
 
     if (changedFiles.length) {
+      const promises = [];
       for (let changedFile of changedFiles) {
         const module = this.getModule(changedFile);
         if (module) {
           module.resetCompilation();
         } else {
-          this.transformModule(changedFile).catch(console.error);
+          promises.push(this.transformModule(changedFile));
         }
       }
+      await Promise.all(promises);
     } else {
       // TODO: Load only changed node modules and don't overwrite existing modules
       console.log("Loading node modules");
@@ -266,42 +268,44 @@ export class Bundler {
 
     entryModule.isEntry = true;
 
-    // Evaluate
-    console.log("Evaluating...");
-    this.modules.forEach((module) => {
-      if (module.hot.hmrConfig?.isDirty()) {
-        module.evaluate();
-      }
-    });
-
-    // TODO: Add ability to add runtimes that run before entrypoints
-    // React refresh... currently worked around it, but should be native in the bundler...
-    // if (typeof window !== 'undefined') {
-    //   const runtime = require('react-refresh/runtime');
-    //   runtime.injectIntoGlobalHook(window);
-    //   window.$RefreshReg$ = () => {};
-    //   window.$RefreshSig$ = () => type => type;
-    // }
-
-    entryModule.evaluate();
-
-    // Check if any module has been invalidated, because in that case we need to
-    // restart evaluation.
-    // const invalidatedModules = this.modules.filter(t => {
-    //   if (t.hmrConfig?.invalidated) {
-    //     t.compilation = null;
-    //     t.hmrConfig = null;
-
-    //     return true;
-    //   }
-
-    //   return false;
-    // });
-
-    // if (invalidatedModules.length > 0) {
-    //   return this.evaluateModule(module, { force, globals });
-    // }
-
     this.isFirstLoad = false;
+
+    return () => {
+      // Evaluate
+      console.log("Evaluating...");
+      this.modules.forEach((module) => {
+        if (module.hot.hmrConfig?.isDirty()) {
+          module.evaluate();
+        }
+      });
+
+      // TODO: Add ability to add runtimes that run before entrypoints
+      // React refresh... currently worked around it, but should be native in the bundler...
+      // if (typeof window !== 'undefined') {
+      //   const runtime = require('react-refresh/runtime');
+      //   runtime.injectIntoGlobalHook(window);
+      //   window.$RefreshReg$ = () => {};
+      //   window.$RefreshSig$ = () => type => type;
+      // }
+
+      entryModule.evaluate();
+
+      // Check if any module has been invalidated, because in that case we need to
+      // restart evaluation.
+      // const invalidatedModules = this.modules.filter(t => {
+      //   if (t.hmrConfig?.invalidated) {
+      //     t.compilation = null;
+      //     t.hmrConfig = null;
+
+      //     return true;
+      //   }
+
+      //   return false;
+      // });
+
+      // if (invalidatedModules.length > 0) {
+      //   return this.evaluateModule(module, { force, globals });
+      // }
+    };
   }
 }

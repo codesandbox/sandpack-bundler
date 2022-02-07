@@ -43,14 +43,56 @@ class SandpackInstance {
       firstLoad: this.bundler.isFirstLoad,
     });
 
-    const startTime = Date.now();
-    const files = Object.values(compileRequest.modules);
-
+    // --- Bundling / Compiling
     console.log("Started bundling");
-    await this.bundler.compile(files);
-    console.log(`Finished bundling in ${Date.now() - startTime}ms`);
+    const bundlingStartTime = Date.now();
+    const files = Object.values(compileRequest.modules);
+    const evaluate = await this.bundler
+      .compile(files)
+      .then((val) => {
+        this.messageBus.sendMessage("done", {
+          compilatonError: false,
+        });
+        return val;
+      })
+      .catch((err) => {
+        console.error("compile error", err);
 
-    this.messageBus.sendMessage("done");
+        this.messageBus.sendMessage("action", {
+          action: "show-error",
+          title: "Could not bundle application",
+          path: "/App.tsx",
+          message: err.message,
+          line: 1,
+          column: 1,
+        });
+
+        this.messageBus.sendMessage("done", {
+          compilatonError: true,
+        });
+      })
+      .finally(() => {
+        console.log(`Finished bundling in ${Date.now() - bundlingStartTime}ms`);
+      });
+
+    // --- Evaluation
+    if (evaluate) {
+      try {
+        console.log("Start evaluation");
+        const evalStartTime = Date.now();
+        evaluate();
+        console.log(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+      } catch (err: any) {
+        this.messageBus.sendMessage("action", {
+          action: "show-error",
+          title: "Could not evaluate app",
+          path: "/App.tsx",
+          message: err.message,
+          line: 1,
+          column: 1,
+        });
+      }
+    }
   }
 
   dispose() {
