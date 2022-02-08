@@ -10,6 +10,11 @@ export interface ITranspilationContext {
   code: string;
 }
 
+export type TransformFn = (
+  ctx: ITranspilationContext,
+  config: any
+) => Promise<ITranspilationResult>;
+
 export class Transformer<Config = any> {
   constructor(public id: string) {}
 

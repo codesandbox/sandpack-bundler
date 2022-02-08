@@ -1,19 +1,19 @@
 import { Module } from "../../module/Module";
 import { Preset } from "../Preset";
 
+import { BabelTransformer } from "../../transforms/babel";
+import { ReactRefreshTransformer } from "../../transforms/react-refresh";
+
 export class ReactPreset extends Preset {
   constructor() {
     super("react");
   }
 
   async init(): Promise<void> {
-    const [{ BabelTransformer }, { ReactRefreshTransformer }] =
-      await Promise.all([
-        import("../../transforms/babel/index"),
-        import("../../transforms/react-refresh/index"),
-      ]);
-    this.registerTransformer(new BabelTransformer());
-    this.registerTransformer(new ReactRefreshTransformer());
+    await Promise.all([
+      this.registerTransformer(new BabelTransformer()),
+      this.registerTransformer(new ReactRefreshTransformer()),
+    ]);
   }
 
   mapTransformers(module: Module): Array<[string, any]> {
