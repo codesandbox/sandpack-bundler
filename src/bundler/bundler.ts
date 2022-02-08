@@ -30,6 +30,7 @@ export class Bundler {
 
   // Map from module id => parent module ids
   initiators: Map<string, Set<string>> = new Map();
+  runtimes: string[] = [];
 
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
@@ -43,8 +44,16 @@ export class Bundler {
   async initPreset(preset: string): Promise<void> {
     if (!this.preset) {
       this.preset = getPreset(preset);
-      await this.preset.init();
+      await this.preset.init(this);
     }
+  }
+
+  registerRuntime(id: string, code: string): void {
+    const filepath = `/node_modules/__csb_runtimes/${id}.js`;
+    this.fs.writeFile(filepath, code);
+    const module = new Module(filepath, code, false, this);
+    this.modules.set(filepath, module);
+    this.runtimes.push(filepath);
   }
 
   getModule(filepath: string): Module | undefined {
@@ -270,6 +279,14 @@ export class Bundler {
       await this.loadNodeModules();
     }
 
+    // Transform runtimes
+    if (this.isFirstLoad) {
+      for (const runtime of this.runtimes) {
+        await this.transformModule(runtime);
+        await this.moduleFinishedPromise(runtime);
+      }
+    }
+
     // Resolve entrypoints
     const entryPoint = this.getEntryPoint();
     const resolvedEntryPont = await this.resolveAsync(entryPoint, "/index.js");
@@ -283,44 +300,48 @@ export class Bundler {
 
     entryModule.isEntry = true;
 
-    this.isFirstLoad = false;
-
     return () => {
       // Evaluate
       console.log("Evaluating...");
-      this.modules.forEach((module) => {
-        if (module.hot.hmrConfig?.isDirty()) {
-          module.evaluate();
+
+      if (this.isFirstLoad) {
+        for (const runtime of this.runtimes) {
+          const module = this.modules.get(runtime);
+          if (!module) {
+            throw new Error(`Runtime ${runtime} is not defined`);
+          } else {
+            console.log(`Loading runtime ${runtime}...`);
+            module.evaluate();
+          }
         }
-      });
 
-      // TODO: Add ability to add runtimes that run before entrypoints
-      // React refresh... currently worked around it, but should be native in the bundler...
-      // if (typeof window !== 'undefined') {
-      //   const runtime = require('react-refresh/runtime');
-      //   runtime.injectIntoGlobalHook(window);
-      //   window.$RefreshReg$ = () => {};
-      //   window.$RefreshSig$ = () => type => type;
-      // }
+        entryModule.evaluate();
+      } else {
+        this.modules.forEach((module) => {
+          if (module.hot.hmrConfig?.isDirty()) {
+            module.evaluate();
+          }
+        });
 
-      entryModule.evaluate();
+        // Check if any module has been invalidated, because in that case we need to
+        // restart evaluation.
+        // const invalidatedModules = this.modules.filter(t => {
+        //   if (t.hmrConfig?.invalidated) {
+        //     t.compilation = null;
+        //     t.hmrConfig = null;
 
-      // Check if any module has been invalidated, because in that case we need to
-      // restart evaluation.
-      // const invalidatedModules = this.modules.filter(t => {
-      //   if (t.hmrConfig?.invalidated) {
-      //     t.compilation = null;
-      //     t.hmrConfig = null;
+        //     return true;
+        //   }
 
-      //     return true;
-      //   }
+        //   return false;
+        // });
 
-      //   return false;
-      // });
+        // if (invalidatedModules.length > 0) {
+        //   return this.evaluateModule(module, { force, globals });
+        // }
+      }
 
-      // if (invalidatedModules.length > 0) {
-      //   return this.evaluateModule(module, { force, globals });
-      // }
+      this.isFirstLoad = false;
     };
   }
 }

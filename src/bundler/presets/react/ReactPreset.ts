@@ -3,13 +3,16 @@ import { Preset } from "../Preset";
 
 import { BabelTransformer } from "../../transforms/babel";
 import { ReactRefreshTransformer } from "../../transforms/react-refresh";
+import { Bundler } from "../../bundler";
 
 export class ReactPreset extends Preset {
   constructor() {
     super("react");
   }
 
-  async init(): Promise<void> {
+  async init(bundler: Bundler): Promise<void> {
+    await super.init(bundler);
+
     await Promise.all([
       this.registerTransformer(new BabelTransformer()),
       this.registerTransformer(new ReactRefreshTransformer()),

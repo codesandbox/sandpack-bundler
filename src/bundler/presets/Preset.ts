@@ -1,13 +1,19 @@
+import { Bundler } from "../bundler";
 import { Module } from "../module/Module";
 import { Transformer } from "../transforms/Transformer";
 
 export class Preset {
   private transformers = new Map<string, Transformer>();
+  private bundler: Bundler | null = null;
 
   constructor(public name: string) {}
 
   async registerTransformer(transfomer: Transformer): Promise<void> {
-    await transfomer.init();
+    if (!this.bundler) {
+      throw new Error("Call Preset#init before registering transformers");
+    }
+
+    await transfomer.init(this.bundler);
     this.transformers.set(transfomer.id, transfomer);
   }
 
@@ -15,8 +21,8 @@ export class Preset {
     return this.transformers.get(id);
   }
 
-  async init(): Promise<void> {
-    throw new Error("Not implemented");
+  async init(bundler: Bundler): Promise<void> {
+    this.bundler = bundler;
   }
 
   mapTransformers(module: Module): Array<[string, any]> {
@@ -25,12 +31,12 @@ export class Preset {
 
   getTransformers(module: Module): Array<[Transformer, any]> {
     const transformersMap = this.mapTransformers(module);
-    return transformersMap.map((t) => {
-      const transformer = this.getTransformer(t[0]);
+    return transformersMap.map((val) => {
+      const transformer = this.getTransformer(val[0]);
       if (!transformer) {
-        throw new Error(`Transformer ${t[0]} not found`);
+        throw new Error(`Transformer ${val[0]} not found`);
       }
-      return [transformer, t[1]];
+      return [transformer, val[1]];
     });
   }
 }

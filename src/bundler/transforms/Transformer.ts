@@ -1,3 +1,4 @@
+import { Bundler } from "../bundler";
 import { Module } from "../module/Module";
 
 export interface ITranspilationResult {
@@ -18,7 +19,7 @@ export type TransformFn = (
 export class Transformer<Config = any> {
   constructor(public id: string) {}
 
-  async init(): Promise<void> {}
+  async init(bundler: Bundler): Promise<void> {}
 
   async transform(
     ctx: ITranspilationContext,

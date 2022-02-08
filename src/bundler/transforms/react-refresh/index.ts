@@ -1,10 +1,11 @@
+import { Bundler } from "../../bundler";
 import {
   ITranspilationContext,
   ITranspilationResult,
   Transformer,
 } from "../Transformer";
 
-const HELPER_PATH = "/node_modules/csbbust/refresh-helper.js";
+const HELPER_PATH = "/node_modules/__csb_bust/refresh-helper.js";
 
 const HELPER_CODE = `
 const Refresh = require('react-refresh/runtime');
@@ -182,6 +183,15 @@ const postlude = `_csbRefreshUtils.postlude(module);
   window.$RefreshSig$ = prevRefreshSig;
 }`.replace(/[\n]+/gm, "");
 
+const REACT_REFRESH_RUNTIME = `
+if (typeof window !== 'undefined') {
+  const runtime = require('react-refresh/runtime');
+  runtime.injectIntoGlobalHook(window);
+  window.$RefreshReg$ = () => {};
+  window.$RefreshSig$ = () => type => type;
+}
+`;
+
 /**
  * This is the compressed version of the code in the comment above. We compress the code
  * to a single line so we don't mess with the source mapping when showing errors.
@@ -192,6 +202,10 @@ const getWrapperCode = (sourceCode: string) =>
 export class ReactRefreshTransformer extends Transformer {
   constructor() {
     super("react-refresh-transformer");
+  }
+
+  async init(bundler: Bundler): Promise<void> {
+    bundler.registerRuntime(this.id, REACT_REFRESH_RUNTIME);
   }
 
   async transform(
