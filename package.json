@@ -1,7 +1,7 @@
 {
-  "name": "sandpack-v2-mvp",
-  "version": "1.0.0",
-  "description": "Sandpack V2 MVP",
+  "name": "sandpack-bundler",
+  "version": "2.0.0",
+  "description": "The bundler powering sandpack",
   "scripts": {
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
