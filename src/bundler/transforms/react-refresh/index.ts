@@ -1,4 +1,8 @@
-import { ITranspilationContext, ITranspilationResult } from "../types";
+import {
+  ITranspilationContext,
+  ITranspilationResult,
+  Transformer,
+} from "../Transformer";
 
 const HELPER_PATH = "/node_modules/csbbust/refresh-helper.js";
 
@@ -185,28 +189,35 @@ const postlude = `_csbRefreshUtils.postlude(module);
 const getWrapperCode = (sourceCode: string) =>
   prelude + sourceCode + "\n" + postlude;
 
-export async function transform(
-  ctx: ITranspilationContext
-): Promise<ITranspilationResult> {
-  const filepath = ctx.module.filepath;
-  if (filepath.endsWith(".tsx") || filepath.endsWith(".jsx")) {
-    // Write helper to memory-fs
-    ctx.module.bundler.fs.writeFile(HELPER_PATH, HELPER_CODE);
+export class ReactRefreshTransformer extends Transformer {
+  constructor() {
+    super("react-refresh-transformer");
+  }
 
-    // await loaderContext.addDependency("react-refresh/runtime");
-    // loaderContext.emitModule(HELPER_PATH, HELPER_CODE, "/", false, false);
+  async transform(
+    ctx: ITranspilationContext,
+    config: any
+  ): Promise<ITranspilationResult> {
+    const filepath = ctx.module.filepath;
+    if (filepath.endsWith(".tsx") || filepath.endsWith(".jsx")) {
+      // Write helper to memory-fs
+      ctx.module.bundler.fs.writeFile(HELPER_PATH, HELPER_CODE);
 
-    console.log(filepath, "is a react file");
+      // await loaderContext.addDependency("react-refresh/runtime");
+      // loaderContext.emitModule(HELPER_PATH, HELPER_CODE, "/", false, false);
 
-    const newCode = getWrapperCode(ctx.code);
-    return {
-      code: newCode || "",
-      dependencies: new Set([HELPER_PATH]),
-    };
-  } else {
-    return {
-      code: ctx.code,
-      dependencies: new Set(),
-    };
+      console.log(filepath, "is a react file");
+
+      const newCode = getWrapperCode(ctx.code);
+      return {
+        code: newCode || "",
+        dependencies: new Set([HELPER_PATH]),
+      };
+    } else {
+      return {
+        code: ctx.code,
+        dependencies: new Set(),
+      };
+    }
   }
 }

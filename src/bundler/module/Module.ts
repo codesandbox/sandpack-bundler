@@ -1,5 +1,4 @@
 import { Bundler } from "../bundler";
-import { getTransformers } from "../transforms";
 import { Evaluation } from "./Evaluation";
 import { HotContext } from "./hot";
 
@@ -60,13 +59,25 @@ export class Module {
     }
 
     try {
-      const transformers = getTransformers();
+      const preset = this.bundler.preset;
+      if (!preset) {
+        throw new Error("Preset has not been initialized");
+      }
+
+      const transformers = preset.getTransformers(this);
+      if (!transformers.length) {
+        throw new Error(`No transformers found for ${this.filepath}`);
+      }
+
       let code = this.source;
-      for (const transformer of transformers) {
-        const transformationResult = await transformer({
-          module: this,
-          code,
-        });
+      for (const [transformer, config] of transformers) {
+        const transformationResult = await transformer.transform(
+          {
+            module: this,
+            code,
+          },
+          config
+        );
         code = transformationResult.code;
         await Promise.all(
           Array.from(transformationResult.dependencies).map((d) => {

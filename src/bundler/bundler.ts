@@ -7,6 +7,8 @@ import { ResolverCache, resolveAsync } from "../resolver/resolver";
 import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
 import { MemoryFSLayer } from "./FileSystem/layers/MemoryFSLayer";
 import { NodeModuleFSLayer } from "./FileSystem/layers/NodeModuleFSLayer";
+import { Preset } from "./presets/Preset";
+import { getPreset } from "./presets/registry";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -24,6 +26,7 @@ export class Bundler {
   resolverCache: ResolverCache = new Map();
   hasHMR = false;
   isFirstLoad = true;
+  preset: Preset | undefined;
 
   // Map from module id => parent module ids
   initiators: Map<string, Set<string>> = new Map();
@@ -35,6 +38,13 @@ export class Bundler {
       new NodeModuleFSLayer(this.moduleRegistry),
     ]);
     this.transformationQueue = new NamedPromiseQueue(true, 50);
+  }
+
+  async initPreset(preset: string): Promise<void> {
+    if (!this.preset) {
+      this.preset = getPreset(preset);
+      await this.preset.init();
+    }
   }
 
   getModule(filepath: string): Module | undefined {

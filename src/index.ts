@@ -43,6 +43,12 @@ class SandpackInstance {
       firstLoad: this.bundler.isFirstLoad,
     });
 
+    // --- Load preset
+    console.log("Loading preset and transformers...");
+    const initStartTime = Date.now();
+    await this.bundler.initPreset(compileRequest.template);
+    console.log(`Finished loading preset in ${Date.now() - initStartTime}ms`);
+
     // --- Bundling / Compiling
     console.log("Started bundling");
     const bundlingStartTime = Date.now();
