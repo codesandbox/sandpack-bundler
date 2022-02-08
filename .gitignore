@@ -3,4 +3,3 @@ dist
 .parcel-cache
 *.log
 .DS_Store
-public

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
-    "build": "rm -rf public && parcel build ./src/index.html --dist-dir public"
+    "build": "parcel build ./src/index.html"
   },
   "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
