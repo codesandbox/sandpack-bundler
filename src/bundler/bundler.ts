@@ -246,16 +246,23 @@ export class Bundler {
   }
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
-    // If it's a change and we don't have any hmr modules we simply reload the application
-    if (!this.isFirstLoad && !this.hasHMR) {
-      console.log("HMR is not enabled, doing a full page refresh");
-      window.location.reload();
-      return () => {};
-    }
-
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
+      console.log("Started incremental compilation");
+
       changedFiles = this.writeNewFiles(files);
+
+      if (!changedFiles.length) {
+        console.log("Skipping compilation, no changes detected");
+        return () => {};
+      }
+
+      // If it's a change and we don't have any hmr modules we simply reload the application
+      if (!this.hasHMR) {
+        console.log("HMR is not enabled, doing a full page refresh");
+        window.location.reload();
+        return () => {};
+      }
     } else {
       for (let file of files) {
         this.fs.writeFile(file.path, file.code);

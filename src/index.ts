@@ -24,9 +24,7 @@ class SandpackInstance {
   handleParentMessage(message: any) {
     switch (message.type) {
       case "compile":
-        this.compileDebouncer.debounce(() => {
-          return this.handleCompile(message).catch(console.error);
-        });
+        this.compileDebouncer.debounce(() => this.handleCompile(message));
         break;
       case "refresh":
         window.location.reload();
