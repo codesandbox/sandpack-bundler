@@ -212,26 +212,15 @@ export class ReactRefreshTransformer extends Transformer {
     ctx: ITranspilationContext,
     config: any
   ): Promise<ITranspilationResult> {
-    const filepath = ctx.module.filepath;
-    if (filepath.endsWith(".tsx") || filepath.endsWith(".jsx")) {
-      // Write helper to memory-fs
-      ctx.module.bundler.fs.writeFile(HELPER_PATH, HELPER_CODE);
+    // TODO: Detect if we need to add react-refresh to this file...
 
-      // await loaderContext.addDependency("react-refresh/runtime");
-      // loaderContext.emitModule(HELPER_PATH, HELPER_CODE, "/", false, false);
+    // Write helper to memory-fs
+    ctx.module.bundler.fs.writeFile(HELPER_PATH, HELPER_CODE);
 
-      console.log(filepath, "is a react file");
-
-      const newCode = getWrapperCode(ctx.code);
-      return {
-        code: newCode || "",
-        dependencies: new Set([HELPER_PATH]),
-      };
-    } else {
-      return {
-        code: ctx.code,
-        dependencies: new Set(),
-      };
-    }
+    const newCode = getWrapperCode(ctx.code);
+    return {
+      code: newCode || "",
+      dependencies: new Set([HELPER_PATH]),
+    };
   }
 }
