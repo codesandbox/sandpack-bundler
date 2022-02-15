@@ -78,6 +78,9 @@ class SandpackInstance {
         console.log(`Finished bundling in ${Date.now() - bundlingStartTime}ms`);
       });
 
+    // --- Replace HTML
+    this.bundler.replaceHTML();
+
     // --- Evaluation
     if (evaluate) {
       try {

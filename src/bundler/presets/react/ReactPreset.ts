@@ -6,6 +6,8 @@ import { ReactRefreshTransformer } from "../../transforms/react-refresh";
 import { Bundler } from "../../bundler";
 
 export class ReactPreset extends Preset {
+  defaultHtmlBody = '<div id="root"></div>';
+
   constructor() {
     super("react");
   }

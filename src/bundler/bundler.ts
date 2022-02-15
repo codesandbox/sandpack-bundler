@@ -9,6 +9,7 @@ import { MemoryFSLayer } from "./FileSystem/layers/MemoryFSLayer";
 import { NodeModuleFSLayer } from "./FileSystem/layers/NodeModuleFSLayer";
 import { Preset } from "./presets/Preset";
 import { getPreset } from "./presets/registry";
+import { replaceHTML } from "../utils/html";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -18,6 +19,8 @@ interface IPackageJSON {
 }
 
 export class Bundler {
+  private lastHTML: string | null = null;
+
   parsedPackageJSON: IPackageJSON | null = null;
   moduleRegistry: ModuleRegistry;
   fs: FileSystem;
@@ -350,5 +353,31 @@ export class Bundler {
 
       this.isFirstLoad = false;
     };
+  }
+
+  // TODO: Support template languages...
+  getHTMLEntry(): string {
+    const foundHTMLFilepath = ["/index.html", "/public/index.html"].find(
+      (filepath) => this.fs.isFileSync(filepath)
+    );
+
+    if (foundHTMLFilepath) {
+      return this.fs.readFileSync(foundHTMLFilepath);
+    } else {
+      if (!this.preset) {
+        throw new Error("Bundler has not been initialized with a preset");
+      }
+      return this.preset.defaultHtmlBody;
+    }
+  }
+
+  replaceHTML() {
+    const html = this.getHTMLEntry();
+    if (this.lastHTML && this.lastHTML !== html) {
+      window.location.reload();
+      return;
+    }
+    this.lastHTML = html;
+    replaceHTML(html);
   }
 }
