@@ -22,3 +22,11 @@ export interface ICompileRequest {
   skipEval?: boolean;
   logLevel?: SandpackLogLevel;
 }
+
+export type BundlerStatus =
+  | "initializing"
+  | "installing-dependencies"
+  | "transpiling"
+  | "evaluating"
+  | "running-tests"
+  | "idle";

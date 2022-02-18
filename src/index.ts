@@ -74,6 +74,8 @@ class SandpackInstance {
       firstLoad: this.bundler.isFirstLoad,
     });
 
+    this.messageBus.sendMessage("status", { status: "initializing" });
+
     // --- Load preset
     logger.info("Loading preset and transformers...");
     const initStartTime = Date.now();
@@ -116,11 +118,14 @@ class SandpackInstance {
 
     // --- Evaluation
     if (evaluate) {
+      this.messageBus.sendMessage("status", { status: "evaluating" });
+
       try {
         logger.info("Start evaluation");
         const evalStartTime = Date.now();
         evaluate();
         logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+        this.messageBus.sendMessage("status");
         this.messageBus.sendMessage("success");
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
@@ -134,6 +139,8 @@ class SandpackInstance {
         });
       }
     }
+
+    this.messageBus.sendMessage("status", { status: "idle" });
   }
 
   dispose() {

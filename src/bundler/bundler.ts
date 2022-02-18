@@ -11,6 +11,8 @@ import { Preset } from "./presets/Preset";
 import { getPreset } from "./presets/registry";
 import { replaceHTML } from "../utils/html";
 import * as logger from "../utils/logger";
+import { Emitter } from "../utils/emitter";
+import { BundlerStatus } from "../protocol/message-types";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -34,8 +36,11 @@ export class Bundler {
   preset: Preset | undefined;
 
   // Map from module id => parent module ids
-  initiators: Map<string, Set<string>> = new Map();
+  initiators = new Map<string, Set<string>>();
   runtimes: string[] = [];
+
+  private onStatusChangeEmitter = new Emitter<BundlerStatus>();
+  onStatusChange = this.onStatusChangeEmitter.event;
 
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
@@ -253,6 +258,8 @@ export class Bundler {
   }
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
+    this.onStatusChangeEmitter.fire("installing-dependencies");
+
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
       logger.info("Started incremental compilation");
@@ -293,6 +300,7 @@ export class Bundler {
       await this.loadNodeModules();
     }
 
+    this.onStatusChangeEmitter.fire("transpiling");
     if (this.isFirstLoad) {
       // When a module errored out during the initial load
       // we stopped halfway through a compilation so we need to remove these modules
