@@ -109,12 +109,6 @@ export class Module {
         module?.resetCompilation();
       }
 
-      // Array.from(this.transpilationInitiators)
-      //   .filter((t) => t.compilation)
-      //   .forEach((dep) => {
-      //     dep.resetCompilation();
-      //   });
-
       // If this is an entry we want all direct entries to be reset as well.
       // Entries generally have side effects
       if (this.isEntry) {

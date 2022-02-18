@@ -25,6 +25,7 @@ export class Bundler {
   parsedPackageJSON: IPackageJSON | null = null;
   moduleRegistry: ModuleRegistry;
   fs: FileSystem;
+  // Map filepath => Module
   modules: Map<string, Module> = new Map();
   transformationQueue: TransformationQueue;
   resolverCache: ResolverCache = new Map();
@@ -221,7 +222,7 @@ export class Bundler {
         try {
           await this.moduleFinishedPromise(dep, moduleIds);
         } catch (err) {
-          logger.error(
+          logger.debug(
             `Failed awaiting transpilation ${dep} required by ${id}`
           );
 
@@ -290,6 +291,23 @@ export class Bundler {
       console.debug("Loading node modules");
       await this.processPackageJSON();
       await this.loadNodeModules();
+    }
+
+    if (this.isFirstLoad) {
+      // When a module errored out during the initial load
+      // we stopped halfway through a compilation so we need to remove these modules
+      const erroredModules = Array.from(this.modules.values()).filter(
+        (m) => m.compilationError
+      );
+      if (erroredModules.length) {
+        // TODO: Instead of transform we should reset compilation of this module and all it's parent modules
+        const promises: Promise<Module>[] = [];
+        erroredModules.forEach((m) => {
+          m.resetCompilation();
+          promises.push(this.transformModule(m.filepath));
+        });
+        await Promise.all(promises);
+      }
     }
 
     // Transform runtimes
