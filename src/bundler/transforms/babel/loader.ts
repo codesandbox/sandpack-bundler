@@ -29,7 +29,10 @@ export async function transform(
       collectDependencies(requires),
       ["react-refresh/babel", { skipEnvCheck: true }],
     ],
-    ast: true,
+    // no ast needed for now
+    ast: false,
+    sourceMaps: false,
+    compact: true,
   });
 
   return {
