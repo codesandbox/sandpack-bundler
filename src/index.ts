@@ -3,6 +3,7 @@ import { IFrameParentMessageBus } from "./protocol/iframe";
 import { ICompileRequest } from "./protocol/message-types";
 import { Debouncer } from "./utils/Debouncer";
 import { DisposableStore } from "./utils/Disposable";
+import * as logger from "./utils/logger";
 
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
@@ -37,18 +38,22 @@ class SandpackInstance {
   }
 
   async handleCompile(compileRequest: ICompileRequest) {
+    if (compileRequest.logLevel != null) {
+      logger.setLogLevel(compileRequest.logLevel);
+    }
+
     this.messageBus.sendMessage("start", {
       firstLoad: this.bundler.isFirstLoad,
     });
 
     // --- Load preset
-    console.log("Loading preset and transformers...");
+    logger.info("Loading preset and transformers...");
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
-    console.log(`Finished loading preset in ${Date.now() - initStartTime}ms`);
+    logger.info(`Finished loading preset in ${Date.now() - initStartTime}ms`);
 
     // --- Bundling / Compiling
-    console.log("Started bundling");
+    logger.info("Started bundling");
     const bundlingStartTime = Date.now();
     const files = Object.values(compileRequest.modules);
     const evaluate = await this.bundler
@@ -75,7 +80,7 @@ class SandpackInstance {
         });
       })
       .finally(() => {
-        console.log(`Finished bundling in ${Date.now() - bundlingStartTime}ms`);
+        logger.info(`Finished bundling in ${Date.now() - bundlingStartTime}ms`);
       });
 
     // --- Replace HTML
@@ -84,10 +89,10 @@ class SandpackInstance {
     // --- Evaluation
     if (evaluate) {
       try {
-        console.log("Start evaluation");
+        logger.info("Start evaluation");
         const evalStartTime = Date.now();
         evaluate();
-        console.log(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+        logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
           action: "show-error",

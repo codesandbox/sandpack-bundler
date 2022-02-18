@@ -40,7 +40,7 @@ export class Evaluation {
   require(specifier: string): any {
     const moduleFilePath = this.module.dependencyMap.get(specifier);
     if (!moduleFilePath) {
-      console.log("Require", {
+      console.debug("Require", {
         dependencies: this.module.dependencyMap,
         specifier,
       });

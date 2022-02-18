@@ -10,6 +10,7 @@ import { NodeModuleFSLayer } from "./FileSystem/layers/NodeModuleFSLayer";
 import { Preset } from "./presets/Preset";
 import { getPreset } from "./presets/registry";
 import { replaceHTML } from "../utils/html";
+import * as logger from "../utils/logger";
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -220,7 +221,9 @@ export class Bundler {
         try {
           await this.moduleFinishedPromise(dep, moduleIds);
         } catch (err) {
-          console.log(`Failed awaiting transpilation ${dep} required by ${id}`);
+          logger.error(
+            `Failed awaiting transpilation ${dep} required by ${id}`
+          );
 
           throw err;
         }
@@ -251,18 +254,18 @@ export class Bundler {
   async compile(files: ISandboxFile[]): Promise<() => any> {
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
-      console.log("Started incremental compilation");
+      logger.info("Started incremental compilation");
 
       changedFiles = this.writeNewFiles(files);
 
       if (!changedFiles.length) {
-        console.log("Skipping compilation, no changes detected");
+        logger.info("Skipping compilation, no changes detected");
         return () => {};
       }
 
       // If it's a change and we don't have any hmr modules we simply reload the application
       if (!this.hasHMR) {
-        console.log("HMR is not enabled, doing a full page refresh");
+        logger.debug("HMR is not enabled, doing a full page refresh");
         window.location.reload();
         return () => {};
       }
@@ -284,7 +287,7 @@ export class Bundler {
       await Promise.all(promises);
     } else {
       // TODO: Load only changed node modules and don't overwrite existing modules
-      console.log("Loading node modules");
+      console.debug("Loading node modules");
       await this.processPackageJSON();
       await this.loadNodeModules();
     }
@@ -300,19 +303,19 @@ export class Bundler {
     // Resolve entrypoints
     const entryPoint = this.getEntryPoint();
     const resolvedEntryPont = await this.resolveAsync(entryPoint, "/index.js");
-    console.log("Resolved entrypoint:", resolvedEntryPont);
+    console.debug("Resolved entrypoint:", resolvedEntryPont);
 
     // Transform entrypoint and deps
     const entryModule = await this.transformModule(resolvedEntryPont);
     await this.moduleFinishedPromise(resolvedEntryPont);
-    console.log("Bundling finished, manifest:");
-    console.log(this.modules);
+    console.debug("Bundling finished, manifest:");
+    console.debug(this.modules);
 
     entryModule.isEntry = true;
 
     return () => {
       // Evaluate
-      console.log("Evaluating...");
+      console.info("Evaluating...");
 
       if (this.isFirstLoad) {
         for (const runtime of this.runtimes) {
@@ -320,7 +323,7 @@ export class Bundler {
           if (!module) {
             throw new Error(`Runtime ${runtime} is not defined`);
           } else {
-            console.log(`Loading runtime ${runtime}...`);
+            console.debug(`Loading runtime ${runtime}...`);
             module.evaluate();
           }
         }

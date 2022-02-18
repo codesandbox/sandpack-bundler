@@ -2,6 +2,7 @@ import { sortObj } from "../../utils/object";
 import { filterBuildDeps } from "./build-dep";
 import { fetchManifest, fetchModule } from "./module-cdn";
 import { NodeModule } from "./NodeModule";
+import * as logger from "../../utils/logger";
 
 // dependency => version range
 export type DepMap = { [depName: string]: string };
@@ -18,9 +19,9 @@ export class ModuleRegistry {
     }
 
     const sortedDeps = sortObj(deps);
-    console.log("Fetching manifest", sortedDeps);
+    logger.debug("Fetching manifest", sortedDeps);
     const dependencies = await fetchManifest(sortedDeps);
-    console.log("fetched manifest", dependencies);
+    logger.debug("fetched manifest", dependencies);
     // TODO: Use priority queue with the depth
     await Promise.all(
       dependencies.map((d) => {
@@ -32,6 +33,6 @@ export class ModuleRegistry {
   async fetchNodeModule(name: string, version: string): Promise<void> {
     const module = await fetchModule(name, version);
     this.modules.set(name, new NodeModule(name, version, module.f, module.m));
-    console.log("fetched module", name, version, module);
+    logger.debug("fetched module", name, version, module);
   }
 }

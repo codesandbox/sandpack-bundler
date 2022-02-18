@@ -1,3 +1,5 @@
+import { SandpackLogLevel } from "../utils/logger";
+
 export interface ISandboxFile {
   code: string;
   path: string;
@@ -18,4 +20,5 @@ export interface ICompileRequest {
   showLoadingScreen?: boolean;
   showOpenInCodeSandbox?: boolean;
   skipEval?: boolean;
+  logLevel?: SandpackLogLevel;
 }
