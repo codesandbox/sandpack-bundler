@@ -63,6 +63,9 @@ class SandpackInstance {
   async init() {
     this.messageBus.sendMessage("initialized");
     this.initDOMMutationObserver();
+    this.bundler.onStatusChange((newStatus) => {
+      this.messageBus.sendMessage("status", { status: newStatus });
+    });
   }
 
   async handleCompile(compileRequest: ICompileRequest) {
@@ -125,7 +128,6 @@ class SandpackInstance {
         const evalStartTime = Date.now();
         evaluate();
         logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
-        this.messageBus.sendMessage("status");
         this.messageBus.sendMessage("success");
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
