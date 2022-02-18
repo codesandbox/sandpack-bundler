@@ -3,6 +3,7 @@ import { IFrameParentMessageBus } from "./protocol/iframe";
 import { ICompileRequest } from "./protocol/message-types";
 import { Debouncer } from "./utils/Debouncer";
 import { DisposableStore } from "./utils/Disposable";
+import { getDocumentHeight } from "./utils/document";
 import * as logger from "./utils/logger";
 
 class SandpackInstance {
@@ -10,6 +11,7 @@ class SandpackInstance {
   private disposableStore = new DisposableStore();
   private bundler = new Bundler();
   private compileDebouncer = new Debouncer(50);
+  private lastHeight: number = 0;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
@@ -33,8 +35,34 @@ class SandpackInstance {
     }
   }
 
+  initDOMMutationObserver() {
+    if (
+      typeof window === "undefined" ||
+      typeof window.MutationObserver !== "function"
+    ) {
+      return;
+    }
+
+    // Listen on document body for any change that could trigger a resize of the content
+    // When a change is found, the sendResize function will determine if a message is dispatched
+    const observer = new MutationObserver(() => {
+      const height = getDocumentHeight();
+      if (this.lastHeight !== height) {
+        this.messageBus.sendMessage("resize", { height });
+      }
+      this.lastHeight = height;
+    });
+
+    observer.observe(document, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
+  }
+
   async init() {
     this.messageBus.sendMessage("initialized");
+    this.initDOMMutationObserver();
   }
 
   async handleCompile(compileRequest: ICompileRequest) {
