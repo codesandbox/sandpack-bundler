@@ -121,6 +121,7 @@ class SandpackInstance {
         const evalStartTime = Date.now();
         evaluate();
         logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+        this.messageBus.sendMessage("success");
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
           action: "show-error",
