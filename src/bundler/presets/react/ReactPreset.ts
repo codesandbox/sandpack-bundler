@@ -4,6 +4,8 @@ import { Preset } from "../Preset";
 import { BabelTransformer } from "../../transforms/babel";
 import { ReactRefreshTransformer } from "../../transforms/react-refresh";
 import { Bundler } from "../../bundler";
+import { CSSTransformer } from "../../transforms/css";
+import { StyleTransformer } from "../../transforms/style";
 
 export class ReactPreset extends Preset {
   defaultHtmlBody = '<div id="root"></div>';
@@ -18,6 +20,8 @@ export class ReactPreset extends Preset {
     await Promise.all([
       this.registerTransformer(new BabelTransformer()),
       this.registerTransformer(new ReactRefreshTransformer()),
+      this.registerTransformer(new CSSTransformer()),
+      this.registerTransformer(new StyleTransformer()),
     ]);
   }
 
@@ -37,7 +41,10 @@ export class ReactPreset extends Preset {
     }
 
     if (/\.css$/.test(module.filepath)) {
-      return [["css-transformer", {}]];
+      return [
+        ["css-transformer", {}],
+        ["style-transformer", {}],
+      ];
     }
 
     throw new Error(`No transformer for ${module.filepath}`);

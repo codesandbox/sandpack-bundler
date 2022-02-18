@@ -333,22 +333,24 @@ export class Bundler {
           }
         });
 
+        // TODO: Validate that this logic actually works...
         // Check if any module has been invalidated, because in that case we need to
         // restart evaluation.
-        // const invalidatedModules = this.modules.filter(t => {
-        //   if (t.hmrConfig?.invalidated) {
-        //     t.compilation = null;
-        //     t.hmrConfig = null;
+        const invalidatedModules = Object.values(this.modules).filter(
+          (m: Module) => {
+            if (m.hot.hmrConfig?.invalidated) {
+              m.resetCompilation();
+              this.transformModule(m.filepath);
+              return true;
+            }
 
-        //     return true;
-        //   }
+            return false;
+          }
+        );
 
-        //   return false;
-        // });
-
-        // if (invalidatedModules.length > 0) {
-        //   return this.evaluateModule(module, { force, globals });
-        // }
+        if (invalidatedModules.length > 0) {
+          return this.compile(files);
+        }
       }
 
       this.isFirstLoad = false;
@@ -372,12 +374,15 @@ export class Bundler {
   }
 
   replaceHTML() {
-    const html = this.getHTMLEntry();
-    if (this.lastHTML && this.lastHTML !== html) {
-      window.location.reload();
+    const html = this.getHTMLEntry() ?? '<div id="root"></div>';
+    if (this.lastHTML) {
+      if (this.lastHTML !== html) {
+        window.location.reload();
+      }
       return;
+    } else {
+      this.lastHTML = html;
+      replaceHTML(html);
     }
-    this.lastHTML = html;
-    replaceHTML(html);
   }
 }
