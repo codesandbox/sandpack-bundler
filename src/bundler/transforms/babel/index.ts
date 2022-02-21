@@ -5,6 +5,8 @@ import {
   Transformer,
 } from "../Transformer";
 
+const WORKER_TIMEOUT = 30000;
+
 export class BabelTransformer extends Transformer {
   private worker: null | Worker = null;
   private messageBus: null | WorkerMessageBus = null;
@@ -26,6 +28,7 @@ export class BabelTransformer extends Transformer {
         console.error(err);
         return Promise.resolve();
       },
+      timeoutMs: WORKER_TIMEOUT,
     });
   }
 

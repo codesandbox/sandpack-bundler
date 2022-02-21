@@ -16,6 +16,7 @@ export interface WorkerMessageBusOpts {
   handleRequest: RequestHandlerFn;
   handleNotification: NotificationHandlerFn;
   handleError: ErrorHandlerFn;
+  timeoutMs: number;
 }
 
 export interface PendingRequest {
@@ -29,6 +30,7 @@ export class WorkerMessageBus {
   private handleNotification: NotificationHandlerFn;
   private handleError: ErrorHandlerFn;
   private channel: string;
+  private timeoutMs: number;
 
   private pendingRequests = new Map<number, PendingRequest>();
   private _messageId = 0;
@@ -39,6 +41,7 @@ export class WorkerMessageBus {
     this.handleRequest = opts.handleRequest;
     this.handleNotification = opts.handleNotification;
     this.handleError = opts.handleError;
+    this.timeoutMs = opts.timeoutMs;
 
     this.endpoint.addEventListener("message", async (evt) => {
       const data = evt.data;
@@ -102,7 +105,21 @@ export class WorkerMessageBus {
       params,
     };
     const promise = new Promise((resolve, reject) => {
-      this.pendingRequests.set(messageId, { resolve, reject });
+      const timeoutRef = setTimeout(() => {
+        this.pendingRequests.delete(messageId);
+        reject(new Error(`Request on channel ${this.channel} timed out`));
+      }, this.timeoutMs);
+
+      this.pendingRequests.set(messageId, {
+        resolve: (data) => {
+          clearTimeout(timeoutRef);
+          resolve(data);
+        },
+        reject: (err) => {
+          clearTimeout(timeoutRef);
+          reject(err);
+        },
+      });
     });
     this.endpoint.postMessage(message);
     return promise;
