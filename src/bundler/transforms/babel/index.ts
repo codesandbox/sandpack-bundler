@@ -4,8 +4,7 @@ import {
   ITranspilationResult,
   Transformer,
 } from "../Transformer";
-
-const WORKER_TIMEOUT = 30000;
+import { ITransformData } from "./babel-worker";
 
 export class BabelTransformer extends Transformer {
   private worker: null | Worker = null;
@@ -28,7 +27,7 @@ export class BabelTransformer extends Transformer {
         console.error(err);
         return Promise.resolve();
       },
-      timeoutMs: WORKER_TIMEOUT,
+      timeoutMs: 30000,
     });
   }
 
@@ -40,6 +39,11 @@ export class BabelTransformer extends Transformer {
       throw new Error("Babel worker has not been initialized");
     }
 
-    return this.messageBus.request("transform", {});
+    const data: ITransformData = {
+      code: ctx.code,
+      filepath: ctx.module.filepath,
+    };
+
+    return this.messageBus.request("transform", data);
   }
 }

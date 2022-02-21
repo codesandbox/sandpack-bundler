@@ -20,7 +20,7 @@ async function transform({
 }: ITransformData): Promise<ITranspilationResult> {
   const requires: Set<string> = new Set();
   const transformed = babel.transform(code, {
-    filepath,
+    filename: filepath,
     presets: [
       "env",
       "typescript",
@@ -63,4 +63,5 @@ new WorkerMessageBus({
     console.error(err);
     return Promise.resolve();
   },
+  timeoutMs: 30000,
 });

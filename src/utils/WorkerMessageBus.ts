@@ -1,4 +1,7 @@
-export type RequestHandlerFn = (method: string, data: any) => Promise<any>;
+export type RequestHandlerFn = (
+  method: string,
+  ...params: any[]
+) => Promise<any>;
 export type NotificationHandlerFn = (method: string, data: any) => Promise<any>;
 export type ErrorHandlerFn = (error: Error) => Promise<any>;
 
@@ -49,41 +52,41 @@ export class WorkerMessageBus {
         return;
       }
 
-      const method = data.method;
-      if (!method) {
-        return;
-      }
-
       const messageId = data.id;
-      if (!messageId) {
-        this.handleNotification(data.method, data.data);
-      } else {
-        if (data.method && data.params) {
+      if (data.method) {
+        if (messageId == null) {
+          this.handleNotification(data.method, data.data);
+        } else if (data.method && data.params) {
           // It's a request
           try {
-            const result = await this.handleRequest(data.method, data.params);
+            const result = await this.handleRequest(
+              data.method,
+              ...data.params
+            );
             this.endpoint.postMessage({
               id: messageId,
+              channel: this.channel,
               result,
             });
           } catch (err) {
             this.endpoint.postMessage({
               id: messageId,
+              channel: this.channel,
               error: err,
             });
           }
-        } else {
-          // It's a response
-          const pendingRequest = this.pendingRequests.get(messageId);
-          if (!pendingRequest) {
-            return;
-          }
+        }
+      } else if (messageId != null) {
+        // It's a response
+        const pendingRequest = this.pendingRequests.get(messageId);
+        if (!pendingRequest) {
+          return;
+        }
 
-          if (data.error !== undefined) {
-            pendingRequest.reject(data.error);
-          } else {
-            pendingRequest.resolve(data.result);
-          }
+        if (data.error !== undefined) {
+          pendingRequest.reject(data.error);
+        } else {
+          pendingRequest.resolve(data.result);
         }
       }
     });
