@@ -1,29 +1,42 @@
+import { WorkerMessageBus } from "../../../utils/WorkerMessageBus";
 import {
   ITranspilationContext,
   ITranspilationResult,
   Transformer,
-  TransformFn,
 } from "../Transformer";
 
 export class BabelTransformer extends Transformer {
-  private loader: null | TransformFn = null;
+  private worker: null | Worker = null;
+  private messageBus: null | WorkerMessageBus = null;
 
   constructor() {
     super("babel-transformer");
   }
 
   async init() {
-    this.transform = await import("./loader").then((l) => l.transform);
+    this.worker = new Worker(new URL("./babel-worker", import.meta.url), {
+      type: "module",
+    });
+    this.messageBus = new WorkerMessageBus({
+      channel: "sandpack-babel",
+      endpoint: this.worker,
+      handleNotification: () => Promise.resolve(),
+      handleRequest: () => Promise.reject(new Error("Unknown method")),
+      handleError: (err) => {
+        console.error(err);
+        return Promise.resolve();
+      },
+    });
   }
 
   async transform(
     ctx: ITranspilationContext,
     config: any
   ): Promise<ITranspilationResult> {
-    if (!this.loader) {
-      throw new Error("Babel loader has not been initialized");
+    if (!this.messageBus) {
+      throw new Error("Babel worker has not been initialized");
     }
 
-    return this.loader(ctx, config);
+    return this.messageBus.request("transform", {});
   }
 }
