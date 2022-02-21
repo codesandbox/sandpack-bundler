@@ -54,7 +54,7 @@ export class Module {
   }
 
   async compile(): Promise<void> {
-    if (this.compiled || this.compilationError) {
+    if (this.compiled != null || this.compilationError != null) {
       return;
     }
 

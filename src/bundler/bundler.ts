@@ -213,9 +213,9 @@ export class Bundler {
     if (!asset) {
       throw new Error(`Asset not in the compilation tree ${id}`);
     } else {
-      if (asset.compilationError) {
+      if (asset.compilationError != null) {
         throw asset.compilationError;
-      } else if (!asset.compiled) {
+      } else if (asset.compiled == null) {
         throw new Error(`Asset ${id} has not been compiled`);
       }
     }
