@@ -260,6 +260,9 @@ export class Bundler {
   async compile(files: ISandboxFile[]): Promise<() => any> {
     this.onStatusChangeEmitter.fire("installing-dependencies");
 
+    // Reset resolver cache
+    this.resolverCache = new Map();
+
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
       logger.info("Started incremental compilation");
@@ -278,6 +281,9 @@ export class Bundler {
         return () => {};
       }
     } else {
+      // Reset modules, can happen if an error occurs on first load
+      this.modules = new Map();
+
       for (let file of files) {
         this.fs.writeFile(file.path, file.code);
       }

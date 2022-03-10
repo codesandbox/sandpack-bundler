@@ -42,6 +42,10 @@ export class Module {
     return this.bundler.getInitiators(this.id);
   }
 
+  isHot(): boolean {
+    return Boolean(this.hot.hmrConfig?.isHot());
+  }
+
   /** Add dependency */
   async addDependency(depSpecifier: string): Promise<void> {
     const resolved = await this.bundler.resolveAsync(
@@ -104,19 +108,21 @@ export class Module {
     if (this.hot.hmrConfig && this.hot.hmrConfig.isHot()) {
       this.hot.hmrConfig.setDirty(true);
     } else {
-      for (let initiator of this.initiators) {
-        const module = this.bundler.getModule(initiator);
-        module?.resetCompilation();
-      }
+      // for (let initiator of this.initiators) {
+      //   const module = this.bundler.getModule(initiator);
+      //   module?.resetCompilation();
+      // }
 
-      // If this is an entry we want all direct entries to be reset as well.
-      // Entries generally have side effects
-      if (this.isEntry) {
-        for (let dependency of this.dependencies) {
-          const module = this.bundler.getModule(dependency);
-          module?.resetCompilation();
-        }
-      }
+      // // If this is an entry we want all direct entries to be reset as well.
+      // // Entries generally have side effects
+      // if (this.isEntry) {
+      //   for (let dependency of this.dependencies) {
+      //     const module = this.bundler.getModule(dependency);
+      //     module?.resetCompilation();
+      //   }
+      // }
+
+      location.reload();
     }
 
     this.bundler.transformModule(this.filepath);
