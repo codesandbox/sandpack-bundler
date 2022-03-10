@@ -79,6 +79,10 @@ class SandpackInstance {
 
     this.messageBus.sendMessage("status", { status: "initializing" });
 
+    if (this.bundler.isFirstLoad) {
+      this.bundler.resetModules();
+    }
+
     // --- Load preset
     logger.info("Loading preset and transformers...");
     const initStartTime = Date.now();

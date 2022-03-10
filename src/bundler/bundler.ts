@@ -51,6 +51,13 @@ export class Bundler {
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 
+  /** Reset all compilation data */
+  resetModules(): void {
+    this.preset = undefined;
+    this.modules = new Map();
+    this.resolverCache = new Map();
+  }
+
   async initPreset(preset: string): Promise<void> {
     if (!this.preset) {
       this.preset = getPreset(preset);
@@ -260,6 +267,7 @@ export class Bundler {
   async compile(files: ISandboxFile[]): Promise<() => any> {
     this.onStatusChangeEmitter.fire("installing-dependencies");
 
+    // TODO: Have more fine-grained cache invalidation for the resolver
     // Reset resolver cache
     this.resolverCache = new Map();
 
@@ -281,9 +289,6 @@ export class Bundler {
         return () => {};
       }
     } else {
-      // Reset modules, can happen if an error occurs on first load
-      this.modules = new Map();
-
       for (let file of files) {
         this.fs.writeFile(file.path, file.code);
       }
