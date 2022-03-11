@@ -1,6 +1,6 @@
 # Sandpack Bundler
 
-The sandpack bundler, this aims to eventually replace the current sandpack with a more streamlined and way faster version.
+The sandpack bundler, this aims to eventually replace the current sandpack with a more streamlined and faster version.
 
 ## Getting started
 
