@@ -348,6 +348,7 @@ export class Bundler {
     const entryModule = await this.transformModule(resolvedEntryPont);
     await this.moduleFinishedPromise(resolvedEntryPont);
     console.debug("Bundling finished, manifest:");
+    console.debug(this.modules);
 
     entryModule.isEntry = true;
 

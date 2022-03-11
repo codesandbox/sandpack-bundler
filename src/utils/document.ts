@@ -1,4 +1,6 @@
-export function getDocumentHeight() {
+export function getDocumentHeight(): number {
+  if (typeof window === "undefined") return 0;
+
   const { body } = document;
   const html = document.documentElement;
 

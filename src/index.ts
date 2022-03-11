@@ -37,13 +37,6 @@ class SandpackInstance {
   }
 
   initResizeEvent() {
-    if (
-      typeof window === "undefined" ||
-      typeof window.MutationObserver !== "function"
-    ) {
-      return;
-    }
-
     const sendResize = () => {
       const height = getDocumentHeight();
       if (this.lastHeight !== height) {
