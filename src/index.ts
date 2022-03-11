@@ -12,6 +12,7 @@ class SandpackInstance {
   private bundler = new Bundler();
   private compileDebouncer = new Debouncer(50);
   private lastHeight: number = 0;
+  private resizePollingTimer: NodeJS.Timer | undefined;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
@@ -35,7 +36,7 @@ class SandpackInstance {
     }
   }
 
-  initDOMMutationObserver() {
+  initResizeEvent() {
     if (
       typeof window === "undefined" ||
       typeof window.MutationObserver !== "function"
@@ -43,26 +44,37 @@ class SandpackInstance {
       return;
     }
 
-    // Listen on document body for any change that could trigger a resize of the content
-    // When a change is found, the sendResize function will determine if a message is dispatched
-    const observer = new MutationObserver(() => {
+    const sendResize = () => {
       const height = getDocumentHeight();
       if (this.lastHeight !== height) {
         this.messageBus.sendMessage("resize", { height });
       }
       this.lastHeight = height;
-    });
+    };
 
-    observer.observe(document, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-    });
+    const resizePolling = () => {
+      if (this.resizePollingTimer) {
+        clearInterval(this.resizePollingTimer);
+      }
+
+      this.resizePollingTimer = setInterval(sendResize, 500);
+    };
+
+    /**
+     * Send an event right away it's initialized
+     */
+    sendResize();
+
+    /**
+     * Ideally we should use a `MutationObserver` to trigger a resize event,
+     * however, we noted that it's not reliable, so we went for polling strategy
+     */
+    resizePolling();
   }
 
   async init() {
     this.messageBus.sendMessage("initialized");
-    this.initDOMMutationObserver();
+    this.initResizeEvent();
     this.bundler.onStatusChange((newStatus) => {
       this.messageBus.sendMessage("status", { status: newStatus });
     });
