@@ -6,6 +6,7 @@ export class Preset {
   private transformers = new Map<string, Transformer>();
   private bundler: Bundler | null = null;
 
+  defaultEntryPoints: string[] = ["index", "src/index"];
   defaultHtmlBody: string = "";
 
   constructor(public name: string) {}

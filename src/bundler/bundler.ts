@@ -17,7 +17,9 @@ import { BundlerStatus } from "../protocol/message-types";
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
 interface IPackageJSON {
-  main: string;
+  main?: string;
+  module?: string;
+  source?: string;
   dependencies?: DepMap;
 }
 
@@ -96,17 +98,50 @@ export class Bundler {
     this.parsedPackageJSON = JSON.parse(foundPackageJSON);
   }
 
-  getEntryPoint(): string {
+  async resolveEntryPoint(): Promise<string> {
     if (!this.parsedPackageJSON) {
       throw new Error("No parsed pkg.json found!");
     }
 
-    const entry = this.parsedPackageJSON?.main ?? "src/index.js";
-    if (entry[0] !== "." && entry[0] !== "/") {
-      return `./${entry}`;
-    } else {
-      return entry;
+    if (!this.preset) {
+      throw new Error("Preset has not been loaded yet");
     }
+
+    const potentialEntries = new Set(
+      [
+        this.parsedPackageJSON.main,
+        this.parsedPackageJSON.source,
+        this.parsedPackageJSON.module,
+        ...this.preset.defaultEntryPoints,
+      ].filter((e) => typeof e === "string")
+    );
+
+    for (let potentialEntry of potentialEntries) {
+      if (typeof potentialEntry === "string") {
+        try {
+          // Normalize path
+          const entryPoint =
+            potentialEntry[0] !== "." && potentialEntry[0] !== "/"
+              ? `./${potentialEntry}`
+              : potentialEntry;
+          const resolvedEntryPont = await this.resolveAsync(
+            entryPoint,
+            "/index.js"
+          );
+          return resolvedEntryPont;
+        } catch (err) {
+          logger.debug(`Could not resolve entrypoint ${potentialEntry}`);
+          logger.debug(err);
+        }
+      }
+    }
+    throw new Error(
+      `Could not resolve entry point, potential entrypoints: ${Array.from(
+        potentialEntries
+      ).join(
+        ", "
+      )}. You can define one by changing the "main" field in package.json.`
+    );
   }
 
   addPrecompiledNodeModule(
@@ -340,13 +375,12 @@ export class Bundler {
     }
 
     // Resolve entrypoints
-    const entryPoint = this.getEntryPoint();
-    const resolvedEntryPont = await this.resolveAsync(entryPoint, "/index.js");
-    console.debug("Resolved entrypoint:", resolvedEntryPont);
+    const resolvedEntryPoint = await this.resolveEntryPoint();
+    console.debug("Resolved entrypoint:", resolvedEntryPoint);
 
     // Transform entrypoint and deps
-    const entryModule = await this.transformModule(resolvedEntryPont);
-    await this.moduleFinishedPromise(resolvedEntryPont);
+    const entryModule = await this.transformModule(resolvedEntryPoint);
+    await this.moduleFinishedPromise(resolvedEntryPoint);
     console.debug("Bundling finished, manifest:");
     console.debug(this.modules);
 
