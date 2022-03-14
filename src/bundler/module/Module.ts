@@ -62,40 +62,43 @@ export class Module {
     if (this.compiled != null || this.compilationError != null) {
       return;
     }
-
-    const preset = this.bundler.preset;
-    if (!preset) {
-      throw new Error("Preset has not been initialized");
-    }
-
-    const transformers = preset.getTransformers(this);
-    if (!transformers.length) {
-      throw new Error(`No transformers found for ${this.filepath}`);
-    }
-
-    let code = this.source;
-    for (const [transformer, config] of transformers) {
-      const transformationResult = await transformer.transform(
-        {
-          module: this,
-          code,
-        },
-        config
-      );
-
-      if (transformationResult instanceof BundlerError) {
-        this.compilationError = transformationResult;
-      } else {
-        code = transformationResult.code;
-        await Promise.all(
-          Array.from(transformationResult.dependencies).map((d) => {
-            return this.addDependency(d);
-          })
-        );
+    try {
+      const preset = this.bundler.preset;
+      if (!preset) {
+        throw new Error("Preset has not been initialized");
       }
-    }
 
-    this.compiled = code;
+      const transformers = preset.getTransformers(this);
+      if (!transformers.length) {
+        throw new Error(`No transformers found for ${this.filepath}`);
+      }
+
+      let code = this.source;
+      for (const [transformer, config] of transformers) {
+        const transformationResult = await transformer.transform(
+          {
+            module: this,
+            code,
+          },
+          config
+        );
+
+        if (transformationResult instanceof BundlerError) {
+          this.compilationError = transformationResult;
+        } else {
+          code = transformationResult.code;
+          await Promise.all(
+            Array.from(transformationResult.dependencies).map((d) => {
+              return this.addDependency(d);
+            })
+          );
+        }
+      }
+
+      this.compiled = code;
+    } catch (err: any) {
+      this.compilationError = err;
+    }
   }
 
   resetCompilation(): void {

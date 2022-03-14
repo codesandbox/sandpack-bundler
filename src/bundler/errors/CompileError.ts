@@ -1,10 +1,6 @@
 import { BundlerError } from "./BundlerError";
 
 export class CompilationError extends BundlerError {
-  column: number;
-  line: number;
-  path: string;
-
   constructor(error: Error, path: string) {
     super(error);
 
@@ -17,7 +13,7 @@ export class CompilationError extends BundlerError {
     this.path = path;
   }
 
-  private formatter(error: Error) {
+  static fromBabelError(error: Error) {
     const babelMatched = error.stack?.match(/(\d+):(\d+)/);
 
     if (babelMatched) {
@@ -26,12 +22,21 @@ export class CompilationError extends BundlerError {
         line: parseInt(babelMatched[1], 10),
         column: parseInt(babelMatched[2], 10),
       };
-    } else {
-      return {
-        message: error.message,
-        line: 1,
-        column: 1,
-      };
     }
+
+    return undefined;
+  }
+
+  private formatter(error: Error) {
+    const babelError = CompilationError.fromBabelError(error);
+    if (babelError) {
+      return babelError;
+    }
+
+    return {
+      message: error.message,
+      line: 1,
+      column: 1,
+    };
   }
 }
