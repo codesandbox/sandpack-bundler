@@ -10,13 +10,13 @@ export class Preset {
 
   constructor(public name: string) {}
 
-  async registerTransformer(transfomer: Transformer): Promise<void> {
+  async registerTransformer(transformer: Transformer): Promise<void> {
     if (!this.bundler) {
       throw new Error("Call Preset#init before registering transformers");
     }
 
-    await transfomer.init(this.bundler);
-    this.transformers.set(transfomer.id, transfomer);
+    await transformer.init(this.bundler);
+    this.transformers.set(transformer.id, transformer);
   }
 
   getTransformer(id: string): Transformer | undefined {

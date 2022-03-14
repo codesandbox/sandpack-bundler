@@ -1,20 +1,18 @@
 import { Bundler } from "../bundler";
 import { Module } from "../module/Module";
+import { BundlerError } from "../errors/BundlerError";
 
-export interface ITranspilationResult {
-  code: string;
-  dependencies: Set<string>;
-}
+export type ITranspilationResult =
+  | {
+      code: string;
+      dependencies: Set<string>;
+    }
+  | BundlerError;
 
 export interface ITranspilationContext {
   module: Module;
   code: string;
 }
-
-export type TransformFn = (
-  ctx: ITranspilationContext,
-  config: any
-) => Promise<ITranspilationResult>;
 
 export class Transformer<Config = any> {
   constructor(public id: string) {}

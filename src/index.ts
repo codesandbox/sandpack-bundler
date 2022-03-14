@@ -1,4 +1,7 @@
 import { Bundler } from "./bundler/bundler";
+import { BundlerError } from "./bundler/errors/BundlerError";
+import { CompilationError } from "./bundler/errors/CompileError";
+import { errorMessage } from "./bundler/errors/util";
 import { IFrameParentMessageBus } from "./protocol/iframe";
 import { ICompileRequest } from "./protocol/message-types";
 import { Debouncer } from "./utils/Debouncer";
@@ -101,18 +104,11 @@ class SandpackInstance {
         this.messageBus.sendMessage("done", {
           compilatonError: false,
         });
+
         return val;
       })
-      .catch((err) => {
-        this.messageBus.sendMessage("action", {
-          action: "show-error",
-          title: "Compilation error",
-          path: "/App.tsx",
-          message: err.message,
-          line: 1,
-          column: 1,
-          payload: { frames: [] },
-        });
+      .catch((error: CompilationError) => {
+        this.messageBus.sendMessage("action", errorMessage(error));
 
         this.messageBus.sendMessage("done", {
           compilatonError: true,
@@ -141,16 +137,11 @@ class SandpackInstance {
         this.sendResizeEvent();
 
         this.messageBus.sendMessage("success");
-      } catch (err: any) {
-        this.messageBus.sendMessage("action", {
-          action: "show-error",
-          title: "Evaluation error",
-          path: "/App.tsx",
-          message: err.message,
-          line: 1,
-          column: 1,
-          payload: { frames: [] },
-        });
+      } catch (error: unknown) {
+        this.messageBus.sendMessage(
+          "action",
+          errorMessage(error as BundlerError) // TODO: create a evaluation error
+        );
       }
     }
 

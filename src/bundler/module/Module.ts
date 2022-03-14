@@ -1,4 +1,5 @@
 import { Bundler } from "../bundler";
+import { BundlerError } from "../errors/BundlerError";
 import { Evaluation } from "./Evaluation";
 import { HotContext } from "./hot";
 
@@ -16,7 +17,7 @@ export class Module {
   evaluation: Evaluation | null = null;
   hot: HotContext;
 
-  compilationError: Error | null = null;
+  compilationError: BundlerError | null = null;
 
   dependencies: Set<string>;
   // Keeping this seperate from dependencies as there might be duplicates otherwise
@@ -62,26 +63,29 @@ export class Module {
       return;
     }
 
-    try {
-      const preset = this.bundler.preset;
-      if (!preset) {
-        throw new Error("Preset has not been initialized");
-      }
+    const preset = this.bundler.preset;
+    if (!preset) {
+      throw new Error("Preset has not been initialized");
+    }
 
-      const transformers = preset.getTransformers(this);
-      if (!transformers.length) {
-        throw new Error(`No transformers found for ${this.filepath}`);
-      }
+    const transformers = preset.getTransformers(this);
+    if (!transformers.length) {
+      throw new Error(`No transformers found for ${this.filepath}`);
+    }
 
-      let code = this.source;
-      for (const [transformer, config] of transformers) {
-        const transformationResult = await transformer.transform(
-          {
-            module: this,
-            code,
-          },
-          config
-        );
+    let code = this.source;
+    for (const [transformer, config] of transformers) {
+      const transformationResult = await transformer.transform(
+        {
+          module: this,
+          code,
+        },
+        config
+      );
+
+      if (transformationResult instanceof BundlerError) {
+        this.compilationError = transformationResult;
+      } else {
         code = transformationResult.code;
         await Promise.all(
           Array.from(transformationResult.dependencies).map((d) => {
@@ -89,10 +93,9 @@ export class Module {
           })
         );
       }
-      this.compiled = code;
-    } catch (err: any) {
-      this.compilationError = err;
     }
+
+    this.compiled = code;
   }
 
   resetCompilation(): void {

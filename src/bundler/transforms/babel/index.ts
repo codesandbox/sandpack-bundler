@@ -1,4 +1,5 @@
 import { WorkerMessageBus } from "../../../utils/WorkerMessageBus";
+import { CompilationError } from "../../errors/CompileError";
 import {
   ITranspilationContext,
   ITranspilationResult,
@@ -18,6 +19,7 @@ export class BabelTransformer extends Transformer {
     this.worker = new Worker(new URL("./babel-worker", import.meta.url), {
       type: "module",
     });
+
     this.messageBus = new WorkerMessageBus({
       channel: "sandpack-babel",
       endpoint: this.worker,
@@ -44,6 +46,10 @@ export class BabelTransformer extends Transformer {
       filepath: ctx.module.filepath,
     };
 
-    return this.messageBus.request("transform", data);
+    try {
+      return await this.messageBus.request("transform", data);
+    } catch (err: unknown) {
+      return new CompilationError(err as Error, ctx.module.filepath);
+    }
   }
 }
