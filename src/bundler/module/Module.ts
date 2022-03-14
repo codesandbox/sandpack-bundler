@@ -1,4 +1,5 @@
 import { Bundler } from "../bundler";
+import { BundlerError } from "../errors/BundlerError";
 import { Evaluation } from "./Evaluation";
 import { HotContext } from "./hot";
 
@@ -16,7 +17,7 @@ export class Module {
   evaluation: Evaluation | null = null;
   hot: HotContext;
 
-  compilationError: Error | null = null;
+  compilationError: BundlerError | null = null;
 
   dependencies: Set<string>;
   // Keeping this seperate from dependencies as there might be duplicates otherwise
@@ -61,7 +62,6 @@ export class Module {
     if (this.compiled != null || this.compilationError != null) {
       return;
     }
-
     try {
       const preset = this.bundler.preset;
       if (!preset) {
@@ -82,13 +82,19 @@ export class Module {
           },
           config
         );
-        code = transformationResult.code;
-        await Promise.all(
-          Array.from(transformationResult.dependencies).map((d) => {
-            return this.addDependency(d);
-          })
-        );
+
+        if (transformationResult instanceof BundlerError) {
+          this.compilationError = transformationResult;
+        } else {
+          code = transformationResult.code;
+          await Promise.all(
+            Array.from(transformationResult.dependencies).map((d) => {
+              return this.addDependency(d);
+            })
+          );
+        }
       }
+
       this.compiled = code;
     } catch (err: any) {
       this.compilationError = err;
