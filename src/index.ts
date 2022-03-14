@@ -36,27 +36,24 @@ class SandpackInstance {
     }
   }
 
-  initResizeEvent() {
-    const sendResize = () => {
-      const height = getDocumentHeight();
-      if (this.lastHeight !== height) {
-        this.messageBus.sendMessage("resize", { height });
-      }
-      this.lastHeight = height;
-    };
+  sendResizeEvent = () => {
+    const height = getDocumentHeight();
 
+    if (this.lastHeight !== height) {
+      this.messageBus.sendMessage("resize", { height });
+    }
+
+    this.lastHeight = height;
+  };
+
+  initResizeEvent() {
     const resizePolling = () => {
       if (this.resizePollingTimer) {
         clearInterval(this.resizePollingTimer);
       }
 
-      this.resizePollingTimer = setInterval(sendResize, 500);
+      this.resizePollingTimer = setInterval(this.sendResizeEvent, 300);
     };
-
-    /**
-     * Send an event right away it's initialized
-     */
-    sendResize();
 
     /**
      * Ideally we should use a `MutationObserver` to trigger a resize event,
@@ -137,6 +134,12 @@ class SandpackInstance {
         const evalStartTime = Date.now();
         evaluate();
         logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+
+        /**
+         * Send an event right away it's initialized
+         */
+        this.sendResizeEvent();
+
         this.messageBus.sendMessage("success");
       } catch (err: any) {
         this.messageBus.sendMessage("action", {
