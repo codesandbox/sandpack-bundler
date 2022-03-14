@@ -5,7 +5,7 @@ The sandpack bundler, this aims to eventually replace the current sandpack with 
 ## Getting started
 
 1. Run `yarn` to install dependencies.
-2. Run `yarn start` to start the development server
+2. Run `yarn dev` to start the development server
 3. Set the `bundlerURL` of sandpack-react to `http://localhost:1234/` to see it in action.
 
 ## Using the deployed version
