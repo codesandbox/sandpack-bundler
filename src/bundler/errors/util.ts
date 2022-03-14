@@ -9,6 +9,7 @@ export const errorMessage = (error: BundlerError) => {
     title: error.title,
     path: error.path,
     message: error.message,
+    payload: { frames: [] },
   };
 
   if (error instanceof CompilationError) {
@@ -16,7 +17,6 @@ export const errorMessage = (error: BundlerError) => {
       ...defaultMessage,
       line: error.line,
       column: error.column,
-      payload: { frames: [] },
     };
   }
 
