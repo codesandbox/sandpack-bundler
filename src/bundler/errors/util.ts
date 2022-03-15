@@ -1,24 +1,15 @@
 import { BundlerError } from "./BundlerError";
-import { CompilationError } from "./CompileError";
 
 export const errorMessage = (error: BundlerError) => {
-  const defaultMessage = {
+  return {
     type: "action",
     action: "show-error",
 
     title: error.title,
     path: error.path,
     message: error.message,
+    line: error.line,
+    column: error.column,
     payload: { frames: [] },
   };
-
-  if (error instanceof CompilationError) {
-    return {
-      ...defaultMessage,
-      line: error.line,
-      column: error.column,
-    };
-  }
-
-  return defaultMessage;
 };

@@ -1,6 +1,6 @@
 import { Bundler } from "./bundler/bundler";
 import { BundlerError } from "./bundler/errors/BundlerError";
-import { CompilationError } from "./bundler/errors/CompileError";
+import { CompilationError } from "./bundler/errors/CompilationError";
 import { errorMessage } from "./bundler/errors/util";
 import { IFrameParentMessageBus } from "./protocol/iframe";
 import { ICompileRequest } from "./protocol/message-types";

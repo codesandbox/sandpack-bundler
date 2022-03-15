@@ -27,6 +27,28 @@ export interface PendingRequest {
   reject: (err: Error) => void;
 }
 
+const serializeError = (originalError: any): any => {
+  if (typeof originalError !== "object") {
+    return { message: originalError };
+  } else {
+    return {
+      message: originalError.message,
+      name: originalError.name,
+      stack: originalError.stack,
+      ...originalError,
+    };
+  }
+};
+
+const parseError = (serializedError: any): Error => {
+  const error = new Error(serializedError.message);
+  for (const key of Object.keys(serializedError)) {
+    // @ts-ignore
+    error[key] = serializedError[key];
+  }
+  return error;
+};
+
 export class WorkerMessageBus {
   private endpoint: MessageEndpoint;
   private handleRequest: RequestHandlerFn;
@@ -72,7 +94,7 @@ export class WorkerMessageBus {
             this.endpoint.postMessage({
               id: messageId,
               channel: this.channel,
-              error: err,
+              error: serializeError(err),
             });
           }
         }
@@ -84,7 +106,7 @@ export class WorkerMessageBus {
         }
 
         if (data.error !== undefined) {
-          pendingRequest.reject(data.error);
+          pendingRequest.reject(parseError(data.error));
         } else {
           pendingRequest.resolve(data.result);
         }

@@ -1,5 +1,5 @@
 import { WorkerMessageBus } from "../../../utils/WorkerMessageBus";
-import { CompilationError } from "../../errors/CompileError";
+import { CompilationError } from "../../errors/CompilationError";
 import {
   ITranspilationContext,
   ITranspilationResult,
