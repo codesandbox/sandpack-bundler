@@ -348,24 +348,6 @@ export class Bundler {
 
     this.onStatusChangeEmitter.fire("transpiling");
 
-    // We should reset all modules if anything failed on first load...
-    // if (this.isFirstLoad) {
-    //   // When a module errored out during the initial load
-    //   // we stopped halfway through a compilation so we need to remove these modules
-    //   const erroredModules = Array.from(this.modules.values()).filter(
-    //     (m) => m.compilationError
-    //   );
-    //   if (erroredModules.length) {
-    //     // TODO: Instead of transform we should reset compilation of this module and all it's parent modules
-    //     const promises: Promise<Module>[] = [];
-    //     erroredModules.forEach((m) => {
-    //       m.resetCompilation();
-    //       promises.push(this.transformModule(m.filepath));
-    //     });
-    //     await Promise.all(promises);
-    //   }
-    // }
-
     // Transform runtimes
     if (this.isFirstLoad) {
       for (const runtime of this.runtimes) {
