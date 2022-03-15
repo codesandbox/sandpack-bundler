@@ -1,4 +1,4 @@
-import { Emitter } from "../utils/emitter";
+import { Emitter } from '../utils/emitter';
 
 /**
  * A message bus to handle messaging with the parent
@@ -14,13 +14,13 @@ export class IFrameParentMessageBus {
   constructor() {
     this._messageListener = this._messageListener.bind(this);
 
-    window.addEventListener("message", this._messageListener);
+    window.addEventListener('message', this._messageListener);
   }
 
   private _messageListener(evt: any) {
     const data = evt.data;
 
-    if (data.type === "register-frame") {
+    if (data.type === 'register-frame') {
       this.parentId = data.id;
     }
 
@@ -39,7 +39,7 @@ export class IFrameParentMessageBus {
         type,
         codesandbox: true,
       },
-      "*"
+      '*'
     );
   }
 }

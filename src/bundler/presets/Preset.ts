@@ -1,19 +1,19 @@
-import { Bundler } from "../bundler";
-import { Module } from "../module/Module";
-import { Transformer } from "../transforms/Transformer";
+import { Bundler } from '../bundler';
+import { Module } from '../module/Module';
+import { Transformer } from '../transforms/Transformer';
 
 export class Preset {
   private transformers = new Map<string, Transformer>();
   private bundler: Bundler | null = null;
 
-  defaultEntryPoints: string[] = ["index", "src/index"];
-  defaultHtmlBody: string = "";
+  defaultEntryPoints: string[] = ['index', 'src/index'];
+  defaultHtmlBody: string = '';
 
   constructor(public name: string) {}
 
   async registerTransformer(transformer: Transformer): Promise<void> {
     if (!this.bundler) {
-      throw new Error("Call Preset#init before registering transformers");
+      throw new Error('Call Preset#init before registering transformers');
     }
 
     await transformer.init(this.bundler);
@@ -29,7 +29,7 @@ export class Preset {
   }
 
   mapTransformers(module: Module): Array<[string, any]> {
-    throw new Error("Not implemented");
+    throw new Error('Not implemented');
   }
 
   getTransformers(module: Module): Array<[Transformer, any]> {

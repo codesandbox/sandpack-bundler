@@ -3,10 +3,23 @@
   "version": "2.0.0",
   "description": "The bundler powering sandpack",
   "scripts": {
+    "prepare": "husky install",
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
     "build": "parcel build ./src/index.html",
-    "test": "jest"
+    "test": "jest",
+    "format": "prettier --write \"./src/**/*.{ts,tsx,js,jsx,json}\""
+  },
+  "importSort": {
+    ".js, .jsx, .ts, .tsx": {
+      "style": "module",
+      "parser": "typescript"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json}": [
+      "pretty-quick --write"
+    ]
   },
   "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
@@ -30,9 +43,14 @@
     "@types/url-join": "^4.0.1",
     "fastify": "^3.27.0",
     "fastify-static": "^4.5.0",
+    "husky": "^7.0.4",
+    "import-sort-style-module": "^6.0.0",
     "jest": "^27.5.1",
     "jest-extended": "^2.0.0",
     "parcel": "^2.0.1",
+    "prettier": "^2.5.1",
+    "prettier-plugin-import-sort": "^0.0.7",
+    "pretty-quick": "^3.1.3",
     "typescript": "4.4.4"
   },
   "resolutions": {

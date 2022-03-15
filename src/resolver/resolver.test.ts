@@ -1,17 +1,14 @@
 import fs from 'fs';
 import path from 'path';
+
 import gensync from 'gensync';
 
-import { resolveSync, normalizeModuleSpecifier } from './resolver';
 import { ModuleNotFoundError } from './errors/ModuleNotFound';
+import { normalizeModuleSpecifier, resolveSync } from './resolver';
 
 const FIXTURE_PATH = path.join(__dirname, 'fixture');
 
-const readFiles = (
-  dir: string,
-  rootPath: string,
-  files: Map<string, string>
-) => {
+const readFiles = (dir: string, rootPath: string, files: Map<string, string>) => {
   const entries = fs.readdirSync(dir);
   for (const entry of entries) {
     const filepath = path.join(dir, entry);
@@ -19,21 +16,14 @@ const readFiles = (
     if (entryStats.isDirectory()) {
       readFiles(filepath, rootPath, files);
     } else if (entryStats.isFile()) {
-      files.set(
-        filepath.replace(rootPath, ''),
-        fs.readFileSync(filepath, 'utf8')
-      );
+      files.set(filepath.replace(rootPath, ''), fs.readFileSync(filepath, 'utf8'));
     }
   }
   return files;
 };
 
 describe('resolve', () => {
-  const files: Map<string, string> = readFiles(
-    FIXTURE_PATH,
-    FIXTURE_PATH,
-    new Map()
-  );
+  const files: Map<string, string> = readFiles(FIXTURE_PATH, FIXTURE_PATH, new Map());
   const isFile = gensync({
     sync: (p: string) => files.has(p),
   });
@@ -105,9 +95,7 @@ describe('resolve', () => {
           isFile,
           readFile,
         });
-      }).toThrowError(
-        new ModuleNotFoundError('/nestedeeeee', '/nested/test.js')
-      );
+      }).toThrowError(new ModuleNotFoundError('/nestedeeeee', '/nested/test.js'));
     });
   });
 
@@ -199,9 +187,7 @@ describe('resolve', () => {
         isFile,
         readFile,
       });
-      expect(resolved).toBe(
-        '/node_modules/package-main-directory/nested/index.js'
-      );
+      expect(resolved).toBe('/node_modules/package-main-directory/nested/index.js');
     });
 
     it('should resolve a file inside a node_modules folder', () => {
@@ -242,9 +228,7 @@ describe('resolve', () => {
           isFile,
           readFile,
         });
-      }).toThrowError(
-        new ModuleNotFoundError('unknown-module/test.js', '/nested/test.js')
-      );
+      }).toThrowError(new ModuleNotFoundError('unknown-module/test.js', '/nested/test.js'));
     });
   });
 
@@ -286,9 +270,7 @@ describe('resolve', () => {
         isFile,
         readFile,
       });
-      expect(resolved).toBe(
-        '/node_modules/package-browser-alias/subfolder1/subfolder2/subfile.js'
-      );
+      expect(resolved).toBe('/node_modules/package-browser-alias/subfolder1/subfolder2/subfile.js');
     });
 
     it('should resolve to an empty file when package.browser resolves to false', () => {
@@ -411,9 +393,7 @@ describe('resolve', () => {
         isFile,
         readFile,
       });
-      expect(resolved).toBe(
-        '/node_modules/package-exports/src/components/a.js'
-      );
+      expect(resolved).toBe('/node_modules/package-exports/src/components/a.js');
     });
 
     it('should alias package.exports subdirectory globs', () => {
@@ -470,12 +450,8 @@ describe('resolve', () => {
 
   describe('normalize module specifier', () => {
     it('normalize module specifier', () => {
-      expect(normalizeModuleSpecifier('/test//fluent-d')).toBe(
-        '/test/fluent-d'
-      );
-      expect(normalizeModuleSpecifier('//node_modules/react/')).toBe(
-        '/node_modules/react'
-      );
+      expect(normalizeModuleSpecifier('/test//fluent-d')).toBe('/test/fluent-d');
+      expect(normalizeModuleSpecifier('//node_modules/react/')).toBe('/node_modules/react');
       expect(normalizeModuleSpecifier('./foo.js')).toBe('./foo.js');
       expect(normalizeModuleSpecifier('react//test')).toBe('react/test');
     });

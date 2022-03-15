@@ -1,11 +1,7 @@
-import { Bundler } from "../../bundler";
-import {
-  ITranspilationContext,
-  ITranspilationResult,
-  Transformer,
-} from "../Transformer";
+import { Bundler } from '../../bundler';
+import { ITranspilationContext, ITranspilationResult, Transformer } from '../Transformer';
 
-const HELPER_PATH = "/node_modules/__csb_bust/refresh-helper.js";
+const HELPER_PATH = '/node_modules/__csb_bust/refresh-helper.js';
 
 const HELPER_CODE = `
 const Refresh = require('react-refresh/runtime');
@@ -175,13 +171,13 @@ const prelude = `var _csbRefreshUtils = require("${HELPER_PATH}");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
 _csbRefreshUtils.prelude(module);
-try {`.replace(/[\n]+/gm, "");
+try {`.replace(/[\n]+/gm, '');
 
 const postlude = `_csbRefreshUtils.postlude(module);
 } finally {
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
-}`.replace(/[\n]+/gm, "");
+}`.replace(/[\n]+/gm, '');
 
 const REACT_REFRESH_RUNTIME = `
 if (typeof window !== 'undefined') {
@@ -196,22 +192,18 @@ if (typeof window !== 'undefined') {
  * This is the compressed version of the code in the comment above. We compress the code
  * to a single line so we don't mess with the source mapping when showing errors.
  */
-const getWrapperCode = (sourceCode: string) =>
-  prelude + sourceCode + "\n" + postlude;
+const getWrapperCode = (sourceCode: string) => prelude + sourceCode + '\n' + postlude;
 
 export class ReactRefreshTransformer extends Transformer {
   constructor() {
-    super("react-refresh-transformer");
+    super('react-refresh-transformer');
   }
 
   async init(bundler: Bundler): Promise<void> {
     bundler.registerRuntime(this.id, REACT_REFRESH_RUNTIME);
   }
 
-  async transform(
-    ctx: ITranspilationContext,
-    config: any
-  ): Promise<ITranspilationResult> {
+  async transform(ctx: ITranspilationContext, config: any): Promise<ITranspilationResult> {
     // TODO: Detect if we need to add react-refresh to this file...
 
     // Write helper to memory-fs
@@ -221,7 +213,7 @@ export class ReactRefreshTransformer extends Transformer {
 
     const newCode = getWrapperCode(ctx.code);
     return {
-      code: newCode || "",
+      code: newCode || '',
       dependencies: new Set([HELPER_PATH]),
     };
   }

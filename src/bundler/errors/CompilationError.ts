@@ -1,4 +1,4 @@
-import { BundlerError } from "./BundlerError";
+import { BundlerError } from './BundlerError';
 
 interface IParsedError {
   message: string;
@@ -28,7 +28,7 @@ export class CompilationError extends BundlerError {
 
     const { column, line, message } = parseError(error);
 
-    this.title = "Compilation error";
+    this.title = 'Compilation error';
     this.message = message;
     this.column = column;
     this.line = line;

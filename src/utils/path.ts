@@ -1,9 +1,8 @@
-const splitPathRe =
-  /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^/]+?|)(\.[^./]*|))(?:[/]*)$/;
+const splitPathRe = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^/]+?|)(\.[^./]*|))(?:[/]*)$/;
 
 function splitPath(filename: string) {
   const result = splitPathRe.exec(filename);
-  return result?.slice(1) ?? "";
+  return result?.slice(1) ?? '';
 }
 
 // resolves . and .. elements in a path array with directory names there
@@ -16,13 +15,13 @@ function normalizeArray(parts: string[], allowAboveRoot?: boolean) {
     const p = parts[i];
 
     // ignore empty parts
-    if (!p || p === ".") continue; // eslint-disable-line no-continue
+    if (!p || p === '.') continue; // eslint-disable-line no-continue
 
-    if (p === "..") {
-      if (res.length && res[res.length - 1] !== "..") {
+    if (p === '..') {
+      if (res.length && res[res.length - 1] !== '..') {
         res.pop();
       } else if (allowAboveRoot) {
-        res.push("..");
+        res.push('..');
       }
     } else {
       res.push(p);
@@ -33,34 +32,34 @@ function normalizeArray(parts: string[], allowAboveRoot?: boolean) {
 }
 
 export function isAbsolute(path: string) {
-  return path.charAt(0) === "/";
+  return path.charAt(0) === '/';
 }
 
 export function normalize(path: string) {
   const isAbs = isAbsolute(path);
-  const trailingSlash = path && path[path.length - 1] === "/";
+  const trailingSlash = path && path[path.length - 1] === '/';
   let newPath = path;
 
   // Normalize the path
-  newPath = normalizeArray(newPath.split("/"), !isAbs).join("/");
+  newPath = normalizeArray(newPath.split('/'), !isAbs).join('/');
 
   if (!newPath && !isAbs) {
-    newPath = ".";
+    newPath = '.';
   }
   if (newPath && trailingSlash) {
-    newPath += "/";
+    newPath += '/';
   }
 
-  return (isAbs ? "/" : "") + newPath;
+  return (isAbs ? '/' : '') + newPath;
 }
 
 export function join(...paths: Array<any>) {
-  let path = "";
+  let path = '';
   for (let i = 0; i < paths.length; i += 1) {
     const segment = paths[i];
 
-    if (typeof segment !== "string") {
-      throw new TypeError("Arguments to path.join must be strings");
+    if (typeof segment !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
     }
     if (segment) {
       if (!path) {
@@ -80,7 +79,7 @@ export function dirname(path: string) {
 
   if (!root && !dir) {
     // No dirname whatsoever
-    return ".";
+    return '.';
   }
 
   if (dir) {
@@ -91,19 +90,19 @@ export function dirname(path: string) {
   return root + dir;
 }
 
-export function basename(p: string, ext: string = "") {
+export function basename(p: string, ext: string = '') {
   // Special case: Normalize will modify this to '.'
-  if (p === "") {
+  if (p === '') {
     return p;
   }
   // Normalize the string first to remove any weirdness.
   const path = normalize(p);
   // Get the last part of the string.
-  const sections = path.split("/");
+  const sections = path.split('/');
   const lastPart = sections[sections.length - 1];
   // Special case: If it's empty, then we have a string like so: foo/
   // Meaning, 'foo' is guaranteed to be a directory.
-  if (lastPart === "" && sections.length > 1) {
+  if (lastPart === '' && sections.length > 1) {
     return sections[sections.length - 2];
   }
   // Remove the extension, if need be.
@@ -117,22 +116,20 @@ export function basename(p: string, ext: string = "") {
 }
 
 export function absolute(path: string) {
-  if (path.startsWith("/")) {
+  if (path.startsWith('/')) {
     return path;
   }
 
-  if (path.startsWith("./")) {
-    return path.replace("./", "/");
+  if (path.startsWith('./')) {
+    return path.replace('./', '/');
   }
 
-  return "/" + path;
+  return '/' + path;
 }
 
 function assertPath(path: string) {
-  if (typeof path !== "string") {
-    throw new TypeError(
-      "Path must be a string. Received " + JSON.stringify(path)
-    );
+  if (typeof path !== 'string') {
+    throw new TypeError('Path must be a string. Received ' + JSON.stringify(path));
   }
 }
 
@@ -182,39 +179,36 @@ export function extname(path: string) {
     // The (right-most) trimmed path component is exactly '..'
     (preDotState === 1 && startDot === end - 1 && startDot === startPart + 1)
   ) {
-    return "";
+    return '';
   }
   return path.slice(startDot, end);
 }
 
 export function resolve(...args: string[]) {
-  let resolvedPath = "";
+  let resolvedPath = '';
   let resolvedAbsolute = false;
 
   for (let i = args.length - 1; i >= -1 && !resolvedAbsolute; i--) {
     const path = i >= 0 ? args[i] : process.cwd();
 
     // Skip empty and invalid entries
-    if (typeof path !== "string") {
-      throw new TypeError("Arguments to path.resolve must be strings");
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
     } else if (!path) {
       continue;
     }
 
-    resolvedPath = path + "/" + resolvedPath;
-    resolvedAbsolute = path[0] === "/";
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path[0] === '/';
   }
 
   // At this point the path should be resolved to a full absolute path, but
   // handle relative paths to be safe (might happen when process.cwd() fails)
 
   // Normalize the path
-  resolvedPath = normalizeArray(
-    resolvedPath.split("/"),
-    !resolvedAbsolute
-  ).join("/");
+  resolvedPath = normalizeArray(resolvedPath.split('/'), !resolvedAbsolute).join('/');
 
-  return (resolvedAbsolute ? "/" : "") + resolvedPath || ".";
+  return (resolvedAbsolute ? '/' : '') + resolvedPath || '.';
 }
 
 function trimArray(arr: string[]): string[] {
@@ -238,8 +232,8 @@ export function relative(from: string, to: string) {
   from = resolve(from).substr(1);
   to = resolve(to).substr(1);
 
-  const fromParts = trimArray(from.split("/"));
-  const toParts = trimArray(to.split("/"));
+  const fromParts = trimArray(from.split('/'));
+  const toParts = trimArray(to.split('/'));
 
   const length = Math.min(fromParts.length, toParts.length);
   let samePartsLength = length;
@@ -252,10 +246,10 @@ export function relative(from: string, to: string) {
 
   let outputParts = [];
   for (let i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push("..");
+    outputParts.push('..');
   }
 
   outputParts = outputParts.concat(toParts.slice(samePartsLength));
 
-  return outputParts.join("/");
+  return outputParts.join('/');
 }

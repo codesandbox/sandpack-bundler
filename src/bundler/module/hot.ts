@@ -1,5 +1,5 @@
-import HMR from "./HMR";
-import { Module } from "./Module";
+import HMR from './HMR';
+import { Module } from './Module';
 
 export class HotContext {
   hmrConfig: HMR | null = null;
@@ -28,26 +28,20 @@ export class HotContext {
   }
 
   accept(path: string | string[], cb: () => any) {
-    if (
-      typeof path === "undefined" ||
-      (typeof path !== "string" && !Array.isArray(path))
-    ) {
+    if (typeof path === 'undefined' || (typeof path !== 'string' && !Array.isArray(path))) {
       // Self mark hot
       const hmrConfig = this.ensureHMRConfig();
-      hmrConfig.setType("accept");
+      hmrConfig.setType('accept');
       hmrConfig.setSelfAccepted(true);
     } else {
-      const paths = typeof path === "string" ? [path] : path;
+      const paths = typeof path === 'string' ? [path] : path;
 
       paths.forEach(async (p) => {
-        const resolvedPath = await this.module.bundler.resolveAsync(
-          p,
-          this.module.filepath
-        );
+        const resolvedPath = await this.module.bundler.resolveAsync(p, this.module.filepath);
         const module = this.module.bundler.getModule(resolvedPath);
         if (module) {
           const hmrConfig = module.hot.ensureHMRConfig();
-          hmrConfig.setType("accept");
+          hmrConfig.setType('accept');
           hmrConfig.setAcceptCallback(cb);
         }
       });
@@ -55,22 +49,19 @@ export class HotContext {
   }
 
   decline(path: string | string[]) {
-    if (typeof path === "undefined") {
+    if (typeof path === 'undefined') {
       const hmrConfig = this.ensureHMRConfig();
-      hmrConfig.setType("decline");
+      hmrConfig.setType('decline');
       this.module.resetCompilation();
     } else {
-      const paths = typeof path === "string" ? [path] : path;
+      const paths = typeof path === 'string' ? [path] : path;
 
       paths.forEach(async (p) => {
-        const resolvedPath = await this.module.bundler.resolveAsync(
-          p,
-          this.module.filepath
-        );
+        const resolvedPath = await this.module.bundler.resolveAsync(p, this.module.filepath);
         const module = this.module.bundler.getModule(resolvedPath);
         if (module) {
           const hmrConfig = module.hot.ensureHMRConfig();
-          hmrConfig.setType("decline");
+          hmrConfig.setType('decline');
           module.resetCompilation();
         }
       });

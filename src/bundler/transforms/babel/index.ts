@@ -1,30 +1,26 @@
-import { WorkerMessageBus } from "../../../utils/WorkerMessageBus";
-import { CompilationError } from "../../errors/CompilationError";
-import {
-  ITranspilationContext,
-  ITranspilationResult,
-  Transformer,
-} from "../Transformer";
-import { ITransformData } from "./babel-worker";
+import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
+import { CompilationError } from '../../errors/CompilationError';
+import { ITranspilationContext, ITranspilationResult, Transformer } from '../Transformer';
+import { ITransformData } from './babel-worker';
 
 export class BabelTransformer extends Transformer {
   private worker: null | Worker = null;
   private messageBus: null | WorkerMessageBus = null;
 
   constructor() {
-    super("babel-transformer");
+    super('babel-transformer');
   }
 
   async init() {
-    this.worker = new Worker(new URL("./babel-worker", import.meta.url), {
-      type: "module",
+    this.worker = new Worker(new URL('./babel-worker', import.meta.url), {
+      type: 'module',
     });
 
     this.messageBus = new WorkerMessageBus({
-      channel: "sandpack-babel",
+      channel: 'sandpack-babel',
       endpoint: this.worker,
       handleNotification: () => Promise.resolve(),
-      handleRequest: () => Promise.reject(new Error("Unknown method")),
+      handleRequest: () => Promise.reject(new Error('Unknown method')),
       handleError: (err) => {
         console.error(err);
         return Promise.resolve();
@@ -33,12 +29,9 @@ export class BabelTransformer extends Transformer {
     });
   }
 
-  async transform(
-    ctx: ITranspilationContext,
-    config: any
-  ): Promise<ITranspilationResult> {
+  async transform(ctx: ITranspilationContext, config: any): Promise<ITranspilationResult> {
     if (!this.messageBus) {
-      throw new Error("Babel worker has not been initialized");
+      throw new Error('Babel worker has not been initialized');
     }
 
     const data: ITransformData = {
@@ -47,7 +40,7 @@ export class BabelTransformer extends Transformer {
     };
 
     try {
-      return await this.messageBus.request("transform", data);
+      return await this.messageBus.request('transform', data);
     } catch (err: unknown) {
       return new CompilationError(err as Error, ctx.module.filepath);
     }

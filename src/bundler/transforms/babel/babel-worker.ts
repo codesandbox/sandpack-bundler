@@ -1,40 +1,34 @@
-import * as babel from "@babel/standalone";
-import * as reactRefreshBabel from "react-refresh/babel";
+import * as babel from '@babel/standalone';
+import * as reactRefreshBabel from 'react-refresh/babel';
 
-import { ITranspilationResult } from "../Transformer";
-import { WorkerMessageBus } from "../../../utils/WorkerMessageBus";
-import { collectDependencies } from "./dep-collector";
+import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
+import { ITranspilationResult } from '../Transformer';
+import { collectDependencies } from './dep-collector';
 
 const reactRefresh = reactRefreshBabel.default ?? reactRefreshBabel;
 
-babel.availablePlugins["react-refresh/babel"] = reactRefresh;
+babel.availablePlugins['react-refresh/babel'] = reactRefresh;
 
 export interface ITransformData {
   code: string;
   filepath: string;
 }
 
-async function transform({
-  code,
-  filepath,
-}: ITransformData): Promise<ITranspilationResult> {
+async function transform({ code, filepath }: ITransformData): Promise<ITranspilationResult> {
   const requires: Set<string> = new Set();
   const transformed = babel.transform(code, {
     filename: filepath,
     presets: [
-      "env",
-      "typescript",
+      'env',
+      'typescript',
       [
-        "react",
+        'react',
         {
-          runtime: "automatic",
+          runtime: 'automatic',
         },
       ],
     ],
-    plugins: [
-      collectDependencies(requires),
-      ["react-refresh/babel", { skipEnvCheck: true }],
-    ],
+    plugins: [collectDependencies(requires), ['react-refresh/babel', { skipEnvCheck: true }]],
     // no ast needed for now
     ast: false,
     sourceMaps: false,
@@ -48,15 +42,15 @@ async function transform({
 }
 
 new WorkerMessageBus({
-  channel: "sandpack-babel",
+  channel: 'sandpack-babel',
   endpoint: self,
   handleNotification: () => Promise.resolve(),
   handleRequest: (method, data) => {
     switch (method) {
-      case "transform":
+      case 'transform':
         return transform(data);
       default:
-        return Promise.reject(new Error("Unknown method"));
+        return Promise.reject(new Error('Unknown method'));
     }
   },
   handleError: (err) => {

@@ -1,6 +1,6 @@
-import { Bundler } from "../bundler";
-import { Module } from "../module/Module";
-import { BundlerError } from "../errors/BundlerError";
+import { Bundler } from '../bundler';
+import { BundlerError } from '../errors/BundlerError';
+import { Module } from '../module/Module';
 
 export type ITranspilationResult =
   | {
@@ -19,10 +19,7 @@ export class Transformer<Config = any> {
 
   async init(bundler: Bundler): Promise<void> {}
 
-  async transform(
-    ctx: ITranspilationContext,
-    config: Config
-  ): Promise<ITranspilationResult> {
-    throw new Error("Not implemented");
+  async transform(ctx: ITranspilationContext, config: Config): Promise<ITranspilationResult> {
+    throw new Error('Not implemented');
   }
 }

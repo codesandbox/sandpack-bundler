@@ -3,12 +3,7 @@ import { normalizeAliasFilePath } from './alias';
 // exports keys, sorted from high to low priority
 const EXPORTS_KEYS = ['browser', 'development', 'default', 'require', 'import'];
 
-type PackageExportType =
-  | string
-  | null
-  | false
-  | PackageExportObj
-  | PackageExportArr;
+type PackageExportType = string | null | false | PackageExportObj | PackageExportArr;
 
 type PackageExportArr = Array<PackageExportObj | string>;
 
@@ -16,17 +11,11 @@ type PackageExportObj = {
   [key: string]: string | null | false | PackageExportType;
 };
 
-export function normalizePackageExport(
-  filepath: string,
-  pkgRoot: string
-): string {
+export function normalizePackageExport(filepath: string, pkgRoot: string): string {
   return normalizeAliasFilePath(filepath.replace(/\*/g, '$1'), pkgRoot);
 }
 
-export function extractPathFromExport(
-  exportValue: PackageExportType,
-  pkgRoot: string
-): string | false {
+export function extractPathFromExport(exportValue: PackageExportType, pkgRoot: string): string | false {
   if (!exportValue) {
     return false;
   }
@@ -36,9 +25,7 @@ export function extractPathFromExport(
   }
 
   if (Array.isArray(exportValue)) {
-    const foundPaths = exportValue
-      .map(v => extractPathFromExport(v, pkgRoot))
-      .filter(Boolean);
+    const foundPaths = exportValue.map((v) => extractPathFromExport(v, pkgRoot)).filter(Boolean);
     if (!foundPaths.length) {
       return false;
     }

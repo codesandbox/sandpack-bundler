@@ -1,15 +1,11 @@
-import gensync from "gensync";
-import micromatch from "micromatch";
+import gensync from 'gensync';
+import micromatch from 'micromatch';
 
-import * as pathUtils from "../utils/path";
-import { ModuleNotFoundError } from "./errors/ModuleNotFound";
-import { ProcessedPackageJSON, processPackageJSON } from "./utils/pkg-json";
-import { isFile, FnIsFile, FnReadFile, getParentDirectories } from "./utils/fs";
-import {
-  ProcessedTSConfig,
-  processTSConfig,
-  getPotentialPathsFromTSConfig,
-} from "./utils/tsconfig";
+import * as pathUtils from '../utils/path';
+import { ModuleNotFoundError } from './errors/ModuleNotFound';
+import { FnIsFile, FnReadFile, getParentDirectories, isFile } from './utils/fs';
+import { ProcessedPackageJSON, processPackageJSON } from './utils/pkg-json';
+import { ProcessedTSConfig, getPotentialPathsFromTSConfig, processTSConfig } from './utils/tsconfig';
 
 export type ResolverCache = Map<string, any>;
 
@@ -29,15 +25,13 @@ interface IResolveOptions extends IResolveOptionsInput {
 
 function normalizeResolverOptions(opts: IResolveOptionsInput): IResolveOptions {
   const normalizedModuleDirectories: Set<string> = opts.moduleDirectories
-    ? new Set(
-        opts.moduleDirectories.map((p) => (p[0] === "/" ? p.substring(1) : p))
-      )
+    ? new Set(opts.moduleDirectories.map((p) => (p[0] === '/' ? p.substring(1) : p)))
     : new Set();
-  normalizedModuleDirectories.add("node_modules");
+  normalizedModuleDirectories.add('node_modules');
 
   return {
     filename: opts.filename,
-    extensions: [...new Set(["", ...opts.extensions])],
+    extensions: [...new Set(['', ...opts.extensions])],
     isFile: opts.isFile,
     readFile: opts.readFile,
     moduleDirectories: [...normalizedModuleDirectories],
@@ -53,11 +47,11 @@ interface IFoundPackageJSON {
 function* loadPackageJSON(
   filepath: string,
   opts: IResolveOptions,
-  rootDir: string = "/"
+  rootDir: string = '/'
 ): Generator<any, IFoundPackageJSON | null, any> {
   const directories = getParentDirectories(filepath, rootDir);
   for (const directory of directories) {
-    const packageFilePath = pathUtils.join(directory, "package.json");
+    const packageFilePath = pathUtils.join(directory, 'package.json');
     let packageContent = opts.resolverCache.get(packageFilePath);
     if (packageContent === undefined) {
       try {
@@ -82,9 +76,9 @@ function* loadPackageJSON(
 
 function resolveFile(filepath: string, dir: string): string {
   switch (filepath[0]) {
-    case ".":
+    case '.':
       return pathUtils.join(dir, filepath);
-    case "/":
+    case '/':
       return filepath;
     default:
       // is a node module
@@ -103,7 +97,7 @@ function resolveAlias(pkgJson: IFoundPackageJSON, filename: string): string {
 
     // Simply check to ensure we don't infinitely alias files due to a misconfiguration of a package/user
     if (count > 5) {
-      throw new Error("Could not resolve file due to a cyclic alias");
+      throw new Error('Could not resolve file due to a cyclic alias');
     }
     count++;
 
@@ -114,7 +108,7 @@ function resolveAlias(pkgJson: IFoundPackageJSON, filename: string): string {
     }
 
     for (const aliasKey of Object.keys(aliases)) {
-      if (!aliasKey.includes("*")) {
+      if (!aliasKey.includes('*')) {
         continue;
       }
 
@@ -124,10 +118,7 @@ function resolveAlias(pkgJson: IFoundPackageJSON, filename: string): string {
         aliasedPath = relativeFilepath.replace(re, val);
         if (aliasedPath.startsWith(relativeFilepath)) {
           const newAddition = aliasedPath.substr(relativeFilepath.length);
-          if (
-            !newAddition.includes("/") &&
-            relativeFilepath.endsWith(newAddition)
-          ) {
+          if (!newAddition.includes('/') && relativeFilepath.endsWith(newAddition)) {
             aliasedPath = relativeFilepath;
           }
         }
@@ -142,43 +133,29 @@ function resolveAlias(pkgJson: IFoundPackageJSON, filename: string): string {
   return aliasedPath || relativeFilepath;
 }
 
-function* resolveModule(
-  moduleSpecifier: string,
-  opts: IResolveOptions
-): Generator<any, string, any> {
+function* resolveModule(moduleSpecifier: string, opts: IResolveOptions): Generator<any, string, any> {
   const dirPath = pathUtils.dirname(opts.filename);
   const filename = resolveFile(moduleSpecifier, dirPath);
-  const isAbsoluteFilename = filename[0] === "/";
-  const pkgJson = yield* findPackageJSON(
-    isAbsoluteFilename ? filename : opts.filename,
-    opts
-  );
+  const isAbsoluteFilename = filename[0] === '/';
+  const pkgJson = yield* findPackageJSON(isAbsoluteFilename ? filename : opts.filename, opts);
   return resolveAlias(pkgJson, filename);
 }
 
 const extractPkgSpecifierParts = (specifier: string) => {
-  const parts = specifier.split("/");
-  const pkgName =
-    parts[0][0] === "@" ? parts.splice(0, 2).join("/") : parts.shift();
+  const parts = specifier.split('/');
+  const pkgName = parts[0][0] === '@' ? parts.splice(0, 2).join('/') : parts.shift();
   return {
     pkgName,
-    filepath: parts.join("/"),
+    filepath: parts.join('/'),
   };
 };
 
-function* resolveNodeModule(
-  moduleSpecifier: string,
-  opts: IResolveOptions
-): Generator<any, string, any> {
+function* resolveNodeModule(moduleSpecifier: string, opts: IResolveOptions): Generator<any, string, any> {
   const pkgSpecifierParts = extractPkgSpecifierParts(moduleSpecifier);
   const directories = getParentDirectories(opts.filename);
   for (const modulesPath of opts.moduleDirectories) {
     for (const directory of directories) {
-      const rootDir = pathUtils.join(
-        directory,
-        modulesPath,
-        pkgSpecifierParts.pkgName
-      );
+      const rootDir = pathUtils.join(directory, modulesPath, pkgSpecifierParts.pkgName);
       const pkgFilePath = pathUtils.join(rootDir, pkgSpecifierParts.filepath);
       const pkgJson = yield* loadPackageJSON(pkgFilePath, opts, rootDir);
       if (pkgJson) {
@@ -189,7 +166,7 @@ function* resolveNodeModule(
           });
         } catch (err) {
           if (!pkgSpecifierParts.filepath) {
-            return yield* resolver(pathUtils.join(pkgFilePath, "index"), {
+            return yield* resolver(pathUtils.join(pkgFilePath, 'index'), {
               ...opts,
               filename: pkgJson.filepath,
             });
@@ -202,16 +179,13 @@ function* resolveNodeModule(
   throw new ModuleNotFoundError(moduleSpecifier, opts.filename);
 }
 
-function* findPackageJSON(
-  filepath: string,
-  opts: IResolveOptions
-): Generator<any, IFoundPackageJSON, any> {
+function* findPackageJSON(filepath: string, opts: IResolveOptions): Generator<any, IFoundPackageJSON, any> {
   let pkg = yield* loadPackageJSON(filepath, opts);
   if (!pkg) {
-    pkg = yield* loadPackageJSON("/index", opts);
+    pkg = yield* loadPackageJSON('/index', opts);
     if (!pkg) {
       return {
-        filepath: "/package.json",
+        filepath: '/package.json',
         content: {
           aliases: {},
         },
@@ -229,7 +203,7 @@ function* expandFile(
   const pkg = yield* findPackageJSON(filepath, opts);
 
   if (expandCount > 5) {
-    throw new Error("Cyclic alias detected");
+    throw new Error('Cyclic alias detected');
   }
 
   for (const ext of opts.extensions) {
@@ -241,11 +215,7 @@ function* expandFile(
         return f;
       }
     } else {
-      const expanded = yield* expandFile(
-        aliasedPath,
-        { ...opts, extensions: [""] },
-        expandCount + 1
-      );
+      const expanded = yield* expandFile(aliasedPath, { ...opts, extensions: [''] }, expandCount + 1);
       if (expanded) {
         return expanded;
       }
@@ -255,17 +225,15 @@ function* expandFile(
 }
 
 export function normalizeModuleSpecifier(specifier: string): string {
-  const normalized = specifier.replace(/(\/|\\)+/g, "/");
-  if (normalized.endsWith("/")) {
+  const normalized = specifier.replace(/(\/|\\)+/g, '/');
+  if (normalized.endsWith('/')) {
     return normalized.substring(0, normalized.length - 1);
   }
   return normalized;
 }
 
-const TS_CONFIG_CACHE_KEY = "__root_tsconfig";
-function* getTSConfig(
-  opts: IResolveOptions
-): Generator<any, ProcessedTSConfig | false, any> {
+const TS_CONFIG_CACHE_KEY = '__root_tsconfig';
+function* getTSConfig(opts: IResolveOptions): Generator<any, ProcessedTSConfig | false, any> {
   const cachedConfig = opts.resolverCache.get(TS_CONFIG_CACHE_KEY);
   if (cachedConfig != null) {
     return cachedConfig;
@@ -273,14 +241,14 @@ function* getTSConfig(
 
   let config: ProcessedTSConfig | false = false;
   try {
-    const contents = yield* opts.readFile("/tsconfig.json");
+    const contents = yield* opts.readFile('/tsconfig.json');
     const processed = processTSConfig(contents);
     if (processed) {
       config = processed;
     }
   } catch (err) {
     try {
-      const contents = yield* opts.readFile("/jsconfig.json");
+      const contents = yield* opts.readFile('/jsconfig.json');
       const processed = processTSConfig(contents);
       if (processed) {
         config = processed;
@@ -293,22 +261,20 @@ function* getTSConfig(
   return config;
 }
 
-export const resolver = gensync<
-  (moduleSpecifier: string, inputOpts: IResolveOptionsInput) => string
->(function* resolve(moduleSpecifier, inputOpts): Generator<any, string, any> {
+export const resolver = gensync<(moduleSpecifier: string, inputOpts: IResolveOptionsInput) => string>(function* resolve(
+  moduleSpecifier,
+  inputOpts
+): Generator<any, string, any> {
   const normalizedSpecifier = normalizeModuleSpecifier(moduleSpecifier);
   const opts = normalizeResolverOptions(inputOpts);
   const modulePath = yield* resolveModule(normalizedSpecifier, opts);
 
-  if (modulePath[0] !== "/") {
+  if (modulePath[0] !== '/') {
     // This isn't a node module, we can attempt to resolve using a tsconfig/jsconfig
-    if (!opts.filename.includes("/node_modules")) {
+    if (!opts.filename.includes('/node_modules')) {
       const parsedTSConfig = yield* getTSConfig(opts);
       if (parsedTSConfig) {
-        const potentialPaths = getPotentialPathsFromTSConfig(
-          modulePath,
-          parsedTSConfig
-        );
+        const potentialPaths = getPotentialPathsFromTSConfig(modulePath, parsedTSConfig);
         for (const potentialPath of potentialPaths) {
           try {
             return yield* resolve(potentialPath, opts);
@@ -328,7 +294,7 @@ export const resolver = gensync<
 
   let foundFile = yield* expandFile(modulePath, opts);
   if (!foundFile) {
-    foundFile = yield* expandFile(pathUtils.join(modulePath, "index"), opts);
+    foundFile = yield* expandFile(pathUtils.join(modulePath, 'index'), opts);
   }
 
   if (!foundFile) {

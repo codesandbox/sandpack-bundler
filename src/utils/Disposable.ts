@@ -1,4 +1,4 @@
-import { Emitter } from "./emitter";
+import { Emitter } from './emitter';
 
 export interface IDisposable {
   /**
@@ -36,7 +36,7 @@ export class Disposable implements IDisposable {
   }
 
   public static is(arg: any): arg is Disposable {
-    return typeof arg["dispose"] === "function";
+    return typeof arg['dispose'] === 'function';
   }
 
   public static create(cb: () => void): IDisposable {
@@ -87,14 +87,14 @@ export class DisposableStore implements IDisposable {
       return o;
     }
     if ((o as unknown as DisposableStore) === this) {
-      throw new Error("Cannot register a disposable on itself!");
+      throw new Error('Cannot register a disposable on itself!');
     }
 
     if (this._isDisposed) {
       if (!DisposableStore.DISABLE_DISPOSED_WARNING) {
         console.warn(
           new Error(
-            "Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!"
+            'Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!'
           ).stack
         );
       }

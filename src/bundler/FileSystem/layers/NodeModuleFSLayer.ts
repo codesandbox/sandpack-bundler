@@ -1,13 +1,9 @@
-import { ModuleRegistry } from "../../module-registry";
-import { FSLayer } from "../FSLayer";
+import { ModuleRegistry } from '../../module-registry';
+import { FSLayer } from '../FSLayer';
 
 const MODULE_PATH_RE = /^\/node_modules\/(@[^/]+\/[^/]+|[^@/]+)(.*)$/;
 
-function getUnpkgSpecifier(
-  moduleName: string,
-  moduleVersion: string,
-  path: string
-): string {
+function getUnpkgSpecifier(moduleName: string, moduleVersion: string, path: string): string {
   return `${moduleName}@${moduleVersion}/${path}`;
 }
 
@@ -16,7 +12,7 @@ export class NodeModuleFSLayer extends FSLayer {
   private unpkgCache: Map<string, string | false> = new Map();
 
   constructor(private registry: ModuleRegistry) {
-    super("node-module-fs");
+    super('node-module-fs');
   }
 
   async _fetchUnpkgFile(specifier: string): Promise<string> {
@@ -34,46 +30,37 @@ export class NodeModuleFSLayer extends FSLayer {
     }
   }
 
-  fetchUnpkgFile(
-    moduleName: string,
-    moduleVersion: string,
-    path: string
-  ): Promise<string> {
+  fetchUnpkgFile(moduleName: string, moduleVersion: string, path: string): Promise<string> {
     const specifier = getUnpkgSpecifier(moduleName, moduleVersion, path);
     const cachedContent = this.unpkgCache.get(specifier);
-    if (typeof cachedContent === "string") {
+    if (typeof cachedContent === 'string') {
       return Promise.resolve(cachedContent);
     } else if (cachedContent === false) {
-      return Promise.reject("unpkg file not found");
+      return Promise.reject('unpkg file not found');
     }
 
-    const promise =
-      this.unpkgPromises.get(specifier) || this._fetchUnpkgFile(specifier);
+    const promise = this.unpkgPromises.get(specifier) || this._fetchUnpkgFile(specifier);
     this.unpkgPromises.set(specifier, promise);
     return promise;
   }
 
-  getUnpkgFile(
-    moduleName: string,
-    moduleVersion: string,
-    path: string
-  ): string {
+  getUnpkgFile(moduleName: string, moduleVersion: string, path: string): string {
     const specifier = getUnpkgSpecifier(moduleName, moduleVersion, path);
     const cachedContent = this.unpkgCache.get(specifier);
-    if (typeof cachedContent === "string") {
+    if (typeof cachedContent === 'string') {
       return cachedContent;
     }
-    throw new Error("File not found in unpkg cache");
+    throw new Error('File not found in unpkg cache');
   }
 
   /** Turns a path into [moduleName, relativePath] */
   private getModuleFromPath(path: string): [string, string] {
     const parts = path.match(MODULE_PATH_RE);
     if (!parts) {
-      throw new Error("Path is not a node_module");
+      throw new Error('Path is not a node_module');
     }
     const moduleName = parts[1];
-    const modulePath: string = parts[2] ?? "";
+    const modulePath: string = parts[2] ?? '';
     return [moduleName, modulePath.substring(1)];
   }
 
@@ -83,7 +70,7 @@ export class NodeModuleFSLayer extends FSLayer {
     if (module) {
       const foundFile = module.files[modulePath];
       if (foundFile) {
-        if (typeof foundFile === "object") {
+        if (typeof foundFile === 'object') {
           return foundFile.c;
         } else {
           return this.getUnpkgFile(moduleName, module.version, modulePath);
@@ -99,7 +86,7 @@ export class NodeModuleFSLayer extends FSLayer {
     if (module) {
       const foundFile = module.files[modulePath];
       if (foundFile) {
-        if (typeof foundFile === "object") {
+        if (typeof foundFile === 'object') {
           return foundFile.c;
         }
 

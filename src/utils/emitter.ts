@@ -1,4 +1,4 @@
-import { IDisposable, Disposable } from "./Disposable";
+import { Disposable, IDisposable } from './Disposable';
 
 /**
  * A typed event.

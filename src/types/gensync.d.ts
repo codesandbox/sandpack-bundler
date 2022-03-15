@@ -3,9 +3,7 @@ declare module 'gensync' {
   declare type Next = undefined | Function;
   declare type Yield = mixed;
 
-  declare type Callback<Return> =
-    | ((err: Error, val: Return) => void)
-    | ((err: unknown) => void);
+  declare type Callback<Return> = ((err: Error, val: Return) => void) | ((err: unknown) => void);
 
   export type Gensync<Fn extends (...args: any) => any> = {
     (...args: Parameters<Fn>): Handler<ReturnType<Fn>>;

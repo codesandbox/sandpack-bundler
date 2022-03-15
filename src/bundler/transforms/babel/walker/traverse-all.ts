@@ -1,6 +1,5 @@
-import type { Node } from "@babel/types";
-
-import { VISITOR_KEYS } from "@babel/types";
+import type { Node } from '@babel/types';
+import { VISITOR_KEYS } from '@babel/types';
 
 export function traverseAll(node: Node, visitor: (node: Node) => void): void {
   if (!node) {

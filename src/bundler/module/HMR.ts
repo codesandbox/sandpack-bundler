@@ -2,7 +2,7 @@ export default class HMR {
   callback?: () => void;
   disposeHandler?: (data: Object) => void;
   data: Object = {};
-  type?: "accept" | "decline";
+  type?: 'accept' | 'decline';
   dirty: boolean = false;
   selfAccepted: boolean = false;
   invalidated = false;
@@ -37,7 +37,7 @@ export default class HMR {
     }
   }
 
-  setType(type: "accept" | "decline" | undefined) {
+  setType(type: 'accept' | 'decline' | undefined) {
     this.type = type;
   }
 
@@ -53,11 +53,11 @@ export default class HMR {
    * Returns whether this module should reset the compilation of its parents
    */
   isHot() {
-    return this.type === "accept";
+    return this.type === 'accept';
   }
 
   isDeclined(isEntry: boolean) {
-    if (this.type === "decline") {
+    if (this.type === 'decline') {
       return true;
     }
 

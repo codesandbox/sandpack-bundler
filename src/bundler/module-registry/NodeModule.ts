@@ -1,4 +1,4 @@
-import { CDNModuleFileType } from "./module-cdn";
+import { CDNModuleFileType } from './module-cdn';
 
 export class NodeModule {
   name: string;
@@ -7,12 +7,7 @@ export class NodeModule {
   // transient dependencies
   modules: string[];
 
-  constructor(
-    name: string,
-    version: string,
-    files: Record<string, CDNModuleFileType>,
-    modules: string[]
-  ) {
+  constructor(name: string, version: string, files: Record<string, CDNModuleFileType>, modules: string[]) {
     this.name = name;
     this.version = version;
     this.files = files;

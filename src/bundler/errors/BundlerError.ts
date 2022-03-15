@@ -18,7 +18,7 @@ export class BundlerError extends Error implements BundlerErrorFormat {
   constructor(error: Error, path?: string) {
     super(error.message);
 
-    this.title = "Unknown error";
+    this.title = 'Unknown error';
     this.message = error.message;
     this.path = path;
   }

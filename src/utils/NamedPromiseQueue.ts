@@ -1,4 +1,4 @@
-import PromiseQueue from "p-queue";
+import PromiseQueue from 'p-queue';
 
 export class NamedPromiseQueue<T> {
   promises: Map<string, Promise<T>>;

@@ -1,8 +1,8 @@
-import { sortObj } from "../../utils/object";
-import { filterBuildDeps } from "./build-dep";
-import { fetchManifest, fetchModule } from "./module-cdn";
-import { NodeModule } from "./NodeModule";
-import * as logger from "../../utils/logger";
+import * as logger from '../../utils/logger';
+import { sortObj } from '../../utils/object';
+import { filterBuildDeps } from './build-dep';
+import { fetchManifest, fetchModule } from './module-cdn';
+import { NodeModule } from './NodeModule';
 
 // dependency => version range
 export type DepMap = { [depName: string]: string };
@@ -10,18 +10,15 @@ export type DepMap = { [depName: string]: string };
 export class ModuleRegistry {
   modules: Map<string, NodeModule> = new Map();
 
-  async fetchNodeModules(
-    deps: DepMap,
-    shouldFilterBuildDeps = true
-  ): Promise<void> {
+  async fetchNodeModules(deps: DepMap, shouldFilterBuildDeps = true): Promise<void> {
     if (shouldFilterBuildDeps) {
       deps = filterBuildDeps(deps);
     }
 
     const sortedDeps = sortObj(deps);
-    logger.debug("Fetching manifest", sortedDeps);
+    logger.debug('Fetching manifest', sortedDeps);
     const dependencies = await fetchManifest(sortedDeps);
-    logger.debug("fetched manifest", dependencies);
+    logger.debug('fetched manifest', dependencies);
     // TODO: Use priority queue with the depth
     await Promise.all(
       dependencies.map((d) => {
@@ -33,6 +30,6 @@ export class ModuleRegistry {
   async fetchNodeModule(name: string, version: string): Promise<void> {
     const module = await fetchModule(name, version);
     this.modules.set(name, new NodeModule(name, version, module.f, module.m));
-    logger.debug("fetched module", name, version, module);
+    logger.debug('fetched module', name, version, module);
   }
 }

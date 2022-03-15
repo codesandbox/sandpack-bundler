@@ -1,23 +1,18 @@
 import { Gensync } from 'gensync';
+
 import { EMPTY_SHIM } from './constants';
 
 export type FnIsFile = Gensync<(filepath: string) => boolean>;
 export type FnReadFile = Gensync<(filepath: string) => string>;
 
-export function* isFile(
-  filepath: string,
-  isFileFn: FnIsFile
-): Generator<any, boolean, any> {
+export function* isFile(filepath: string, isFileFn: FnIsFile): Generator<any, boolean, any> {
   if (filepath === EMPTY_SHIM) {
     return true;
   }
   return yield* isFileFn(filepath);
 }
 
-export function getParentDirectories(
-  filepath: string,
-  rootDir: string = '/'
-): string[] {
+export function getParentDirectories(filepath: string, rootDir: string = '/'): string[] {
   const parts = filepath.split('/');
   const directories = [];
   while (parts.length > 0) {

@@ -1,4 +1,4 @@
-import { SandpackLogLevel } from "../utils/logger";
+import { SandpackLogLevel } from '../utils/logger';
 
 export interface ISandboxFile {
   code: string;
@@ -24,9 +24,9 @@ export interface ICompileRequest {
 }
 
 export type BundlerStatus =
-  | "initializing"
-  | "installing-dependencies"
-  | "transpiling"
-  | "evaluating"
-  | "running-tests"
-  | "idle";
+  | 'initializing'
+  | 'installing-dependencies'
+  | 'transpiling'
+  | 'evaluating'
+  | 'running-tests'
+  | 'idle';

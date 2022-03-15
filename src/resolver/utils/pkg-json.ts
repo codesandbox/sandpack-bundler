@@ -1,6 +1,6 @@
 import { normalizeAliasFilePath } from './alias';
-import { extractPathFromExport } from './exports';
 import { EMPTY_SHIM } from './constants';
+import { extractPathFromExport } from './exports';
 
 // alias/exports/main keys, sorted from high to low priority
 const MAIN_PKG_FIELDS = ['module', 'browser', 'main', 'jsnext:main'];
@@ -12,10 +12,7 @@ export interface ProcessedPackageJSON {
   aliases: AliasesDict;
 }
 
-export function processPackageJSON(
-  content: any,
-  pkgRoot: string
-): ProcessedPackageJSON {
+export function processPackageJSON(content: any, pkgRoot: string): ProcessedPackageJSON {
   if (!content || typeof content !== 'object') {
     return { aliases: {} };
   }
@@ -54,10 +51,7 @@ export function processPackageJSON(
       aliases[pkgRoot] = normalizeAliasFilePath(content.exports, pkgRoot);
     } else if (typeof content.exports === 'object') {
       for (const exportKey of Object.keys(content.exports)) {
-        const exportValue = extractPathFromExport(
-          content.exports[exportKey],
-          pkgRoot
-        );
+        const exportValue = extractPathFromExport(content.exports[exportKey], pkgRoot);
         const normalizedKey = normalizeAliasFilePath(exportKey, pkgRoot);
         aliases[normalizedKey] = exportValue || EMPTY_SHIM;
       }

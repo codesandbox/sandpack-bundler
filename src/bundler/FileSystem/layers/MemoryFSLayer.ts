@@ -1,10 +1,10 @@
-import { FSLayer } from "../FSLayer";
+import { FSLayer } from '../FSLayer';
 
 export class MemoryFSLayer extends FSLayer {
   files: Map<string, string> = new Map();
 
   constructor() {
-    super("memory-fs");
+    super('memory-fs');
   }
 
   writeFile(path: string, content: string): void {

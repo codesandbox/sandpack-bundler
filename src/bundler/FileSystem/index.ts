@@ -1,5 +1,6 @@
-import gensync, { Gensync } from "gensync";
-import { FSLayer } from "./FSLayer";
+import gensync, { Gensync } from 'gensync';
+
+import { FSLayer } from './FSLayer';
 
 export class FileSystem {
   // path => content

@@ -1,9 +1,9 @@
 /* eslint-disable no-eval */
 // import buildProcess from "./utils/process";
 
-import * as swcHelpers from "@swc/helpers";
+import * as swcHelpers from '@swc/helpers';
 
-const g = typeof window === "undefined" ? self : window;
+const g = typeof window === 'undefined' ? self : window;
 
 const hasGlobalDeclaration = /^const global/m;
 
@@ -18,7 +18,7 @@ export default function (
   const global = g;
   const process = {
     env: {
-      NODE_ENV: "development",
+      NODE_ENV: 'development',
     },
   }; // buildProcess(env);
   // @ts-ignore
@@ -39,11 +39,10 @@ export default function (
   }
 
   const allGlobalKeys = Object.keys(allGlobals);
-  const globalsCode = allGlobalKeys.length ? allGlobalKeys.join(", ") : "";
+  const globalsCode = allGlobalKeys.length ? allGlobalKeys.join(', ') : '';
   const globalsValues = allGlobalKeys.map((k) => allGlobals[k]);
   try {
-    const newCode =
-      `(function $csb$eval(` + globalsCode + `) {` + code + `\n})`;
+    const newCode = `(function $csb$eval(` + globalsCode + `) {` + code + `\n})`;
     // @ts-ignore
     (0, eval)(newCode).apply(allGlobals.global, globalsValues);
 
@@ -53,7 +52,7 @@ export default function (
     console.error(code);
 
     let error = err;
-    if (typeof err === "string") {
+    if (typeof err === 'string') {
       error = new Error(err);
     }
     // @ts-ignore

@@ -1,18 +1,11 @@
-import {
-  ITranspilationContext,
-  ITranspilationResult,
-  Transformer,
-} from "../Transformer";
+import { ITranspilationContext, ITranspilationResult, Transformer } from '../Transformer';
 
 export class CSSTransformer extends Transformer {
   constructor() {
-    super("css-transformer");
+    super('css-transformer');
   }
 
-  async transform(
-    ctx: ITranspilationContext,
-    config: any
-  ): Promise<ITranspilationResult> {
+  async transform(ctx: ITranspilationContext, config: any): Promise<ITranspilationResult> {
     // TODO: Handle @import statements
     return {
       code: ctx.code,

@@ -1,13 +1,13 @@
-import { Bundler } from "./bundler/bundler";
-import { BundlerError } from "./bundler/errors/BundlerError";
-import { CompilationError } from "./bundler/errors/CompilationError";
-import { errorMessage } from "./bundler/errors/util";
-import { IFrameParentMessageBus } from "./protocol/iframe";
-import { ICompileRequest } from "./protocol/message-types";
-import { Debouncer } from "./utils/Debouncer";
-import { DisposableStore } from "./utils/Disposable";
-import { getDocumentHeight } from "./utils/document";
-import * as logger from "./utils/logger";
+import { Bundler } from './bundler/bundler';
+import { BundlerError } from './bundler/errors/BundlerError';
+import { CompilationError } from './bundler/errors/CompilationError';
+import { errorMessage } from './bundler/errors/util';
+import { IFrameParentMessageBus } from './protocol/iframe';
+import { ICompileRequest } from './protocol/message-types';
+import { Debouncer } from './utils/Debouncer';
+import { DisposableStore } from './utils/Disposable';
+import { getDocumentHeight } from './utils/document';
+import * as logger from './utils/logger';
 
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
@@ -30,10 +30,10 @@ class SandpackInstance {
 
   handleParentMessage(message: any) {
     switch (message.type) {
-      case "compile":
+      case 'compile':
         this.compileDebouncer.debounce(() => this.handleCompile(message));
         break;
-      case "refresh":
+      case 'refresh':
         window.location.reload();
         break;
     }
@@ -43,7 +43,7 @@ class SandpackInstance {
     const height = getDocumentHeight();
 
     if (this.lastHeight !== height) {
-      this.messageBus.sendMessage("resize", { height });
+      this.messageBus.sendMessage('resize', { height });
     }
 
     this.lastHeight = height;
@@ -66,10 +66,10 @@ class SandpackInstance {
   }
 
   async init() {
-    this.messageBus.sendMessage("initialized");
+    this.messageBus.sendMessage('initialized');
     this.initResizeEvent();
     this.bundler.onStatusChange((newStatus) => {
-      this.messageBus.sendMessage("status", { status: newStatus });
+      this.messageBus.sendMessage('status', { status: newStatus });
     });
   }
 
@@ -78,39 +78,39 @@ class SandpackInstance {
       logger.setLogLevel(compileRequest.logLevel);
     }
 
-    this.messageBus.sendMessage("start", {
+    this.messageBus.sendMessage('start', {
       firstLoad: this.bundler.isFirstLoad,
     });
 
-    this.messageBus.sendMessage("status", { status: "initializing" });
+    this.messageBus.sendMessage('status', { status: 'initializing' });
 
     if (this.bundler.isFirstLoad) {
       this.bundler.resetModules();
     }
 
     // --- Load preset
-    logger.info("Loading preset and transformers...");
+    logger.info('Loading preset and transformers...');
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
     logger.info(`Finished loading preset in ${Date.now() - initStartTime}ms`);
 
     // --- Bundling / Compiling
-    logger.info("Started bundling");
+    logger.info('Started bundling');
     const bundlingStartTime = Date.now();
     const files = Object.values(compileRequest.modules);
     const evaluate = await this.bundler
       .compile(files)
       .then((val) => {
-        this.messageBus.sendMessage("done", {
+        this.messageBus.sendMessage('done', {
           compilatonError: false,
         });
 
         return val;
       })
       .catch((error: CompilationError) => {
-        this.messageBus.sendMessage("action", errorMessage(error));
+        this.messageBus.sendMessage('action', errorMessage(error));
 
-        this.messageBus.sendMessage("done", {
+        this.messageBus.sendMessage('done', {
           compilatonError: true,
         });
       })
@@ -123,10 +123,10 @@ class SandpackInstance {
 
     // --- Evaluation
     if (evaluate) {
-      this.messageBus.sendMessage("status", { status: "evaluating" });
+      this.messageBus.sendMessage('status', { status: 'evaluating' });
 
       try {
-        logger.info("Start evaluation");
+        logger.info('Start evaluation');
         const evalStartTime = Date.now();
         evaluate();
         logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
@@ -136,16 +136,16 @@ class SandpackInstance {
          */
         this.sendResizeEvent();
 
-        this.messageBus.sendMessage("success");
+        this.messageBus.sendMessage('success');
       } catch (error: unknown) {
         this.messageBus.sendMessage(
-          "action",
+          'action',
           errorMessage(error as BundlerError) // TODO: create a evaluation error
         );
       }
     }
 
-    this.messageBus.sendMessage("status", { status: "idle" });
+    this.messageBus.sendMessage('status', { status: 'idle' });
   }
 
   dispose() {

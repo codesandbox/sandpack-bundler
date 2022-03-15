@@ -1,18 +1,18 @@
-import { ISandboxFile } from "../api/sandbox";
-import { DepMap, ModuleRegistry } from "./module-registry";
-import { FileSystem } from "./FileSystem";
-import { Module } from "./module/Module";
-import { ICDNModuleFile } from "./module-registry/module-cdn";
-import { ResolverCache, resolveAsync } from "../resolver/resolver";
-import { NamedPromiseQueue } from "../utils/NamedPromiseQueue";
-import { MemoryFSLayer } from "./FileSystem/layers/MemoryFSLayer";
-import { NodeModuleFSLayer } from "./FileSystem/layers/NodeModuleFSLayer";
-import { Preset } from "./presets/Preset";
-import { getPreset } from "./presets/registry";
-import { replaceHTML } from "../utils/html";
-import * as logger from "../utils/logger";
-import { Emitter } from "../utils/emitter";
-import { BundlerStatus } from "../protocol/message-types";
+import { ISandboxFile } from '../api/sandbox';
+import { BundlerStatus } from '../protocol/message-types';
+import { ResolverCache, resolveAsync } from '../resolver/resolver';
+import { Emitter } from '../utils/emitter';
+import { replaceHTML } from '../utils/html';
+import * as logger from '../utils/logger';
+import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
+import { FileSystem } from './FileSystem';
+import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
+import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
+import { DepMap, ModuleRegistry } from './module-registry';
+import { ICDNModuleFile } from './module-registry/module-cdn';
+import { Module } from './module/Module';
+import { Preset } from './presets/Preset';
+import { getPreset } from './presets/registry';
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
@@ -46,10 +46,7 @@ export class Bundler {
 
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
-    this.fs = new FileSystem([
-      new MemoryFSLayer(),
-      new NodeModuleFSLayer(this.moduleRegistry),
-    ]);
+    this.fs = new FileSystem([new MemoryFSLayer(), new NodeModuleFSLayer(this.moduleRegistry)]);
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 
@@ -94,17 +91,17 @@ export class Bundler {
   }
 
   async processPackageJSON(): Promise<void> {
-    const foundPackageJSON = await this.fs.readFileAsync("/package.json");
+    const foundPackageJSON = await this.fs.readFileAsync('/package.json');
     this.parsedPackageJSON = JSON.parse(foundPackageJSON);
   }
 
   async resolveEntryPoint(): Promise<string> {
     if (!this.parsedPackageJSON) {
-      throw new Error("No parsed pkg.json found!");
+      throw new Error('No parsed pkg.json found!');
     }
 
     if (!this.preset) {
-      throw new Error("Preset has not been loaded yet");
+      throw new Error('Preset has not been loaded yet');
     }
 
     const potentialEntries = new Set(
@@ -113,21 +110,16 @@ export class Bundler {
         this.parsedPackageJSON.source,
         this.parsedPackageJSON.module,
         ...this.preset.defaultEntryPoints,
-      ].filter((e) => typeof e === "string")
+      ].filter((e) => typeof e === 'string')
     );
 
     for (let potentialEntry of potentialEntries) {
-      if (typeof potentialEntry === "string") {
+      if (typeof potentialEntry === 'string') {
         try {
           // Normalize path
           const entryPoint =
-            potentialEntry[0] !== "." && potentialEntry[0] !== "/"
-              ? `./${potentialEntry}`
-              : potentialEntry;
-          const resolvedEntryPont = await this.resolveAsync(
-            entryPoint,
-            "/index.js"
-          );
+            potentialEntry[0] !== '.' && potentialEntry[0] !== '/' ? `./${potentialEntry}` : potentialEntry;
+          const resolvedEntryPont = await this.resolveAsync(entryPoint, '/index.js');
           return resolvedEntryPont;
         } catch (err) {
           logger.debug(`Could not resolve entrypoint ${potentialEntry}`);
@@ -136,18 +128,13 @@ export class Bundler {
       }
     }
     throw new Error(
-      `Could not resolve entry point, potential entrypoints: ${Array.from(
-        potentialEntries
-      ).join(
-        ", "
+      `Could not resolve entry point, potential entrypoints: ${Array.from(potentialEntries).join(
+        ', '
       )}. You can define one by changing the "main" field in package.json.`
     );
   }
 
-  addPrecompiledNodeModule(
-    path: string,
-    file: ICDNModuleFile
-  ): (() => Promise<void>)[] {
+  addPrecompiledNodeModule(path: string, file: ICDNModuleFile): (() => Promise<void>)[] {
     const module = new Module(path, file.c, true, this);
     this.modules.set(path, module);
     return file.d.map((dep) => async () => {
@@ -161,13 +148,13 @@ export class Bundler {
 
   async loadNodeModules() {
     if (!this.parsedPackageJSON) {
-      throw new Error("No parsed pkg.json found!");
+      throw new Error('No parsed pkg.json found!');
     }
 
     const dependencies = this.parsedPackageJSON.dependencies;
     if (dependencies) {
-      if (dependencies["react"] && !dependencies["react-refresh"]) {
-        dependencies["react-refresh"] = "^0.11.0";
+      if (dependencies['react'] && !dependencies['react-refresh']) {
+        dependencies['react-refresh'] = '^0.11.0';
       }
 
       await this.moduleRegistry.fetchNodeModules(dependencies);
@@ -175,11 +162,8 @@ export class Bundler {
       const depPromises = [];
       for (let [moduleName, nodeModule] of this.moduleRegistry.modules) {
         for (let [fileName, file] of Object.entries(nodeModule.files)) {
-          if (typeof file === "object") {
-            const promises = this.addPrecompiledNodeModule(
-              `/node_modules/${moduleName}/${fileName}`,
-              file
-            );
+          if (typeof file === 'object') {
+            const promises = this.addPrecompiledNodeModule(`/node_modules/${moduleName}/${fileName}`, file);
             depPromises.push(...promises);
           }
         }
@@ -192,7 +176,7 @@ export class Bundler {
     try {
       const resolved = await resolveAsync(specifier, {
         filename,
-        extensions: [".js", ".jsx", ".mjs", ".cjs", ".ts", ".tsx"],
+        extensions: ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'],
         isFile: this.fs.isFile,
         readFile: this.fs.readFile,
         resolverCache: this.resolverCache,
@@ -240,10 +224,7 @@ export class Bundler {
     });
   }
 
-  async moduleFinishedPromise(
-    id: string,
-    moduleIds: Set<string> = new Set()
-  ): Promise<any> {
+  async moduleFinishedPromise(id: string, moduleIds: Set<string> = new Set()): Promise<any> {
     if (moduleIds.has(id)) return;
 
     const foundPromise = this.transformationQueue.getItem(id);
@@ -269,9 +250,7 @@ export class Bundler {
         try {
           await this.moduleFinishedPromise(dep, moduleIds);
         } catch (err) {
-          logger.debug(
-            `Failed awaiting transpilation ${dep} required by ${id}`
-          );
+          logger.debug(`Failed awaiting transpilation ${dep} required by ${id}`);
 
           throw err;
         }
@@ -300,7 +279,7 @@ export class Bundler {
   }
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
-    this.onStatusChangeEmitter.fire("installing-dependencies");
+    this.onStatusChangeEmitter.fire('installing-dependencies');
 
     // TODO: Have more fine-grained cache invalidation for the resolver
     // Reset resolver cache
@@ -308,18 +287,18 @@ export class Bundler {
 
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
-      logger.info("Started incremental compilation");
+      logger.info('Started incremental compilation');
 
       changedFiles = this.writeNewFiles(files);
 
       if (!changedFiles.length) {
-        logger.info("Skipping compilation, no changes detected");
+        logger.info('Skipping compilation, no changes detected');
         return () => {};
       }
 
       // If it's a change and we don't have any hmr modules we simply reload the application
       if (!this.hasHMR) {
-        logger.debug("HMR is not enabled, doing a full page refresh");
+        logger.debug('HMR is not enabled, doing a full page refresh');
         window.location.reload();
         return () => {};
       }
@@ -341,12 +320,12 @@ export class Bundler {
       await Promise.all(promises);
     } else {
       // TODO: Load only changed node modules and don't overwrite existing modules
-      console.debug("Loading node modules");
+      console.debug('Loading node modules');
       await this.processPackageJSON();
       await this.loadNodeModules();
     }
 
-    this.onStatusChangeEmitter.fire("transpiling");
+    this.onStatusChangeEmitter.fire('transpiling');
 
     // Transform runtimes
     if (this.isFirstLoad) {
@@ -358,19 +337,19 @@ export class Bundler {
 
     // Resolve entrypoints
     const resolvedEntryPoint = await this.resolveEntryPoint();
-    console.debug("Resolved entrypoint:", resolvedEntryPoint);
+    console.debug('Resolved entrypoint:', resolvedEntryPoint);
 
     // Transform entrypoint and deps
     const entryModule = await this.transformModule(resolvedEntryPoint);
     await this.moduleFinishedPromise(resolvedEntryPoint);
-    console.debug("Bundling finished, manifest:");
+    console.debug('Bundling finished, manifest:');
     console.debug(this.modules);
 
     entryModule.isEntry = true;
 
     return () => {
       // Evaluate
-      console.info("Evaluating...");
+      console.info('Evaluating...');
 
       if (this.isFirstLoad) {
         for (const runtime of this.runtimes) {
@@ -394,17 +373,15 @@ export class Bundler {
         // TODO: Validate that this logic actually works...
         // Check if any module has been invalidated, because in that case we need to
         // restart evaluation.
-        const invalidatedModules = Object.values(this.modules).filter(
-          (m: Module) => {
-            if (m.hot.hmrConfig?.invalidated) {
-              m.resetCompilation();
-              this.transformModule(m.filepath);
-              return true;
-            }
-
-            return false;
+        const invalidatedModules = Object.values(this.modules).filter((m: Module) => {
+          if (m.hot.hmrConfig?.invalidated) {
+            m.resetCompilation();
+            this.transformModule(m.filepath);
+            return true;
           }
-        );
+
+          return false;
+        });
 
         if (invalidatedModules.length > 0) {
           return this.compile(files);
@@ -417,15 +394,13 @@ export class Bundler {
 
   // TODO: Support template languages...
   getHTMLEntry(): string {
-    const foundHTMLFilepath = ["/index.html", "/public/index.html"].find(
-      (filepath) => this.fs.isFileSync(filepath)
-    );
+    const foundHTMLFilepath = ['/index.html', '/public/index.html'].find((filepath) => this.fs.isFileSync(filepath));
 
     if (foundHTMLFilepath) {
       return this.fs.readFileSync(foundHTMLFilepath);
     } else {
       if (!this.preset) {
-        throw new Error("Bundler has not been initialized with a preset");
+        throw new Error('Bundler has not been initialized with a preset');
       }
       return this.preset.defaultHtmlBody;
     }

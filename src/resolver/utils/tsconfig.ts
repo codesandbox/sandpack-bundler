@@ -1,4 +1,5 @@
 import stripJsonComments from 'strip-json-comments';
+
 import * as pathUtils from '../../utils/path';
 
 export interface ProcessedTSConfig {
@@ -26,10 +27,7 @@ export function processTSConfig(content: string): ProcessedTSConfig | null {
   return null;
 }
 
-export function getPotentialPathsFromTSConfig(
-  moduleSpecifier: string,
-  config: ProcessedTSConfig
-): string[] {
+export function getPotentialPathsFromTSConfig(moduleSpecifier: string, config: ProcessedTSConfig): string[] {
   const res = [];
   for (const p of Object.keys(config.paths)) {
     if (p.endsWith('*')) {

@@ -1,7 +1,4 @@
-export type RequestHandlerFn = (
-  method: string,
-  ...params: any[]
-) => Promise<any>;
+export type RequestHandlerFn = (method: string, ...params: any[]) => Promise<any>;
 export type NotificationHandlerFn = (method: string, data: any) => Promise<any>;
 export type ErrorHandlerFn = (error: Error) => Promise<any>;
 
@@ -28,7 +25,7 @@ export interface PendingRequest {
 }
 
 const serializeError = (originalError: any): any => {
-  if (typeof originalError !== "object") {
+  if (typeof originalError !== 'object') {
     return { message: originalError };
   } else {
     return {
@@ -68,7 +65,7 @@ export class WorkerMessageBus {
     this.handleError = opts.handleError;
     this.timeoutMs = opts.timeoutMs;
 
-    this.endpoint.addEventListener("message", async (evt) => {
+    this.endpoint.addEventListener('message', async (evt) => {
       const data = evt.data;
       if (data.channel !== this.channel) {
         return;
@@ -81,10 +78,7 @@ export class WorkerMessageBus {
         } else if (data.method && data.params) {
           // It's a request
           try {
-            const result = await this.handleRequest(
-              data.method,
-              ...data.params
-            );
+            const result = await this.handleRequest(data.method, ...data.params);
             this.endpoint.postMessage({
               id: messageId,
               channel: this.channel,
@@ -113,7 +107,7 @@ export class WorkerMessageBus {
       }
     });
 
-    this.endpoint.addEventListener("error", (err) => this.handleError(err));
+    this.endpoint.addEventListener('error', (err) => this.handleError(err));
   }
 
   nextMessageId() {

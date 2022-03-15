@@ -1,7 +1,7 @@
-import { Bundler } from "../bundler";
-import { BundlerError } from "../errors/BundlerError";
-import { Evaluation } from "./Evaluation";
-import { HotContext } from "./hot";
+import { Bundler } from '../bundler';
+import { BundlerError } from '../errors/BundlerError';
+import { Evaluation } from './Evaluation';
+import { HotContext } from './hot';
 
 export interface IDependencyEvent {
   specifier: string;
@@ -23,12 +23,7 @@ export class Module {
   // Keeping this seperate from dependencies as there might be duplicates otherwise
   dependencyMap: Map<string, string>;
 
-  constructor(
-    filepath: string,
-    source: string,
-    isCompiled: boolean = false,
-    bundler: Bundler
-  ) {
+  constructor(filepath: string, source: string, isCompiled: boolean = false, bundler: Bundler) {
     this.id = filepath;
     this.filepath = filepath;
     this.source = source;
@@ -49,10 +44,7 @@ export class Module {
 
   /** Add dependency */
   async addDependency(depSpecifier: string): Promise<void> {
-    const resolved = await this.bundler.resolveAsync(
-      depSpecifier,
-      this.filepath
-    );
+    const resolved = await this.bundler.resolveAsync(depSpecifier, this.filepath);
     this.dependencies.add(resolved);
     this.dependencyMap.set(depSpecifier, resolved);
     this.bundler.addInitiator(resolved, this.id);
@@ -65,7 +57,7 @@ export class Module {
     try {
       const preset = this.bundler.preset;
       if (!preset) {
-        throw new Error("Preset has not been initialized");
+        throw new Error('Preset has not been initialized');
       }
 
       const transformers = preset.getTransformers(this);

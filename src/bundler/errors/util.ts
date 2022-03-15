@@ -1,9 +1,9 @@
-import { BundlerError } from "./BundlerError";
+import { BundlerError } from './BundlerError';
 
 export const errorMessage = (error: BundlerError) => {
   return {
-    type: "action",
-    action: "show-error",
+    type: 'action',
+    action: 'show-error',
 
     title: error.title,
     path: error.path,

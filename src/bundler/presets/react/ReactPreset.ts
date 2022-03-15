@@ -1,17 +1,16 @@
-import { Module } from "../../module/Module";
-import { Preset } from "../Preset";
-
-import { BabelTransformer } from "../../transforms/babel";
-import { ReactRefreshTransformer } from "../../transforms/react-refresh";
-import { Bundler } from "../../bundler";
-import { CSSTransformer } from "../../transforms/css";
-import { StyleTransformer } from "../../transforms/style";
+import { Bundler } from '../../bundler';
+import { Module } from '../../module/Module';
+import { BabelTransformer } from '../../transforms/babel';
+import { CSSTransformer } from '../../transforms/css';
+import { ReactRefreshTransformer } from '../../transforms/react-refresh';
+import { StyleTransformer } from '../../transforms/style';
+import { Preset } from '../Preset';
 
 export class ReactPreset extends Preset {
   defaultHtmlBody = '<div id="root"></div>';
 
   constructor() {
-    super("react");
+    super('react');
   }
 
   async init(bundler: Bundler): Promise<void> {
@@ -28,22 +27,19 @@ export class ReactPreset extends Preset {
   mapTransformers(module: Module): Array<[string, any]> {
     if (/^(?!\/node_modules\/).*\.(((m|c)?jsx?)|tsx)$/.test(module.filepath)) {
       return [
-        ["babel-transformer", {}],
-        ["react-refresh-transformer", {}],
+        ['babel-transformer', {}],
+        ['react-refresh-transformer', {}],
       ];
     }
 
-    if (
-      /\.(m|c)?(t|j)sx?$/.test(module.filepath) &&
-      !module.filepath.endsWith(".d.ts")
-    ) {
-      return [["babel-transformer", {}]];
+    if (/\.(m|c)?(t|j)sx?$/.test(module.filepath) && !module.filepath.endsWith('.d.ts')) {
+      return [['babel-transformer', {}]];
     }
 
     if (/\.css$/.test(module.filepath)) {
       return [
-        ["css-transformer", {}],
-        ["style-transformer", {}],
+        ['css-transformer', {}],
+        ['style-transformer', {}],
       ];
     }
 

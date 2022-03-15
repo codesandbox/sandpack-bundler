@@ -1,12 +1,6 @@
-import { DepMap } from "./index";
+import { DepMap } from './index';
 
-const BUILD_DEPS = new Set([
-  "parcel",
-  "parcel-bundler",
-  "vite",
-  "@babel/core",
-  "react-scripts",
-]);
+const BUILD_DEPS = new Set(['parcel', 'parcel-bundler', 'vite', '@babel/core', 'react-scripts']);
 const BUILD_DEP_REGEXES = [
   /babel-plugin.*/,
   /@babel\/plugin.*/,

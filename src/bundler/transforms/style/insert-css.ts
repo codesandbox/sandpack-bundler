@@ -19,14 +19,10 @@ createStyleNode(
   ${JSON.stringify(css)}
 );
 
-${hmrEnabled ? "module.hot.accept()" : ""}
+${hmrEnabled ? 'module.hot.accept()' : ''}
 `;
 
-export function insertCss(
-  id: string,
-  css?: string,
-  hmrEnabled?: boolean
-) {
-  const result = wrapper(id, css || "", hmrEnabled);
+export function insertCss(id: string, css?: string, hmrEnabled?: boolean) {
+  const result = wrapper(id, css || '', hmrEnabled);
   return result;
 }
