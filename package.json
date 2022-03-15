@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
-    "build": "parcel build ./src/index.html"
+    "build": "parcel build ./src/index.html",
+    "test": "jest"
   },
   "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
@@ -23,11 +24,14 @@
     "url-join": "^4.0.1"
   },
   "devDependencies": {
+    "@swc-node/jest": "^1.4.3",
     "@types/jest": "^27.4.0",
     "@types/micromatch": "^4.0.2",
     "@types/url-join": "^4.0.1",
     "fastify": "^3.27.0",
     "fastify-static": "^4.5.0",
+    "jest": "^27.5.1",
+    "jest-extended": "^2.0.0",
     "parcel": "^2.0.1",
     "typescript": "4.4.4"
   },
