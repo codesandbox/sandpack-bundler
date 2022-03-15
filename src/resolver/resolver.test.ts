@@ -130,6 +130,16 @@ describe('resolve', () => {
       expect(resolved).toBe('/node_modules/simple/entrypoint.js');
     });
 
+    it('should fallback to higher level node_module in case of duplicates', () => {
+      const resolved = resolveSync('punycode/1.3.2', {
+        filename: '/nested_node_modules/node_modules/url/url.js',
+        extensions: ['.ts', '.tsx', '.js', '.jsx'],
+        isFile,
+        readFile,
+      });
+      expect(resolved).toBe('/nested_node_modules/node_modules/punycode/1.3.2/punycode.js');
+    });
+
     it('should be able to handle packages with nested package.json files, this is kinda invalid but whatever', () => {
       const resolved = resolveSync('styled-components/macro', {
         filename: '/foo.js',
@@ -445,6 +455,16 @@ describe('resolve', () => {
           readFile,
         })
       ).toThrow();
+    });
+
+    it('should not fail on wildcard *.js and folder references', () => {
+      const resolved = resolveSync('./test', {
+        filename: '/node_modules/package-exports/src/utils/path.js',
+        extensions: ['.ts', '.tsx', '.js', '.jsx'],
+        isFile,
+        readFile,
+      });
+      expect(resolved).toBe('/node_modules/package-exports/src/utils/test/index.js');
     });
   });
 

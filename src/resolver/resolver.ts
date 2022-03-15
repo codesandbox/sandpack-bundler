@@ -156,23 +156,37 @@ function* resolveNodeModule(moduleSpecifier: string, opts: IResolveOptions): Gen
   for (const modulesPath of opts.moduleDirectories) {
     for (const directory of directories) {
       const rootDir = pathUtils.join(directory, modulesPath, pkgSpecifierParts.pkgName);
-      const pkgFilePath = pathUtils.join(rootDir, pkgSpecifierParts.filepath);
-      const pkgJson = yield* loadPackageJSON(pkgFilePath, opts, rootDir);
-      if (pkgJson) {
-        try {
-          return yield* resolver(pkgFilePath, {
-            ...opts,
-            filename: pkgJson.filepath,
-          });
-        } catch (err) {
-          if (!pkgSpecifierParts.filepath) {
-            return yield* resolver(pathUtils.join(pkgFilePath, 'index'), {
+
+      try {
+        const pkgFilePath = pathUtils.join(rootDir, pkgSpecifierParts.filepath);
+        const pkgJson = yield* loadPackageJSON(pkgFilePath, opts, rootDir);
+        if (pkgJson) {
+          try {
+            return yield* resolver(pkgFilePath, {
               ...opts,
               filename: pkgJson.filepath,
             });
+          } catch (err) {
+            if (!pkgSpecifierParts.filepath) {
+              return yield* resolver(pathUtils.join(pkgFilePath, 'index'), {
+                ...opts,
+                filename: pkgJson.filepath,
+              });
+            }
+
+            throw err;
           }
-          throw err;
         }
+      } catch (err) {
+        // Handle multiple duplicates of a node_module across the tree
+        if (directory.length > 1) {
+          return yield* resolveNodeModule(moduleSpecifier, {
+            ...opts,
+            filename: pathUtils.dirname(directory),
+          });
+        }
+
+        throw err;
       }
     }
   }
@@ -295,6 +309,19 @@ export const resolver = gensync<(moduleSpecifier: string, inputOpts: IResolveOpt
   let foundFile = yield* expandFile(modulePath, opts);
   if (!foundFile) {
     foundFile = yield* expandFile(pathUtils.join(modulePath, 'index'), opts);
+
+    // In case alias adds an extension, we retry the entire resolution with an added /index
+    // This is mostly a hack I guess, but it works for now, so many edge-cases
+    if (!foundFile) {
+      try {
+        const parts = moduleSpecifier.split('/');
+        if (!parts.length || !parts[parts.length - 1].startsWith('index')) {
+          foundFile = yield* resolve(moduleSpecifier + '/index', opts);
+        }
+      } catch (err) {
+        // should throw ModuleNotFound for original specifier, not new one
+      }
+    }
   }
 
   if (!foundFile) {
