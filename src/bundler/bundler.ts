@@ -44,6 +44,8 @@ export class Bundler {
   private onStatusChangeEmitter = new Emitter<BundlerStatus>();
   onStatusChange = this.onStatusChangeEmitter.event;
 
+  private _previousDepString: string | null = null;
+
   constructor() {
     this.moduleRegistry = new ModuleRegistry();
     this.fs = new FileSystem([new MemoryFSLayer(), new NodeModuleFSLayer(this.moduleRegistry)]);
@@ -92,7 +94,14 @@ export class Bundler {
 
   async processPackageJSON(): Promise<void> {
     const foundPackageJSON = await this.fs.readFileAsync('/package.json');
-    this.parsedPackageJSON = JSON.parse(foundPackageJSON);
+    try {
+      this.parsedPackageJSON = JSON.parse(foundPackageJSON);
+    } catch (err) {
+      // Makes the bundler a bit more error-prone to invalid pkg.json's
+      if (!this.parsedPackageJSON) {
+        throw err;
+      }
+    }
   }
 
   async resolveEntryPoint(): Promise<string> {
@@ -183,9 +192,9 @@ export class Bundler {
       });
       return resolved;
     } catch (err) {
-      console.error(err);
-      console.error(Array.from(this.modules));
-      // console.error(Array.from(this.fs.files));
+      logger.error(err);
+      logger.error(Array.from(this.modules));
+      // logger.error(Array.from(this.fs.files));
       throw err;
     }
   }
@@ -318,10 +327,26 @@ export class Bundler {
         promises.push(this.transformModule(changedFile));
       }
       await Promise.all(promises);
-    } else {
-      // TODO: Load only changed node modules and don't overwrite existing modules
-      console.debug('Loading node modules');
+    }
+
+    const pkgJsonChanged = changedFiles.find((f) => f === '/package.json');
+    if (this.isFirstLoad || pkgJsonChanged) {
+      logger.debug('Loading node modules');
       await this.processPackageJSON();
+
+      const depString = Object.entries(this.parsedPackageJSON?.dependencies || {})
+        .map((v) => `${v[0]}:${v[1]}`)
+        .sort()
+        .join(',');
+
+      if (this._previousDepString != null && depString !== this._previousDepString) {
+        logger.info('Dependencies changed, reloading');
+        location.reload();
+        return () => {};
+      }
+
+      this._previousDepString = depString;
+
       await this.loadNodeModules();
     }
 
@@ -337,19 +362,19 @@ export class Bundler {
 
     // Resolve entrypoints
     const resolvedEntryPoint = await this.resolveEntryPoint();
-    console.debug('Resolved entrypoint:', resolvedEntryPoint);
+    logger.debug('Resolved entrypoint:', resolvedEntryPoint);
 
     // Transform entrypoint and deps
     const entryModule = await this.transformModule(resolvedEntryPoint);
     await this.moduleFinishedPromise(resolvedEntryPoint);
-    console.debug('Bundling finished, manifest:');
-    console.debug(this.modules);
+    logger.debug('Bundling finished, manifest:');
+    logger.debug(this.modules);
 
     entryModule.isEntry = true;
 
     return () => {
       // Evaluate
-      console.info('Evaluating...');
+      logger.info('Evaluating...');
 
       if (this.isFirstLoad) {
         for (const runtime of this.runtimes) {
@@ -357,7 +382,7 @@ export class Bundler {
           if (!module) {
             throw new Error(`Runtime ${runtime} is not defined`);
           } else {
-            console.debug(`Loading runtime ${runtime}...`);
+            logger.debug(`Loading runtime ${runtime}...`);
             module.evaluate();
           }
         }

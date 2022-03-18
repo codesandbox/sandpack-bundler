@@ -6,7 +6,7 @@ export enum SandpackLogLevel {
   Debug = 40,
 }
 
-let logLevel = SandpackLogLevel.Info;
+let logLevel = SandpackLogLevel.Debug;
 
 function shouldLog(minimalLogLevel: SandpackLogLevel) {
   return logLevel >= minimalLogLevel;

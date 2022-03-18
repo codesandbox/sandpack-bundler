@@ -21,13 +21,21 @@ export class ModuleRegistry {
     logger.debug('fetched manifest', dependencies);
     // TODO: Use priority queue with the depth
     await Promise.all(
-      dependencies.map((d) => {
-        return this.fetchNodeModule(d.n, d.v);
-      })
+      dependencies
+        // Small performance improvement, reduces amount of promises
+        .filter((d) => !this.modules.has(d.n))
+        .map((d) => {
+          return this.fetchNodeModule(d.n, d.v);
+        })
     );
   }
 
   async fetchNodeModule(name: string, version: string): Promise<void> {
+    // Module already found, skip fetching
+    // This could also check version, but for now this is fine
+    // as we don't allow multiple versions of the same module right now
+    if (this.modules.has(name)) return;
+
     const module = await fetchModule(name, version);
     this.modules.set(name, new NodeModule(name, version, module.f, module.m));
     logger.debug('fetched module', name, version, module);
