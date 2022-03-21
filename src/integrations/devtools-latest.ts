@@ -1,10 +1,10 @@
-import uuid from 'uuid';
+import { v1 as uuidv1 } from 'uuid';
 
 import { IFrameParentMessageBus } from '../protocol/iframe';
 
 export async function initializeReactDevToolsLatest(messageBus: IFrameParentMessageBus) {
   if (!window.opener) {
-    const uid = uuid.v1();
+    const uid = uuidv1();
 
     const wall = {
       listen(listener: any) {
