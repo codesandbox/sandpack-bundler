@@ -15,7 +15,7 @@ export interface ICompileRequest {
   externalResources?: Array<string>;
   hasFileResolver?: boolean;
   isInitializationCompile?: boolean;
-  reactDevTools?: boolean;
+  reactDevTools?: 'legacy' | 'latest';
   showErrorScreen?: boolean;
   showLoadingScreen?: boolean;
   showOpenInCodeSandbox?: boolean;
