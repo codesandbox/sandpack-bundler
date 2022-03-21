@@ -43,9 +43,12 @@
     "react-devtools-inline_legacy": "npm:react-devtools-inline@4.4.0",
     "react-refresh": "^0.11.0",
     "strip-json-comments": "^4.0.0",
-    "url-join": "^4.0.1"
+    "url-join": "^4.0.1",
+    "react-devtools-inline": "^4.22.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@types/uuid": "^8.3.4",
     "@swc-node/jest": "^1.4.3",
     "@types/jest": "^27.4.0",
     "@types/micromatch": "^4.0.2",
