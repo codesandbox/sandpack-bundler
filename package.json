@@ -41,7 +41,8 @@
     "postcss-import": "^14.0.2",
     "react-refresh": "^0.11.0",
     "strip-json-comments": "^4.0.0",
-    "url-join": "^4.0.1"
+    "url-join": "^4.0.1",
+    "react-devtools-inline_legacy": "npm:react-devtools-inline@4.4.0"
   },
   "devDependencies": {
     "@swc-node/jest": "^1.4.3",
