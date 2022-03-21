@@ -9,13 +9,6 @@ import { StyleTransformer } from '../../transforms/style';
 import { Preset } from '../Preset';
 import { initializeReactDevToolsLegacy } from './integrations/devtools-legacy';
 
-const INTEGRATIONS: Record<string, Record<string, (messageBus: IFrameParentMessageBus) => Promise<void>>> = {
-  devtools: {
-    legacy: initializeReactDevToolsLegacy,
-    latest: initializeReactDevToolsLegacy, // TODO
-  },
-};
-
 export class ReactPreset extends Preset {
   defaultHtmlBody = '<div id="root"></div>';
 
@@ -31,16 +24,7 @@ export class ReactPreset extends Preset {
       this.registerTransformer(new ReactRefreshTransformer()),
       this.registerTransformer(new CSSTransformer()),
       this.registerTransformer(new StyleTransformer()),
-      this.loadIntegrations(bundler.integrations),
     ]);
-  }
-
-  async loadIntegrations(integrations: Integrations) {
-    logger.info('Loading preset integrations...');
-
-    integrations.forEach(async (value, key) => {
-      await INTEGRATIONS?.[key]?.[value.version]?.(value.messageBus);
-    });
   }
 
   mapTransformers(module: Module): Array<[string, any]> {
