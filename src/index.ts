@@ -90,6 +90,13 @@ class SandpackInstance {
 
     // --- Load preset
     logger.info('Loading preset and transformers...');
+    // TODO: should this step be framework agnostic?
+    if (compileRequest.reactDevTools) {
+      this.bundler.integrations.set('devtools', {
+        version: compileRequest.reactDevTools,
+        messageBus: this.messageBus,
+      });
+    }
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
     logger.info(`Finished loading preset in ${Date.now() - initStartTime}ms`);
