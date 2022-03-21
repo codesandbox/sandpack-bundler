@@ -7,12 +7,13 @@ import { CSSTransformer } from '../../transforms/css';
 import { ReactRefreshTransformer } from '../../transforms/react-refresh';
 import { StyleTransformer } from '../../transforms/style';
 import { Preset } from '../Preset';
+import { initializeReactDevToolsLatest } from './integrations/devtools-latest';
 import { initializeReactDevToolsLegacy } from './integrations/devtools-legacy';
 
 const INTEGRATIONS: Record<string, Record<string, (messageBus: IFrameParentMessageBus) => Promise<void>>> = {
   devtools: {
     legacy: initializeReactDevToolsLegacy,
-    latest: initializeReactDevToolsLegacy, // TODO
+    latest: initializeReactDevToolsLatest,
   },
 };
 
