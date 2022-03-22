@@ -1,5 +1,5 @@
+import { CompilationError } from '../../../errors/CompilationError';
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
-import { CompilationError } from '../../errors/CompilationError';
 import { ITranspilationContext, ITranspilationResult, Transformer } from '../Transformer';
 import { ITransformData } from './babel-worker';
 

@@ -1,5 +1,5 @@
+import { BundlerError } from '../../errors/BundlerError';
 import { Bundler } from '../bundler';
-import { BundlerError } from '../errors/BundlerError';
 import { Module } from '../module/Module';
 
 export type ITranspilationResult =

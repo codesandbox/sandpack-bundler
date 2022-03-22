@@ -1,3 +1,5 @@
+import { BundlerError } from '../errors/BundlerError';
+import { IntegrationError } from '../errors/IntegrationError';
 import { IFrameParentMessageBus } from '../protocol/iframe';
 
 type LoadIntegrationFn = () => Promise<any>;
@@ -15,13 +17,13 @@ export class Integrations {
     this.messageBus = messageBus;
   }
 
-  async load(key: string): Promise<undefined> {
+  async load(key: string): Promise<undefined | BundlerError> {
     if (this.registry.has(key)) {
       try {
         const { default: integrationModule } = await this.registry.get(key)?.();
         return integrationModule(this);
-      } catch {
-        // TODO: integration error
+      } catch (err) {
+        return new IntegrationError(err as Error);
       }
     }
 
