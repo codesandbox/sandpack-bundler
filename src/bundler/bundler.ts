@@ -1,5 +1,4 @@
 import { ISandboxFile } from '../api/sandbox';
-import { IFrameParentMessageBus } from '../protocol/iframe';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
 import { Emitter } from '../utils/emitter';
@@ -24,8 +23,6 @@ interface IPackageJSON {
   dependencies?: DepMap;
 }
 
-export type Integrations = Map<string, { version: string; messageBus: IFrameParentMessageBus }>;
-
 export class Bundler {
   private lastHTML: string | null = null;
 
@@ -39,7 +36,6 @@ export class Bundler {
   hasHMR = false;
   isFirstLoad = true;
   preset: Preset | undefined;
-  integrations: Integrations = new Map();
 
   // Map from module id => parent module ids
   initiators = new Map<string, Set<string>>();
@@ -61,7 +57,6 @@ export class Bundler {
     this.preset = undefined;
     this.modules = new Map();
     this.resolverCache = new Map();
-    this.integrations = new Map();
   }
 
   async initPreset(preset: string): Promise<void> {

@@ -1,13 +1,10 @@
-import { IFrameParentMessageBus } from '../../../protocol/iframe';
-import * as logger from '../../../utils/logger';
-import { Bundler, Integrations } from '../../bundler';
+import { Bundler } from '../../bundler';
 import { Module } from '../../module/Module';
 import { BabelTransformer } from '../../transforms/babel';
 import { CSSTransformer } from '../../transforms/css';
 import { ReactRefreshTransformer } from '../../transforms/react-refresh';
 import { StyleTransformer } from '../../transforms/style';
 import { Preset } from '../Preset';
-import { initializeReactDevToolsLegacy } from './integrations/devtools-legacy';
 
 export class ReactPreset extends Preset {
   defaultHtmlBody = '<div id="root"></div>';
