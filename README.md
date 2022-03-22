@@ -2,6 +2,8 @@
 
 The sandpack bundler, this aims to eventually replace the current sandpack with a more streamlined and faster version.
 
+[Architecture chart](https://excalidraw.csb.dev/OF3psMUWe9WwUWgrevj5Es2JnDE3/1pzFeqkVTX12H8lmGuez)
+
 ## Getting started
 
 1. Run `yarn` to install dependencies.
