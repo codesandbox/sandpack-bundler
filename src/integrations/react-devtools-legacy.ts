@@ -1,9 +1,9 @@
-import { IFrameParentMessageBus } from '../../../../protocol/iframe';
+import { activate, initialize } from 'react-devtools-inline_legacy/backend';
+
+import { IFrameParentMessageBus } from '../protocol/iframe';
 
 export async function initializeReactDevToolsLegacy(messageBus: IFrameParentMessageBus) {
   if (!window.opener) {
-    const { initialize: initializeDevTools, activate } = await import('react-devtools-inline_legacy/backend');
-
     // The dispatch needs to happen before initializing, so that the backend can already listen
     messageBus.sendMessage('activate-react-devtools');
 
@@ -18,7 +18,7 @@ export async function initializeReactDevToolsLegacy(messageBus: IFrameParentMess
     }
 
     // Call this before importing React (or any other packages that might import React).
-    initializeDevTools(window);
+    initialize(window);
     activate(window);
   }
 }

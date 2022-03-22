@@ -4,7 +4,7 @@ import { IFrameParentMessageBus } from '../protocol/iframe';
 type LoadIntegrationFn = () => Promise<any>;
 
 const INTEGRATION_LIST = new Map<string, LoadIntegrationFn>([
-  ['foo', () => import('./foo')],
+  ['react-devtools-legacy', () => import('./react-devtools-legacy')],
   ['foo', () => import('./foo')],
 ]);
 
