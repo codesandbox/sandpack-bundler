@@ -1,11 +1,10 @@
 import { activate, createBridge, initialize } from 'react-devtools-inline/backend';
-import { v1 as uuidv1 } from 'uuid';
 
 import { IFrameParentMessageBus } from '../protocol/iframe';
 
 export async function initializeReactDevToolsLatest(messageBus: IFrameParentMessageBus) {
   if (!window.opener) {
-    const uid = uuidv1();
+    const uid = Date.now().toString(16);
 
     const wall = {
       listen(listener: any) {
