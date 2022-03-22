@@ -2,7 +2,7 @@ import { activate, createBridge, initialize } from 'react-devtools-inline/backen
 
 import { IFrameParentMessageBus } from '../protocol/iframe';
 
-export async function initializeReactDevToolsLatest(messageBus: IFrameParentMessageBus) {
+function initIntegration({ messageBus }: { messageBus: IFrameParentMessageBus }) {
   if (!window.opener) {
     const uid = Date.now().toString(16);
 
@@ -38,3 +38,5 @@ export async function initializeReactDevToolsLatest(messageBus: IFrameParentMess
     });
   }
 }
+
+export default initIntegration;
