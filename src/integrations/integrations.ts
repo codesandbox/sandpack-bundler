@@ -3,7 +3,9 @@ import { IFrameParentMessageBus } from '../protocol/iframe';
 
 type LoadIntegrationFn = () => Promise<any>;
 
-const INTEGRATION_LIST = new Map<string, LoadIntegrationFn>([
+type IntegrationsKeys = 'react-devtools-legacy' | 'foo';
+
+const INTEGRATION_LIST = new Map<IntegrationsKeys, LoadIntegrationFn>([
   ['react-devtools-legacy', () => import('./react-devtools-legacy')],
   ['foo', () => import('./foo')],
 ]);
@@ -16,7 +18,11 @@ export class Integrations {
     this.messageBus = messageBus;
   }
 
+<<<<<<< HEAD
   async load(key: string): Promise<undefined | Error> {
+=======
+  async load(key: IntegrationsKeys): Promise<undefined | BundlerError> {
+>>>>>>> 104ce76 (init)
     if (this.registry.has(key)) {
       try {
         const { default: integrationModule } = await this.registry.get(key)?.();
