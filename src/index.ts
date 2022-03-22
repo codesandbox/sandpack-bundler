@@ -2,6 +2,7 @@ import { Bundler } from './bundler/bundler';
 import { BundlerError } from './bundler/errors/BundlerError';
 import { CompilationError } from './bundler/errors/CompilationError';
 import { errorMessage } from './bundler/errors/util';
+import { Integrations } from './integrations/integrations';
 import { IFrameParentMessageBus } from './protocol/iframe';
 import { ICompileRequest } from './protocol/message-types';
 import { Debouncer } from './utils/Debouncer';
@@ -16,9 +17,11 @@ class SandpackInstance {
   private compileDebouncer = new Debouncer(50);
   private lastHeight: number = 0;
   private resizePollingTimer: NodeJS.Timer | undefined;
+  private integrations: Integrations | undefined;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
+    this.integrations = new Integrations(this.messageBus);
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -88,15 +91,16 @@ class SandpackInstance {
       this.bundler.resetModules();
     }
 
+    // -- Load integrations
+    logger.info('Loading integration...');
+    const initStartTimeIntegration = Date.now();
+    if (compileRequest.reactDevTools) {
+      this.integrations?.load('foo');
+    }
+    logger.info(`Finished loading integration in ${Date.now() - initStartTimeIntegration}ms`);
+
     // --- Load preset
     logger.info('Loading preset and transformers...');
-    // TODO: should this step be framework agnostic?
-    if (compileRequest.reactDevTools) {
-      this.bundler.integrations.set('devtools', {
-        version: compileRequest.reactDevTools,
-        messageBus: this.messageBus,
-      });
-    }
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
     logger.info(`Finished loading preset in ${Date.now() - initStartTime}ms`);
