@@ -1,3 +1,4 @@
+import { activate, createBridge, initialize } from 'react-devtools-inline/backend';
 import { v1 as uuidv1 } from 'uuid';
 
 import { IFrameParentMessageBus } from '../protocol/iframe';
@@ -19,12 +20,6 @@ export async function initializeReactDevToolsLatest(messageBus: IFrameParentMess
       },
     };
 
-    const {
-      activate: activateBackend,
-      createBridge: createBackendBridge,
-      initialize: initializeBackend,
-    } = await import('react-devtools-inline/backend');
-
     // The dispatch needs to happen before initializing, so that the backend can already listen
     messageBus.sendMessage('activate-react-devtools', { uid });
 
@@ -38,9 +33,9 @@ export async function initializeReactDevToolsLatest(messageBus: IFrameParentMess
       }
     }
     // Call this before importing React (or any other packages that might import React).
-    initializeBackend(window);
-    activateBackend(window, {
-      bridge: createBackendBridge(window, wall),
+    initialize(window);
+    activate(window, {
+      bridge: createBridge(window, wall),
     });
   }
 }
