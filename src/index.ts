@@ -95,7 +95,11 @@ class SandpackInstance {
     logger.info('Loading integration...');
     const initStartTimeIntegration = Date.now();
     if (compileRequest.reactDevTools) {
-      this.integrations?.load('foo');
+      const integrationPayload = await this.integrations?.load('foo');
+
+      if (integrationPayload instanceof Error) {
+        logger.error(integrationPayload);
+      }
     }
     logger.info(`Finished loading integration in ${Date.now() - initStartTimeIntegration}ms`);
 

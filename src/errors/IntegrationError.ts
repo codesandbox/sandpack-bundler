@@ -1,9 +1,11 @@
-import { BundlerError } from './BundlerError';
+export class IntegrationError extends Error {
+  code: string;
+  name: string;
 
-export class IntegrationError extends BundlerError {
-  constructor(error: Error) {
-    super(error);
+  constructor(error: Error | string, name: string) {
+    super(typeof error === 'string' ? error : error.message);
 
-    this.title = 'Integration error';
+    this.code = 'Integration error';
+    this.name = name;
   }
 }

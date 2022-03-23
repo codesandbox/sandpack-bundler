@@ -3,7 +3,7 @@ import path from 'path';
 
 import gensync from 'gensync';
 
-import { ModuleNotFoundError } from './errors/ModuleNotFound';
+import { ModuleNotFoundError } from '../errors/ModuleNotFound';
 import { normalizeModuleSpecifier, resolveSync } from './resolver';
 
 const FIXTURE_PATH = path.join(__dirname, 'fixture');

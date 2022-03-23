@@ -17,16 +17,16 @@ export class Integrations {
     this.messageBus = messageBus;
   }
 
-  async load(key: string): Promise<undefined | BundlerError> {
+  async load(key: string): Promise<undefined | Error> {
     if (this.registry.has(key)) {
       try {
         const { default: integrationModule } = await this.registry.get(key)?.();
         return integrationModule(this);
       } catch (err) {
-        return new IntegrationError(err as Error);
+        return new IntegrationError(err as Error, key);
       }
     }
 
-    return Promise.reject('The integration was not found.');
+    return new IntegrationError('The integration was not found.', key);
   }
 }
