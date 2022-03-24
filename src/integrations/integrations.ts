@@ -26,6 +26,6 @@ export class Integrations {
       }
     }
 
-    throw new IntegrationError(`The integration ${key} was not found.`, key);
+    throw new IntegrationError(`The integration "${key}" was not found.`, key);
   }
 }
