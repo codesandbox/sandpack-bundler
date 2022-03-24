@@ -3,11 +3,11 @@ import { IFrameParentMessageBus } from '../protocol/iframe';
 
 type LoadIntegrationFn = () => Promise<any>;
 
-type IntegrationsKeys = 'react-devtools-legacy' | 'foo';
+type IntegrationsKeys = 'react-devtools-legacy' | 'react-devtools-latest';
 
 const INTEGRATION_LIST = new Map<IntegrationsKeys, LoadIntegrationFn>([
   ['react-devtools-legacy', () => import('./react-devtools-legacy')],
-  ['foo', () => import('./foo')],
+  ['react-devtools-latest', () => import('./react-devtools-latest')],
 ]);
 
 export class Integrations {
