@@ -96,7 +96,7 @@ class SandpackInstance {
     const initStartTimeIntegration = Date.now();
     if (compileRequest.reactDevTools) {
       try {
-        this.integrations?.load('foo');
+        this.integrations?.load(`react-devtools-${compileRequest.reactDevTools}`);
       } catch (err) {
         logger.error(err);
       }

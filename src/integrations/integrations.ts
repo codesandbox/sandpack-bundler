@@ -3,9 +3,11 @@ import { IFrameParentMessageBus } from '../protocol/iframe';
 
 type LoadIntegrationFn = () => Promise<any>;
 
-const INTEGRATION_LIST = new Map<string, LoadIntegrationFn>([
-  ['foo', () => import('./foo')],
-  ['foo', () => import('./foo')],
+type IntegrationsKeys = 'react-devtools-legacy' | 'react-devtools-latest';
+
+const INTEGRATION_LIST = new Map<IntegrationsKeys, LoadIntegrationFn>([
+  ['react-devtools-legacy', () => import('./react-devtools-legacy')],
+  ['react-devtools-latest', () => import('./react-devtools-latest')],
 ]);
 
 export class Integrations {
@@ -16,7 +18,7 @@ export class Integrations {
     this.messageBus = messageBus;
   }
 
-  async load(key: string): Promise<undefined | Error> {
+  async load(key: IntegrationsKeys): Promise<undefined | Error> {
     if (this.registry.has(key)) {
       try {
         const { default: integrationModule } = await this.registry.get(key)?.();
