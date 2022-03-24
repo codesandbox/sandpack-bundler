@@ -1,4 +1,3 @@
-import { BundlerError } from '../errors/BundlerError';
 import { IntegrationError } from '../errors/IntegrationError';
 import { IFrameParentMessageBus } from '../protocol/iframe';
 
@@ -23,10 +22,10 @@ export class Integrations {
         const { default: integrationModule } = await this.registry.get(key)?.();
         return integrationModule(this);
       } catch (err) {
-        return new IntegrationError(err as Error, key);
+        throw new IntegrationError(err instanceof Error ? err.message : (err as string), key);
       }
     }
 
-    return new IntegrationError('The integration was not found.', key);
+    throw new IntegrationError(`The integration ${key} was not found.`, key);
   }
 }

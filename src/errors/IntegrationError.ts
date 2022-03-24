@@ -1,11 +1,13 @@
-export class IntegrationError extends Error {
-  code: string;
+import { SandpackError } from './SandpackError';
+
+export class IntegrationError extends SandpackError {
+  code = 'INTEGRATION_ERROR';
+
   name: string;
 
-  constructor(error: Error | string, name: string) {
-    super(typeof error === 'string' ? error : error.message);
+  constructor(message: string, name: string) {
+    super(message);
 
-    this.code = 'Integration error';
     this.name = name;
   }
 }
