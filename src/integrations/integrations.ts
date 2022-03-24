@@ -18,11 +18,7 @@ export class Integrations {
     this.messageBus = messageBus;
   }
 
-<<<<<<< HEAD
-  async load(key: string): Promise<undefined | Error> {
-=======
-  async load(key: IntegrationsKeys): Promise<undefined | BundlerError> {
->>>>>>> 104ce76 (init)
+  async load(key: IntegrationsKeys): Promise<undefined | Error> {
     if (this.registry.has(key)) {
       try {
         const { default: integrationModule } = await this.registry.get(key)?.();
