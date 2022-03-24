@@ -1,7 +1,8 @@
 import { Bundler } from './bundler/bundler';
-import { BundlerError } from './bundler/errors/BundlerError';
-import { CompilationError } from './bundler/errors/CompilationError';
-import { errorMessage } from './bundler/errors/util';
+import { BundlerError } from './errors/BundlerError';
+import { CompilationError } from './errors/CompilationError';
+import { errorMessage } from './errors/util';
+import { Integrations } from './integrations/integrations';
 import { IFrameParentMessageBus } from './protocol/iframe';
 import { ICompileRequest } from './protocol/message-types';
 import { Debouncer } from './utils/Debouncer';
@@ -16,9 +17,11 @@ class SandpackInstance {
   private compileDebouncer = new Debouncer(50);
   private lastHeight: number = 0;
   private resizePollingTimer: NodeJS.Timer | undefined;
+  private integrations: Integrations | undefined;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
+    this.integrations = new Integrations(this.messageBus);
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -87,6 +90,18 @@ class SandpackInstance {
     if (this.bundler.isFirstLoad) {
       this.bundler.resetModules();
     }
+
+    // -- Load integrations
+    logger.info('Loading integration...');
+    const initStartTimeIntegration = Date.now();
+    if (compileRequest.reactDevTools) {
+      try {
+        this.integrations?.load(`react-devtools-${compileRequest.reactDevTools}`).catch(logger.error);
+      } catch (err) {
+        logger.error(err);
+      }
+    }
+    logger.info(`Finished loading integration in ${Date.now() - initStartTimeIntegration}ms`);
 
     // --- Load preset
     logger.info('Loading preset and transformers...');
