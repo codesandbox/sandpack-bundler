@@ -1,9 +1,13 @@
-import { BundlerError } from './BundlerError';
+import { SandpackError } from './SandpackError';
 
-export class IntegrationError extends BundlerError {
-  constructor(error: Error) {
-    super(error);
+export class IntegrationError extends SandpackError {
+  code = 'INTEGRATION_ERROR';
 
-    this.title = 'Integration error';
+  name: string;
+
+  constructor(message: string, name: string) {
+    super(message);
+
+    this.name = name;
   }
 }

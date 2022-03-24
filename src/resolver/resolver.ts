@@ -1,8 +1,8 @@
 import gensync from 'gensync';
 import micromatch from 'micromatch';
 
+import { ModuleNotFoundError } from '../errors/ModuleNotFound';
 import * as pathUtils from '../utils/path';
-import { ModuleNotFoundError } from './errors/ModuleNotFound';
 import { FnIsFile, FnReadFile, getParentDirectories, isFile } from './utils/fs';
 import { ProcessedPackageJSON, processPackageJSON } from './utils/pkg-json';
 import { ProcessedTSConfig, getPotentialPathsFromTSConfig, processTSConfig } from './utils/tsconfig';

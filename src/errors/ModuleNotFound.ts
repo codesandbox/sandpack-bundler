@@ -1,7 +1,10 @@
-export class ModuleNotFoundError extends Error {
+import { SandpackError } from './SandpackError';
+
+export class ModuleNotFoundError extends SandpackError {
+  code = 'MODULE_NOT_FOUND';
+
   filepath: string;
   parent: string;
-  code: string = 'MODULE_NOT_FOUND';
 
   constructor(filepath: string, parent: string) {
     super(`Cannot find module '${filepath}' from '${parent}'`);

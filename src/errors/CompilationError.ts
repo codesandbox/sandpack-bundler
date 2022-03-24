@@ -23,8 +23,10 @@ const parseError = (error: any): IParsedError => {
 };
 
 export class CompilationError extends BundlerError {
+  code = 'COMPILATION_ERROR';
+
   constructor(error: Error, path: string) {
-    super(error);
+    super(error.message);
 
     const { column, line, message } = parseError(error);
 
