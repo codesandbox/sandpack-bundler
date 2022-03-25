@@ -1,6 +1,6 @@
-import { ISandboxFile } from '../api/sandbox';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
+import { ISandboxFile } from '../types';
 import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';

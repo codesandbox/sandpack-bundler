@@ -1,6 +1,7 @@
 /* eslint-disable no-eval */
 // import buildProcess from "./utils/process";
 
+// @ts-ignore
 import * as swcHelpers from '@swc/helpers';
 
 const g = typeof window === 'undefined' ? self : window;

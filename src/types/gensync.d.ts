@@ -1,9 +1,9 @@
 // https://github.com/babel/babel/blob/main/packages/babel-core/src/gensync-utils/gensync.d.ts
 declare module 'gensync' {
-  declare type Next = undefined | Function;
-  declare type Yield = mixed;
+  type Next = undefined | Function;
+  type Yield = any;
 
-  declare type Callback<Return> = ((err: Error, val: Return) => void) | ((err: unknown) => void);
+  type Callback<Return> = ((err: Error, val: Return) => void) | ((err: unknown) => void);
 
   export type Gensync<Fn extends (...args: any) => any> = {
     (...args: Parameters<Fn>): Handler<ReturnType<Fn>>;
@@ -24,7 +24,7 @@ declare module 'gensync' {
       }
   );
 
-  declare const gensync: {
+  const gensync: {
     <Fn extends (...args: any) => any>(
       _: Options<Fn> | ((...args: Parameters<Fn>) => Handler<ReturnType<Fn>>)
     ): Gensync<Fn>;

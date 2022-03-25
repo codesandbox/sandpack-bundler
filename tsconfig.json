@@ -12,5 +12,7 @@
     "moduleResolution": "node",
     "downlevelIteration": true,
     "strictNullChecks": true
-  }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "fixture"]
 }

@@ -1,6 +1,8 @@
 import * as babel from '@babel/standalone';
+// @ts-ignore
 import * as reactRefreshBabel from 'react-refresh/babel';
 
+import { BundlerError } from '../../../errors/BundlerError';
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
 import { ITranspilationResult } from '../Transformer';
 import { collectDependencies } from './dep-collector';
@@ -34,6 +36,11 @@ async function transform({ code, filepath }: ITransformData): Promise<ITranspila
     sourceMaps: false,
     compact: true,
   });
+
+  // no-op module
+  if (!transformed.code) {
+    transformed.code = 'module.exports = {};';
+  }
 
   return {
     code: transformed.code,

@@ -1,9 +1,5 @@
+import { ISandboxFile } from '../types';
 import { SandpackLogLevel } from '../utils/logger';
-
-export interface ISandboxFile {
-  code: string;
-  path: string;
-}
 
 export interface ICompileRequest {
   version: number;
