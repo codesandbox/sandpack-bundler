@@ -1,4 +1,4 @@
-import { fetch } from '../../../utils/fetch';
+import { retryFetch } from '../../../utils/fetch';
 import { ModuleRegistry } from '../../module-registry';
 import { FSLayer } from '../FSLayer';
 
@@ -18,7 +18,7 @@ export class NodeModuleFSLayer extends FSLayer {
 
   async _fetchUnpkgFile(specifier: string): Promise<string> {
     try {
-      const response = await fetch(`https://unpkg.com/${specifier}`);
+      const response = await retryFetch(`https://unpkg.com/${specifier}`);
       if (!response.ok) {
         throw new Error(`Could not fetch ${specifier} from unpkg`);
       }

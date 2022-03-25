@@ -1,5 +1,6 @@
 import urlJoin from 'url-join';
 
+import { retryFetch } from '../../utils/fetch';
 import { DepMap } from '.';
 
 const CDN_ROOT = 'https://sandpack-cdn-staging.blazingly.io/';
@@ -21,7 +22,7 @@ function encodePayload(payload: string): string {
 
 export async function fetchManifest(deps: DepMap): Promise<IResolvedDependency[]> {
   const encoded_manifest = encodePayload(JSON.stringify(deps));
-  const result = await fetch(urlJoin(CDN_ROOT, `/dep_tree/${encoded_manifest}`));
+  const result = await retryFetch(urlJoin(CDN_ROOT, `/dep_tree/${encoded_manifest}`));
   return result.json();
 }
 
@@ -46,6 +47,6 @@ export interface ICDNModule {
 export async function fetchModule(name: string, version: string) {
   const specifier = `${name}@${version}`;
   const encoded_specifier = encodePayload(specifier);
-  const result = await fetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`));
+  const result = await retryFetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`));
   return result.json();
 }

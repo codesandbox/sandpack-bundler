@@ -1,45 +1,42 @@
-import { isPositiveInteger } from './number';
+import pRetry, { AbortError, Options as RetryOptions } from 'p-retry';
 
-export type RequestInitWithRetry = RequestInit & { retries?: number; retryDelay?: number };
+export type RequestInitWithRetry = RequestInit & RetryOptions;
 
-function cloneInput(input: RequestInfo): RequestInfo {
-  if (typeof Request !== 'undefined' && input instanceof Request) {
-    return input.clone();
-  } else {
-    return input;
-  }
+// 408 is timeout
+// 429 is too many requests
+// 424 is failed dependency
+// 499 is client closed connection
+// 444 is connection closed without response
+// 502 is Bad gateway
+// 503 is Service Unavailable
+// 504 is Gateway Timeout
+// 599 is Network Connect Timeout Error
+const ERROR_CODES_TO_RETRY = new Set([408, 429, 424, 499, 444, 502, 503, 504, 599]);
+function isRetryableStatus(errorcode: number): boolean {
+  return ERROR_CODES_TO_RETRY.has(errorcode);
 }
 
-export function fetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
-  const retries: number = isPositiveInteger(init.retries) ? init.retries : 3;
-  const retryDelay: number = isPositiveInteger(init.retryDelay) ? init.retryDelay : 1000;
-
-  return new Promise((resolve, reject) => {
-    input = cloneInput(input);
-
-    // TODO: Be a bit smarter about retry logic...
-    function retry(attempt: number, error: Error | null, response: Response | null) {
-      setTimeout(function () {
-        wrappedFetch(++attempt);
-      }, retryDelay);
+/**
+ * Fetches a resource using the provided config and retries if it fails with a network or server availability error
+ *
+ * @param {RequestInfo} input: request info for fetch
+ * @param {RequestInit} init: request options for fetch
+ * @param {pRetry.PromiseRetryOptions} retryOptions: Retry configuration
+ * @returns {Response}
+ */
+export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
+  const tryFetch = async () => {
+    const response = await window.fetch(input, init);
+    if (!response.ok && isRetryableStatus(response.status)) {
+      throw new AbortError(`[${response.status}]: ${response.statusText}`);
     }
+    return response;
+  };
 
-    function wrappedFetch(attempt: number) {
-      window.fetch(input, init)
-        .then(function (response) {
-          if (attempt < retries) {
-            retry(attempt, null, response);
-          } else {
-            resolve(response);
-          }
-        })
-        .catch(function (error) {
-          if (attempt < retries) {
-            retry(attempt, error, null);
-          } else {
-            reject(error);
-          }
-        });
-    }
+  return pRetry<Response>(tryFetch, {
+    minTimeout: 250,
+    maxTimeout: 1500,
+    retries: 5,
+    ...init,
   });
 }
