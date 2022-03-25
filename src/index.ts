@@ -34,7 +34,7 @@ class SandpackInstance {
   handleParentMessage(message: any) {
     switch (message.type) {
       case 'compile':
-        this.compileDebouncer.debounce(() => this.handleCompile(message));
+        this.compileDebouncer.debounce(() => this.handleCompile(message).catch(console.error));
         break;
       case 'refresh':
         window.location.reload();
@@ -123,6 +123,8 @@ class SandpackInstance {
         return val;
       })
       .catch((error: CompilationError) => {
+        logger.error(error);
+
         this.messageBus.sendMessage('action', errorMessage(error));
 
         this.messageBus.sendMessage('done', {
@@ -153,6 +155,8 @@ class SandpackInstance {
 
         this.messageBus.sendMessage('success');
       } catch (error: unknown) {
+        logger.error(error);
+
         this.messageBus.sendMessage(
           'action',
           errorMessage(error as BundlerError) // TODO: create a evaluation error
