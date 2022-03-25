@@ -24,19 +24,25 @@ function isRetryableStatus(errorcode: number): boolean {
  * @param {pRetry.PromiseRetryOptions} retryOptions: Retry configuration
  * @returns {Response}
  */
-export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
-  const tryFetch = async () => {
-    const response = await window.fetch(input, init);
-    if (!response.ok && isRetryableStatus(response.status)) {
-      throw new AbortError(`[${response.status}]: ${response.statusText}`);
-    }
-    return response;
-  };
+// export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
+//   const tryFetch = async () => {
+//     const response = await window.fetch(input, init);
+//     if (!response.ok && isRetryableStatus(response.status)) {
+//       throw new AbortError(`[${response.status}]: ${response.statusText}`);
+//     }
+//     return response;
+//   };
 
-  return pRetry<Response>(tryFetch, {
-    minTimeout: 250,
-    maxTimeout: 1500,
-    retries: 5,
-    ...init,
-  });
+//   return pRetry<Response>(tryFetch, {
+//     minTimeout: 250,
+//     maxTimeout: 1500,
+//     retries: 5,
+//     ...init,
+//   });
+// }
+
+// Don't use p-retry it fails after prod build on parcel
+// See https://github.com/parcel-bundler/parcel/issues/7866
+export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
+  return window.fetch(input, init);
 }
