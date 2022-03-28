@@ -39,12 +39,12 @@ export interface ICDNModuleFile {
 
 export interface ICDNModule {
   // files
-  f: CDNModuleFileType[];
+  f: Record<string, CDNModuleFileType>;
   // transient dependencies
   m: string[];
 }
 
-export async function fetchModule(name: string, version: string) {
+export async function fetchModule(name: string, version: string): Promise<ICDNModule> {
   const specifier = `${name}@${version}`;
   const encoded_specifier = encodePayload(specifier);
   const result = await retryFetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`));

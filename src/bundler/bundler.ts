@@ -47,7 +47,7 @@ export class Bundler {
   private _previousDepString: string | null = null;
 
   constructor() {
-    this.moduleRegistry = new ModuleRegistry();
+    this.moduleRegistry = new ModuleRegistry(this);
     this.fs = new FileSystem([new MemoryFSLayer(), new NodeModuleFSLayer(this.moduleRegistry)]);
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
@@ -143,18 +143,6 @@ export class Bundler {
     );
   }
 
-  addPrecompiledNodeModule(path: string, file: ICDNModuleFile): (() => Promise<void>)[] {
-    const module = new Module(path, file.c, true, this);
-    this.modules.set(path, module);
-    return file.d.map((dep) => async () => {
-      await module.addDependency(dep);
-
-      for (let dep of module.dependencies) {
-        this.transformModule(dep);
-      }
-    });
-  }
-
   async loadNodeModules() {
     if (!this.parsedPackageJSON) {
       throw new Error('No parsed pkg.json found!');
@@ -166,18 +154,7 @@ export class Bundler {
         dependencies['react-refresh'] = '^0.11.0';
       }
 
-      await this.moduleRegistry.fetchNodeModules(dependencies);
-
-      const depPromises = [];
-      for (let [moduleName, nodeModule] of this.moduleRegistry.modules) {
-        for (let [fileName, file] of Object.entries(nodeModule.files)) {
-          if (typeof file === 'object') {
-            const promises = this.addPrecompiledNodeModule(`/node_modules/${moduleName}/${fileName}`, file);
-            depPromises.push(...promises);
-          }
-        }
-      }
-      await Promise.all(depPromises.map((fn) => fn()));
+      await this.moduleRegistry.fetchManifest(dependencies);
     }
   }
 
