@@ -19,5 +19,5 @@ The sandpack bundler, this aims to eventually replace the current sandpack with 
 
 ## Using the deployed version
 
-The `main` branch of this repository is automatically deployed to `https://sandpack-next.pages.dev/` so you can update `bundlerURL` of `sandpack-react` to that url and start using the new sandpack bundler.
+The `main` branch of this repository is automatically deployed to `https://sandpack-bundler.pages.dev/` so you can update `bundlerURL` of `sandpack-react` to that url and start using the new sandpack bundler.
 
