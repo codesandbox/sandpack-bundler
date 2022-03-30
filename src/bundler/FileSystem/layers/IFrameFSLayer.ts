@@ -1,10 +1,11 @@
+import { IFrameParentMessageBus } from '../../../protocol/iframe';
 import { FSLayer } from '../FSLayer';
 import { MemoryFSLayer } from './MemoryFSLayer';
 
 export class IFrameFSLayer extends FSLayer {
   files: Map<string, string> = new Map();
 
-  constructor(private memoryFS: MemoryFSLayer) {
+  constructor(private memoryFS: MemoryFSLayer, private messageBus: IFrameParentMessageBus) {
     super('iframe-fs');
   }
 
@@ -22,8 +23,12 @@ export class IFrameFSLayer extends FSLayer {
     } catch (err) {
       // Skip node_modules
       if (!path.includes('node_modules')) {
-        // TODO: Fetch file using iframe protocol
-        // TODO: Write to memory fs
+        const response = await this.messageBus.sendRequest('fs/readFile', {
+          path,
+        });
+        if (typeof response.result === 'string') {
+          return response.result;
+        }
       }
       throw err;
     }
@@ -38,8 +43,10 @@ export class IFrameFSLayer extends FSLayer {
     if (!isFile) {
       // Skip node_modules
       if (!path.includes('node_modules')) {
-        // TODO: Do isFile through iFrame Protocol
-        // TODO: Write to memory fs?
+        const response = await this.messageBus.sendRequest('fs/isFile', {
+          path,
+        });
+        return !!response.result;
       }
     }
     return isFile;

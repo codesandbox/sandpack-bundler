@@ -1,3 +1,4 @@
+import { IFrameParentMessageBus } from '../protocol/iframe';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
 import { ISandboxFile } from '../types';
@@ -6,6 +7,7 @@ import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
 import { FileSystem } from './FileSystem';
+import { IFrameFSLayer } from './FileSystem/layers/IFrameFSLayer';
 import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
 import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
 import { DepMap, ModuleRegistry } from './module-registry';
@@ -46,9 +48,14 @@ export class Bundler {
 
   private _previousDepString: string | null = null;
 
-  constructor() {
+  constructor(messageBus: IFrameParentMessageBus) {
     this.moduleRegistry = new ModuleRegistry();
-    this.fs = new FileSystem([new MemoryFSLayer(), new NodeModuleFSLayer(this.moduleRegistry)]);
+    const memoryFS = new MemoryFSLayer();
+    this.fs = new FileSystem([
+      memoryFS,
+      new IFrameFSLayer(memoryFS, messageBus),
+      new NodeModuleFSLayer(this.moduleRegistry),
+    ]);
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 

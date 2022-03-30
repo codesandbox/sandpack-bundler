@@ -6,6 +6,7 @@ import { Emitter } from '../utils/emitter';
  * */
 export class IFrameParentMessageBus {
   private parentId: number | null = null;
+  private messageId = 0;
 
   // TODO: Type messages
   private messageEmitter = new Emitter();
@@ -41,5 +42,19 @@ export class IFrameParentMessageBus {
       },
       '*'
     );
+  }
+
+  sendRequest(type: string, params: Record<string, any> = {}): Promise<any> {
+    const messageId = this.messageId++;
+    return new Promise((resolve) => {
+      const disposable = this.onMessage((msg: any) => {
+        if (msg.msgId === messageId) {
+          disposable.dispose();
+          resolve(msg);
+        }
+      });
+
+      this.sendMessage(type, { params });
+    });
   }
 }
