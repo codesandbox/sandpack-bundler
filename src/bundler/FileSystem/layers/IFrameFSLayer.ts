@@ -20,7 +20,11 @@ export class IFrameFSLayer extends FSLayer {
     try {
       return this.memoryFS.readFileSync(path);
     } catch (err) {
-      // TODO: Fetch file using iframe protocol
+      // Skip node_modules
+      if (!path.includes('node_modules')) {
+        // TODO: Fetch file using iframe protocol
+        // TODO: Write to memory fs
+      }
       throw err;
     }
   }
@@ -32,7 +36,11 @@ export class IFrameFSLayer extends FSLayer {
   async isFileAsync(path: string): Promise<boolean> {
     let isFile = this.memoryFS.isFileSync(path);
     if (!isFile) {
-      // TODO: Do isFile through iFrame Protocol
+      // Skip node_modules
+      if (!path.includes('node_modules')) {
+        // TODO: Do isFile through iFrame Protocol
+        // TODO: Write to memory fs?
+      }
     }
     return isFile;
   }
