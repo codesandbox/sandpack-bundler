@@ -3,8 +3,6 @@ import { FSLayer } from '../FSLayer';
 import { MemoryFSLayer } from './MemoryFSLayer';
 
 export class IFrameFSLayer extends FSLayer {
-  files: Map<string, string> = new Map();
-
   constructor(private memoryFS: MemoryFSLayer, private messageBus: IFrameParentMessageBus) {
     super('iframe-fs');
   }
