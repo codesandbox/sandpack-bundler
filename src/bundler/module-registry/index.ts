@@ -32,6 +32,14 @@ export class ModuleRegistry {
     logger.debug('fetched manifest', this.manifest);
   }
 
+  async preloadModules(): Promise<void> {
+    await Promise.all(
+      this.manifest.map((dep) => {
+        return this.fetchNodeModule(dep.n, dep.v);
+      })
+    );
+  }
+
   private async _fetchModule(name: string, version: string): Promise<NodeModule> {
     const module = await fetchModule(name, version);
     const processedNodeModule = new NodeModule(name, version, module.f, module.m);

@@ -167,6 +167,9 @@ export class Bundler {
       }
 
       await this.moduleRegistry.fetchManifest(dependencies);
+
+      // Preload all modules
+      this.moduleRegistry.preloadModules().catch((err) => logger.error(err));
     }
   }
 
