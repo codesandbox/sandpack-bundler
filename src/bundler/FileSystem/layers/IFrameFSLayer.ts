@@ -21,11 +21,16 @@ export class IFrameFSLayer extends FSLayer {
     } catch (err) {
       // Skip node_modules
       if (!path.includes('node_modules')) {
-        const response = await this.messageBus.sendRequest('fs/readFile', {
-          path,
-        });
-        if (typeof response.result === 'string') {
-          return response.result;
+        try {
+          const response = await this.messageBus.protocolRequest('file-resolver', {
+            m: 'readFile',
+            path,
+          });
+          if (typeof response === 'string') {
+            return response;
+          }
+        } catch (err) {
+          // do nothing
         }
       }
       throw err;
@@ -41,10 +46,15 @@ export class IFrameFSLayer extends FSLayer {
     if (!isFile) {
       // Skip node_modules
       if (!path.includes('node_modules')) {
-        const response = await this.messageBus.sendRequest('fs/isFile', {
-          path,
-        });
-        return !!response.result;
+        try {
+          const response = await this.messageBus.protocolRequest('file-resolver', {
+            m: 'isFile',
+            path,
+          });
+          return !!response;
+        } catch (err) {
+          console.error(err);
+        }
       }
     }
     return isFile;
