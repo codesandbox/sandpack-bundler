@@ -1,16 +1,12 @@
-import { IFrameParentMessageBus } from '../protocol/iframe';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
-import { ISandboxFile } from '../types';
+import { ISandboxFile, IPackageJSON } from '../types';
 import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
-import { FileSystem } from './FileSystem';
-import { IFrameFSLayer } from './FileSystem/layers/IFrameFSLayer';
-import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
-import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
-import { DepMap, ModuleRegistry } from './module-registry';
+import { FileSystem } from '../FileSystem';
+import { ModuleRegistry } from './module-registry';
 import { ICDNModuleFile } from './module-registry/module-cdn';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
@@ -18,19 +14,18 @@ import { getPreset } from './presets/registry';
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
-interface IPackageJSON {
-  main?: string;
-  module?: string;
-  source?: string;
-  dependencies?: DepMap;
+interface IBundlerOpts {
+  fs: FileSystem;
+  moduleRegistry: ModuleRegistry;
 }
 
 export class Bundler {
   private lastHTML: string | null = null;
 
-  parsedPackageJSON: IPackageJSON | null = null;
-  moduleRegistry: ModuleRegistry;
   fs: FileSystem;
+  moduleRegistry: ModuleRegistry;
+
+  parsedPackageJSON: IPackageJSON | null = null;
   // Map filepath => Module
   modules: Map<string, Module> = new Map();
   transformationQueue: TransformationQueue;
@@ -48,14 +43,9 @@ export class Bundler {
 
   private _previousDepString: string | null = null;
 
-  constructor(messageBus: IFrameParentMessageBus) {
-    this.moduleRegistry = new ModuleRegistry();
-    const memoryFS = new MemoryFSLayer();
-    this.fs = new FileSystem([
-      memoryFS,
-      new IFrameFSLayer(memoryFS, messageBus),
-      new NodeModuleFSLayer(this.moduleRegistry),
-    ]);
+  constructor(opts: IBundlerOpts) {
+    this.fs = opts.fs;
+    this.moduleRegistry = opts.moduleRegistry;
     this.transformationQueue = new NamedPromiseQueue(true, 50);
   }
 

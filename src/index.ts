@@ -1,7 +1,12 @@
 import { Bundler } from './bundler/bundler';
+import { ModuleRegistry } from './bundler/module-registry';
 import { BundlerError } from './errors/BundlerError';
 import { CompilationError } from './errors/CompilationError';
 import { errorMessage } from './errors/util';
+import { FileSystem } from './FileSystem';
+import { IFrameFSLayer } from './FileSystem/layers/IFrameFSLayer';
+import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
+import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
 import { Integrations } from './integrations/integrations';
 import { IFrameParentMessageBus } from './protocol/iframe';
 import { ICompileRequest } from './protocol/message-types';
@@ -18,11 +23,19 @@ class SandpackInstance {
   private lastHeight: number = 0;
   private resizePollingTimer: NodeJS.Timer | undefined;
   private integrations: Integrations | undefined;
+  private moduleRegistry: ModuleRegistry;
+  private fs: FileSystem;
+  private iFrameFsLayer: IFrameFSLayer;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
     this.integrations = new Integrations(this.messageBus);
-    this.bundler = new Bundler(this.messageBus);
+
+    this.moduleRegistry = new ModuleRegistry();
+    const memoryFS = new MemoryFSLayer();
+    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, this.messageBus);
+    this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
+    this.bundler = new Bundler({ fs: this.fs, moduleRegistry: this.moduleRegistry });
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -80,6 +93,10 @@ class SandpackInstance {
   async handleCompile(compileRequest: ICompileRequest) {
     if (compileRequest.logLevel != null) {
       logger.setLogLevel(compileRequest.logLevel);
+    }
+
+    if (compileRequest.hasFileResolver) {
+      this.iFrameFsLayer.enableIFrameFS();
     }
 
     this.messageBus.sendMessage('start', {

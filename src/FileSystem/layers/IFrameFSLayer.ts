@@ -1,10 +1,24 @@
-import { IFrameParentMessageBus } from '../../../protocol/iframe';
+import { IFrameParentMessageBus } from '../../protocol/iframe';
 import { FSLayer } from '../FSLayer';
 import { MemoryFSLayer } from './MemoryFSLayer';
 
 export class IFrameFSLayer extends FSLayer {
+  private isBypassed = true;
+
   constructor(private memoryFS: MemoryFSLayer, private messageBus: IFrameParentMessageBus) {
     super('iframe-fs');
+  }
+
+  enableIFrameFS(): void {
+    this.isBypassed = false;
+  }
+
+  shouldSkipLayer(path: string): boolean {
+    return this.isBypassed || path.includes('node_modules');
+  }
+
+  resetCache(): void {
+    // do nothing yet
   }
 
   writeFile(path: string, content: string): void {
@@ -19,20 +33,18 @@ export class IFrameFSLayer extends FSLayer {
     try {
       return this.memoryFS.readFileSync(path);
     } catch (err) {
-      // Skip node_modules
-      if (!path.includes('node_modules')) {
-        try {
-          const response = await this.messageBus.protocolRequest('file-resolver', {
-            m: 'readFile',
-            path,
-          });
-          if (typeof response === 'string') {
-            return response;
-          }
-        } catch (err) {
-          // do nothing
+      try {
+        const response = await this.messageBus.protocolRequest('file-resolver', {
+          m: 'readFile',
+          path,
+        });
+        if (typeof response === 'string') {
+          return response;
         }
+      } catch (err) {
+        // do nothing
       }
+
       throw err;
     }
   }
@@ -44,17 +56,14 @@ export class IFrameFSLayer extends FSLayer {
   async isFileAsync(path: string): Promise<boolean> {
     let isFile = this.memoryFS.isFileSync(path);
     if (!isFile) {
-      // Skip node_modules
-      if (!path.includes('node_modules')) {
-        try {
-          const response = await this.messageBus.protocolRequest('file-resolver', {
-            m: 'isFile',
-            path,
-          });
-          return !!response;
-        } catch (err) {
-          console.error(err);
-        }
+      try {
+        const response = await this.messageBus.protocolRequest('file-resolver', {
+          m: 'isFile',
+          path,
+        });
+        return !!response;
+      } catch (err) {
+        console.error(err);
       }
     }
     return isFile;
