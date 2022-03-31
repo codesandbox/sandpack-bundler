@@ -11,7 +11,6 @@ import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
 import { ModuleRegistry } from './module-registry';
-import { ICDNModuleFile } from './module-registry/module-cdn';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
 import { getPreset } from './presets/registry';
@@ -53,7 +52,7 @@ export class Bundler {
 
   constructor(opts: IBundlerOpts) {
     this.transformationQueue = new NamedPromiseQueue(true, 50);
-    this.moduleRegistry = new ModuleRegistry();
+    this.moduleRegistry = new ModuleRegistry(this);
     const memoryFS = new MemoryFSLayer();
     this.iFrameFsLayer = new IFrameFSLayer(memoryFS, opts.messageBus);
     this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
@@ -156,18 +155,6 @@ export class Bundler {
     );
   }
 
-  addPrecompiledNodeModule(path: string, file: ICDNModuleFile): (() => Promise<void>)[] {
-    const module = new Module(path, file.c, true, this);
-    this.modules.set(path, module);
-    return file.d.map((dep) => async () => {
-      await module.addDependency(dep);
-
-      for (let dep of module.dependencies) {
-        this.transformModule(dep);
-      }
-    });
-  }
-
   async loadNodeModules() {
     if (!this.parsedPackageJSON) {
       throw new Error('No parsed pkg.json found!');
@@ -179,18 +166,10 @@ export class Bundler {
         dependencies['react-refresh'] = '^0.11.0';
       }
 
-      await this.moduleRegistry.fetchNodeModules(dependencies);
+      await this.moduleRegistry.fetchManifest(dependencies);
 
-      const depPromises = [];
-      for (let [moduleName, nodeModule] of this.moduleRegistry.modules) {
-        for (let [fileName, file] of Object.entries(nodeModule.files)) {
-          if (typeof file === 'object') {
-            const promises = this.addPrecompiledNodeModule(`/node_modules/${moduleName}/${fileName}`, file);
-            depPromises.push(...promises);
-          }
-        }
-      }
-      await Promise.all(depPromises.map((fn) => fn()));
+      // Preload all modules
+      this.moduleRegistry.preloadModules().catch((err) => logger.error(err));
     }
   }
 

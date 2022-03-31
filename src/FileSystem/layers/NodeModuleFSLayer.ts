@@ -83,6 +83,7 @@ export class NodeModuleFSLayer extends FSLayer {
 
   async readFileAsync(path: string): Promise<string> {
     const [moduleName, modulePath] = this.getModuleFromPath(path);
+    await this.registry.ensureModule(moduleName);
     const module = this.registry.modules.get(moduleName);
     if (module) {
       const foundFile = module.files[modulePath];
@@ -111,6 +112,7 @@ export class NodeModuleFSLayer extends FSLayer {
   }
 
   isFileAsync(path: string): Promise<boolean> {
-    return Promise.resolve(this.isFileSync(path));
+    const [moduleName] = this.getModuleFromPath(path);
+    return this.registry.ensureModule(moduleName).then(() => this.isFileSync(path));
   }
 }
