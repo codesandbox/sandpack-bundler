@@ -4,6 +4,7 @@ import { MemoryFSLayer } from './MemoryFSLayer';
 
 export class IFrameFSLayer extends FSLayer {
   private isBypassed = true;
+  private isFileCache: Map<string, boolean> = new Map();
 
   constructor(private memoryFS: MemoryFSLayer, private messageBus: IFrameParentMessageBus) {
     super('iframe-fs');
@@ -18,7 +19,11 @@ export class IFrameFSLayer extends FSLayer {
   }
 
   resetCache(): void {
-    // do nothing yet
+    this.isFileCache = new Map();
+  }
+
+  private getIsFileCache(path: string): boolean | undefined {
+    return this.isFileCache.get(path);
   }
 
   writeFile(path: string, content: string): void {
@@ -33,18 +38,21 @@ export class IFrameFSLayer extends FSLayer {
     try {
       return this.memoryFS.readFileSync(path);
     } catch (err) {
-      try {
-        const response = await this.messageBus.protocolRequest('file-resolver', {
-          m: 'readFile',
-          path,
-        });
-        if (typeof response === 'string') {
-          return response;
+      const isFile = this.getIsFileCache(path);
+      if (isFile !== false) {
+        try {
+          const response = await this.messageBus.protocolRequest('file-resolver', {
+            m: 'readFile',
+            path,
+          });
+          if (typeof response === 'string') {
+            return response;
+          }
+        } catch (err) {
+          // do nothing
         }
-      } catch (err) {
-        // do nothing
       }
-
+      this.isFileCache.set(path, false);
       throw err;
     }
   }
@@ -56,11 +64,18 @@ export class IFrameFSLayer extends FSLayer {
   async isFileAsync(path: string): Promise<boolean> {
     let isFile = this.memoryFS.isFileSync(path);
     if (!isFile) {
+      const cachedIsFile = this.getIsFileCache(path);
+      if (cachedIsFile !== undefined) {
+        return cachedIsFile;
+      }
+
       try {
         const response = await this.messageBus.protocolRequest('file-resolver', {
           m: 'isFile',
           path,
         });
+        isFile = !!response;
+        this.isFileCache.set(path, !!response);
         return !!response;
       } catch (err) {
         console.error(err);
