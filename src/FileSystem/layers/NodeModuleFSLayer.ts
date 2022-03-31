@@ -1,5 +1,5 @@
-import { retryFetch } from '../../../utils/fetch';
-import { ModuleRegistry } from '../../module-registry';
+import { retryFetch } from '../../utils/fetch';
+import { ModuleRegistry } from '../../bundler/module-registry';
 import { FSLayer } from '../FSLayer';
 
 const MODULE_PATH_RE = /^\/node_modules\/(@[^/]+\/[^/]+|[^@/]+)(.*)$/;

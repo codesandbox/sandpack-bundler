@@ -1,14 +1,16 @@
+import { FileSystem } from '../FileSystem';
+import { IFrameFSLayer } from '../FileSystem/layers/IFrameFSLayer';
+import { MemoryFSLayer } from '../FileSystem/layers/MemoryFSLayer';
+import { NodeModuleFSLayer } from '../FileSystem/layers/NodeModuleFSLayer';
+import { IFrameParentMessageBus } from '../protocol/iframe';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
-import { ISandboxFile } from '../types';
+import { IPackageJSON, ISandboxFile } from '../types';
 import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
-import { FileSystem } from './FileSystem';
-import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
-import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
-import { DepMap, ModuleRegistry } from './module-registry';
+import { ModuleRegistry } from './module-registry';
 import { ICDNModuleFile } from './module-registry/module-cdn';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
@@ -16,19 +18,21 @@ import { getPreset } from './presets/registry';
 
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
-interface IPackageJSON {
-  main?: string;
-  module?: string;
-  source?: string;
-  dependencies?: DepMap;
+interface IBundlerOpts {
+  messageBus: IFrameParentMessageBus;
+}
+
+interface IFSOptions {
+  hasAsyncFileResolver?: boolean;
 }
 
 export class Bundler {
   private lastHTML: string | null = null;
 
-  parsedPackageJSON: IPackageJSON | null = null;
-  moduleRegistry: ModuleRegistry;
   fs: FileSystem;
+  moduleRegistry: ModuleRegistry;
+
+  parsedPackageJSON: IPackageJSON | null = null;
   // Map filepath => Module
   modules: Map<string, Module> = new Map();
   transformationQueue: TransformationQueue;
@@ -45,11 +49,14 @@ export class Bundler {
   onStatusChange = this.onStatusChangeEmitter.event;
 
   private _previousDepString: string | null = null;
+  private iFrameFsLayer: IFrameFSLayer;
 
-  constructor() {
-    this.moduleRegistry = new ModuleRegistry(this);
-    this.fs = new FileSystem([new MemoryFSLayer(), new NodeModuleFSLayer(this.moduleRegistry)]);
+  constructor(opts: IBundlerOpts) {
     this.transformationQueue = new NamedPromiseQueue(true, 50);
+    this.moduleRegistry = new ModuleRegistry(this);
+    const memoryFS = new MemoryFSLayer();
+    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, opts.messageBus);
+    this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
   }
 
   /** Reset all compilation data */
@@ -57,6 +64,12 @@ export class Bundler {
     this.preset = undefined;
     this.modules = new Map();
     this.resolverCache = new Map();
+  }
+
+  configureFS(opts: IFSOptions): void {
+    if (opts.hasAsyncFileResolver) {
+      this.iFrameFsLayer.enableIFrameFS();
+    }
   }
 
   async initPreset(preset: string): Promise<void> {
@@ -270,6 +283,7 @@ export class Bundler {
     // TODO: Have more fine-grained cache invalidation for the resolver
     // Reset resolver cache
     this.resolverCache = new Map();
+    this.fs.resetCache();
 
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {

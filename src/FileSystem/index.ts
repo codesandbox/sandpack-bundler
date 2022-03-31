@@ -20,8 +20,16 @@ export class FileSystem {
     });
   }
 
+  resetCache(): void {
+    for (const layer of this.layers) {
+      layer.resetCache();
+    }
+  }
+
   writeFile(path: string, content: string): void {
     for (let layer of this.layers) {
+      if (layer.shouldSkipLayer(path)) continue;
+
       layer.writeFile(path, content);
     }
   }
@@ -29,6 +37,8 @@ export class FileSystem {
   readFileSync(path: string): string {
     let lastError = null;
     for (let layer of this.layers) {
+      if (layer.shouldSkipLayer(path)) continue;
+
       try {
         const result = layer.readFileSync(path);
         return result;
@@ -47,6 +57,8 @@ export class FileSystem {
   async readFileAsync(path: string): Promise<string> {
     let lastError = null;
     for (let layer of this.layers) {
+      if (layer.shouldSkipLayer(path)) continue;
+
       try {
         const result = await layer.readFileAsync(path);
         return result;
@@ -64,6 +76,8 @@ export class FileSystem {
 
   isFileSync(path: string): boolean {
     for (let layer of this.layers) {
+      if (layer.shouldSkipLayer(path)) continue;
+
       try {
         if (layer.isFileSync(path)) {
           return true;
@@ -77,6 +91,8 @@ export class FileSystem {
 
   async isFileAsync(path: string): Promise<boolean> {
     for (let layer of this.layers) {
+      if (layer.shouldSkipLayer(path)) continue;
+      
       try {
         const exists = await layer.isFileSync(path);
         if (exists) {

@@ -13,7 +13,7 @@ import * as logger from './utils/logger';
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
   private disposableStore = new DisposableStore();
-  private bundler = new Bundler();
+  private bundler;
   private compileDebouncer = new Debouncer(50);
   private lastHeight: number = 0;
   private resizePollingTimer: NodeJS.Timer | undefined;
@@ -22,6 +22,8 @@ class SandpackInstance {
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
     this.integrations = new Integrations(this.messageBus);
+
+    this.bundler = new Bundler({ messageBus: this.messageBus });
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -80,6 +82,11 @@ class SandpackInstance {
     if (compileRequest.logLevel != null) {
       logger.setLogLevel(compileRequest.logLevel);
     }
+
+    logger.debug('Configuring FileSystem...');
+    this.bundler.configureFS({
+      hasAsyncFileResolver: compileRequest.hasFileResolver,
+    });
 
     this.messageBus.sendMessage('start', {
       firstLoad: this.bundler.isFirstLoad,
