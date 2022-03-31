@@ -1,4 +1,8 @@
 import { FileSystem } from '../FileSystem';
+import { IFrameFSLayer } from '../FileSystem/layers/IFrameFSLayer';
+import { MemoryFSLayer } from '../FileSystem/layers/MemoryFSLayer';
+import { NodeModuleFSLayer } from '../FileSystem/layers/NodeModuleFSLayer';
+import { IFrameParentMessageBus } from '../protocol/iframe';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
 import { IPackageJSON, ISandboxFile } from '../types';
@@ -15,8 +19,11 @@ import { getPreset } from './presets/registry';
 export type TransformationQueue = NamedPromiseQueue<Module>;
 
 interface IBundlerOpts {
-  fs: FileSystem;
-  moduleRegistry: ModuleRegistry;
+  messageBus: IFrameParentMessageBus;
+}
+
+interface IFSOptions {
+  hasAsyncFileResolver?: boolean;
 }
 
 export class Bundler {
@@ -42,11 +49,14 @@ export class Bundler {
   onStatusChange = this.onStatusChangeEmitter.event;
 
   private _previousDepString: string | null = null;
+  private iFrameFsLayer: IFrameFSLayer;
 
   constructor(opts: IBundlerOpts) {
-    this.fs = opts.fs;
-    this.moduleRegistry = opts.moduleRegistry;
     this.transformationQueue = new NamedPromiseQueue(true, 50);
+    this.moduleRegistry = new ModuleRegistry();
+    const memoryFS = new MemoryFSLayer();
+    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, opts.messageBus);
+    this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
   }
 
   /** Reset all compilation data */
@@ -54,6 +64,12 @@ export class Bundler {
     this.preset = undefined;
     this.modules = new Map();
     this.resolverCache = new Map();
+  }
+
+  configureFS(opts: IFSOptions): void {
+    if (opts.hasAsyncFileResolver) {
+      this.iFrameFsLayer.enableIFrameFS();
+    }
   }
 
   async initPreset(preset: string): Promise<void> {

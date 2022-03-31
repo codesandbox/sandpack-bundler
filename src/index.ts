@@ -1,12 +1,7 @@
 import { Bundler } from './bundler/bundler';
-import { ModuleRegistry } from './bundler/module-registry';
 import { BundlerError } from './errors/BundlerError';
 import { CompilationError } from './errors/CompilationError';
 import { errorMessage } from './errors/util';
-import { FileSystem } from './FileSystem';
-import { IFrameFSLayer } from './FileSystem/layers/IFrameFSLayer';
-import { MemoryFSLayer } from './FileSystem/layers/MemoryFSLayer';
-import { NodeModuleFSLayer } from './FileSystem/layers/NodeModuleFSLayer';
 import { Integrations } from './integrations/integrations';
 import { IFrameParentMessageBus } from './protocol/iframe';
 import { ICompileRequest } from './protocol/message-types';
@@ -23,19 +18,12 @@ class SandpackInstance {
   private lastHeight: number = 0;
   private resizePollingTimer: NodeJS.Timer | undefined;
   private integrations: Integrations | undefined;
-  private moduleRegistry: ModuleRegistry;
-  private fs: FileSystem;
-  private iFrameFsLayer: IFrameFSLayer;
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
     this.integrations = new Integrations(this.messageBus);
 
-    this.moduleRegistry = new ModuleRegistry();
-    const memoryFS = new MemoryFSLayer();
-    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, this.messageBus);
-    this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
-    this.bundler = new Bundler({ fs: this.fs, moduleRegistry: this.moduleRegistry });
+    this.bundler = new Bundler({ messageBus: this.messageBus });
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -95,9 +83,10 @@ class SandpackInstance {
       logger.setLogLevel(compileRequest.logLevel);
     }
 
-    if (compileRequest.hasFileResolver) {
-      this.iFrameFsLayer.enableIFrameFS();
-    }
+    logger.debug('Configuring FileSystem...');
+    this.bundler.configureFS({
+      hasAsyncFileResolver: compileRequest.hasFileResolver,
+    });
 
     this.messageBus.sendMessage('start', {
       firstLoad: this.bundler.isFirstLoad,
