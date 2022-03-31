@@ -1,11 +1,11 @@
+import { FileSystem } from '../FileSystem';
 import { BundlerStatus } from '../protocol/message-types';
 import { ResolverCache, resolveAsync } from '../resolver/resolver';
-import { ISandboxFile, IPackageJSON } from '../types';
+import { IPackageJSON, ISandboxFile } from '../types';
 import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
-import { FileSystem } from '../FileSystem';
 import { ModuleRegistry } from './module-registry';
 import { ICDNModuleFile } from './module-registry/module-cdn';
 import { Module } from './module/Module';
@@ -290,6 +290,7 @@ export class Bundler {
     // TODO: Have more fine-grained cache invalidation for the resolver
     // Reset resolver cache
     this.resolverCache = new Map();
+    this.fs.resetCache();
 
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
