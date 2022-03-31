@@ -11,7 +11,6 @@ import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
 import { ModuleRegistry } from './module-registry';
-import { ICDNModuleFile } from './module-registry/module-cdn';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
 import { getPreset } from './presets/registry';
