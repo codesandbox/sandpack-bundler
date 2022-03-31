@@ -1,6 +1,14 @@
 export class FSLayer {
   constructor(readonly name: string) {}
 
+  shouldSkipLayer(path: string): boolean {
+    return false;
+  }
+
+  resetCache(): void {
+    return;
+  }
+
   writeFile(path: string, content: string): void {
     return;
   }
