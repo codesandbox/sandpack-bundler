@@ -1,5 +1,5 @@
-import { retryFetch } from '../../utils/fetch';
 import { ModuleRegistry } from '../../bundler/module-registry';
+import { retryFetch } from '../../utils/fetch';
 import { FSLayer } from '../FSLayer';
 
 const MODULE_PATH_RE = /^\/node_modules\/(@[^/]+\/[^/]+|[^@/]+)(.*)$/;
@@ -18,7 +18,7 @@ export class NodeModuleFSLayer extends FSLayer {
 
   async _fetchUnpkgFile(specifier: string): Promise<string> {
     try {
-      const response = await retryFetch(`https://unpkg.com/${specifier}`);
+      const response = await retryFetch(`https://unpkg.com/${specifier}`, { maxRetries: 5 });
       if (!response.ok) {
         throw new Error(`Could not fetch ${specifier} from unpkg`);
       }

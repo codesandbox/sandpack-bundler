@@ -22,7 +22,10 @@ function encodePayload(payload: string): string {
 
 export async function fetchManifest(deps: DepMap): Promise<IResolvedDependency[]> {
   const encoded_manifest = encodePayload(JSON.stringify(deps));
-  const result = await retryFetch(urlJoin(CDN_ROOT, `/dep_tree/${encoded_manifest}`));
+  const result = await retryFetch(urlJoin(CDN_ROOT, `/dep_tree/${encoded_manifest}`), {
+    maxRetries: 5,
+    retryDelay: 1000,
+  });
   return result.json();
 }
 
@@ -47,6 +50,6 @@ export interface ICDNModule {
 export async function fetchModule(name: string, version: string): Promise<ICDNModule> {
   const specifier = `${name}@${version}`;
   const encoded_specifier = encodePayload(specifier);
-  const result = await retryFetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`));
+  const result = await retryFetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`), { maxRetries: 5 });
   return result.json();
 }
