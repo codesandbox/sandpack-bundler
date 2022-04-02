@@ -1,4 +1,10 @@
-import pRetry, { AbortError, Options as RetryOptions } from 'p-retry';
+import { FetchError } from '../errors/FetchError';
+import { sleep } from './sleep';
+
+interface RetryOptions {
+  maxRetries?: number;
+  retryDelay?: number;
+}
 
 export type RequestInitWithRetry = RequestInit & RetryOptions;
 
@@ -12,8 +18,8 @@ export type RequestInitWithRetry = RequestInit & RetryOptions;
 // 504 is Gateway Timeout
 // 599 is Network Connect Timeout Error
 const ERROR_CODES_TO_RETRY = new Set([408, 429, 424, 499, 444, 502, 503, 504, 599]);
-function isRetryableStatus(errorcode: number): boolean {
-  return ERROR_CODES_TO_RETRY.has(errorcode);
+function isRetryableStatus(status: number): boolean {
+  return ERROR_CODES_TO_RETRY.has(status);
 }
 
 /**
@@ -24,25 +30,29 @@ function isRetryableStatus(errorcode: number): boolean {
  * @param {pRetry.PromiseRetryOptions} retryOptions: Retry configuration
  * @returns {Response}
  */
-// export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
-//   const tryFetch = async () => {
-//     const response = await window.fetch(input, init);
-//     if (!response.ok && isRetryableStatus(response.status)) {
-//       throw new AbortError(`[${response.status}]: ${response.statusText}`);
-//     }
-//     return response;
-//   };
-
-//   return pRetry<Response>(tryFetch, {
-//     minTimeout: 250,
-//     maxTimeout: 1500,
-//     retries: 5,
-//     ...init,
-//   });
-// }
-
-// Don't use p-retry it fails after prod build on parcel
-// See https://github.com/parcel-bundler/parcel/issues/7866
-export function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}): Promise<Response> {
-  return window.fetch(input, init);
+export async function retryFetch(input: RequestInfo, init: RequestInitWithRetry = {}, count = 0): Promise<Response> {
+  const { maxRetries = 0, retryDelay = 500 } = init;
+  if (count > maxRetries) {
+    throw new Error('Fetch failed, maximum retries exceeded');
+  }
+  const shouldRetry = count < maxRetries;
+  try {
+    const result = await window.fetch(input, init);
+    if (result.ok) {
+      return result;
+    }
+    // Don't use p-retry it cannot be scope hoisted properly
+    // See https://github.com/parcel-bundler/parcel/issues/7866
+    const isRetryable = isRetryableStatus(result.status);
+    if (!shouldRetry || !isRetryable) {
+      const text = await result.text().catch(() => '');
+      throw new FetchError(result, text);
+    }
+  } catch (err) {
+    if (!shouldRetry) {
+      throw err;
+    }
+  }
+  await sleep(retryDelay);
+  return retryFetch(input, init, count + 1);
 }
