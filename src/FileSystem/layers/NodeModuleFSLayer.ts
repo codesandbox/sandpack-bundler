@@ -19,9 +19,6 @@ export class NodeModuleFSLayer extends FSLayer {
   async _fetchUnpkgFile(specifier: string): Promise<string> {
     try {
       const response = await retryFetch(`https://unpkg.com/${specifier}`, { maxRetries: 5 });
-      if (!response.ok) {
-        throw new Error(`Could not fetch ${specifier} from unpkg`);
-      }
       const content = await response.text();
       this.unpkgCache.set(specifier, content);
       return content;
