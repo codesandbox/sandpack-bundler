@@ -94,7 +94,7 @@ export class FileSystem {
       if (layer.shouldSkipLayer(path)) continue;
       
       try {
-        const exists = await layer.isFileSync(path);
+        const exists = await layer.isFileAsync(path);
         if (exists) {
           return true;
         }
