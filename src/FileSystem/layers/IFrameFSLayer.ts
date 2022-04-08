@@ -43,7 +43,7 @@ export class IFrameFSLayer extends FSLayer {
         try {
           const response = await this.messageBus.protocolRequest('file-resolver', {
             m: 'readFile',
-            path,
+            p: path,
           });
           if (typeof response === 'string') {
             return response;
@@ -72,7 +72,7 @@ export class IFrameFSLayer extends FSLayer {
       try {
         const response = await this.messageBus.protocolRequest('file-resolver', {
           m: 'isFile',
-          path,
+          p: path,
         });
         isFile = !!response;
         this.isFileCache.set(path, !!response);
