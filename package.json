@@ -34,6 +34,7 @@
     "@babel/standalone": "7.17.5",
     "@swc/helpers": "^0.3.8",
     "@types/babel__standalone": "7.1.3",
+    "babel-preset-solid": "^1.3.13",
     "gensync": "^1.0.0-beta.2",
     "micromatch": "^4.0.4",
     "p-queue": "^6.6.2",
