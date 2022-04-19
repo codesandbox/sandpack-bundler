@@ -39,7 +39,7 @@ function getPresets(presets: any) {
     const presetName = getNameFromConfigEntry(preset);
     if (presetName !== null) {
       const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === presetName);
-      if (foundIndex) {
+      if (foundIndex > -1) {
         result[foundIndex] = preset;
         continue;
       }
@@ -59,7 +59,7 @@ function getPlugins(requires: Set<string>, plugins: any) {
     const pluginName = getNameFromConfigEntry(plugin);
     if (pluginName !== null) {
       const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === pluginName);
-      if (foundIndex) {
+      if (foundIndex > -1) {
         result[foundIndex] = plugin;
         continue;
       }

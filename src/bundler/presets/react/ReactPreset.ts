@@ -31,12 +31,14 @@ export class ReactPreset extends Preset {
           'babel-transformer',
           {
             presets: [
-              'react',
-              {
-                runtime: 'automatic',
-              },
+              [
+                'react',
+                {
+                  runtime: 'automatic',
+                },
+              ],
             ],
-            plugins: ['react-refresh/babel', { skipEnvCheck: true }],
+            plugins: [['react-refresh/babel', { skipEnvCheck: true }]],
           },
         ],
         ['react-refresh-transformer', {}],
@@ -49,10 +51,12 @@ export class ReactPreset extends Preset {
           'babel-transformer',
           {
             presets: [
-              'react',
-              {
-                runtime: 'automatic',
-              },
+              [
+                'react',
+                {
+                  runtime: 'automatic',
+                },
+              ],
             ],
           },
         ],
