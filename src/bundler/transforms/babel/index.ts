@@ -34,7 +34,7 @@ export class BabelTransformer extends Transformer {
       throw new Error('Babel worker has not been initialized');
     }
 
-    console.log(config);
+    console.log({ config });
 
     const data: ITransformData = {
       code: ctx.code,

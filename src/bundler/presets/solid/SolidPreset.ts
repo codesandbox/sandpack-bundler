@@ -24,9 +24,14 @@ export class SolidPreset extends Preset {
 
   mapTransformers(module: Module): Array<[string, any]> {
     if (/^(?!\/node_modules\/).*\.(((m|c)?jsx?)|tsx)$/.test(module.filepath)) {
-      return [['babel-transformer', {
-          
-      }]];
+      return [
+        [
+          'babel-transformer',
+          {
+            presets: ['solid'],
+          },
+        ],
+      ];
     }
 
     if (/\.(m|c)?(t|j)sx?$/.test(module.filepath) && !module.filepath.endsWith('.d.ts')) {

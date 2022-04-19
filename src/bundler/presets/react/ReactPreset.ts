@@ -27,13 +27,36 @@ export class ReactPreset extends Preset {
   mapTransformers(module: Module): Array<[string, any]> {
     if (/^(?!\/node_modules\/).*\.(((m|c)?jsx?)|tsx)$/.test(module.filepath)) {
       return [
-        ['babel-transformer', {}],
+        [
+          'babel-transformer',
+          {
+            presets: [
+              'react',
+              {
+                runtime: 'automatic',
+              },
+            ],
+            plugins: ['react-refresh/babel', { skipEnvCheck: true }],
+          },
+        ],
         ['react-refresh-transformer', {}],
       ];
     }
 
     if (/\.(m|c)?(t|j)sx?$/.test(module.filepath) && !module.filepath.endsWith('.d.ts')) {
-      return [['babel-transformer', {}]];
+      return [
+        [
+          'babel-transformer',
+          {
+            presets: [
+              'react',
+              {
+                runtime: 'automatic',
+              },
+            ],
+          },
+        ],
+      ];
     }
 
     if (/\.css$/.test(module.filepath)) {

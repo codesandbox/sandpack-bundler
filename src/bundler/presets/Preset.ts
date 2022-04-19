@@ -34,6 +34,7 @@ export class Preset {
 
   getTransformers(module: Module): Array<[Transformer, any]> {
     const transformersMap = this.mapTransformers(module);
+    console.log(transformersMap);
     return transformersMap.map((val) => {
       const transformer = this.getTransformer(val[0]);
       if (!transformer) {

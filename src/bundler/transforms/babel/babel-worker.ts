@@ -73,8 +73,8 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
   const requires: Set<string> = new Set();
   const transformed = babel.transform(code, {
     filename: filepath,
-    presets: getPresets(config.presets),
-    plugins: getPlugins(requires, config.plugins),
+    presets: getPresets(config?.presets ?? []),
+    plugins: getPlugins(requires, config?.plugins ?? []),
     // no ast needed for now
     ast: false,
     sourceMaps: false,

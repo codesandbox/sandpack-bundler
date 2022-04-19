@@ -83,7 +83,7 @@ export class FileSystem {
           return true;
         }
       } catch (err) {
-        console.error(err);
+        // console.error(err);
       }
     }
     return false;
@@ -92,7 +92,7 @@ export class FileSystem {
   async isFileAsync(path: string): Promise<boolean> {
     for (let layer of this.layers) {
       if (layer.shouldSkipLayer(path)) continue;
-      
+
       try {
         const exists = await layer.isFileAsync(path);
         if (exists) {
