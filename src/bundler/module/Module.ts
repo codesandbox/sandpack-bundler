@@ -65,8 +65,6 @@ export class Module {
         throw new Error(`No transformers found for ${this.filepath}`);
       }
 
-      console.log(transformers);
-
       let code = this.source;
       for (const [transformer, config] of transformers) {
         const transformationResult = await transformer.transform(
