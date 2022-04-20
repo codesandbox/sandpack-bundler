@@ -13,7 +13,7 @@
     "prepare": "husky install",
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
-    "build": "parcel build ./src/index.html",
+    "build": "parcel build ./src/index.html --no-scope-hoist",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"./src/**/*.{ts,tsx,js,jsx,json}\""
