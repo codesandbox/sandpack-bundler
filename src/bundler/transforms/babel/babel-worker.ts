@@ -1,17 +1,10 @@
+import type { PluginItem } from '@babel/core';
 import * as babel from '@babel/standalone';
-// @ts-ignore
-import * as solidBabelPreset from 'babel-preset-solid';
-// @ts-ignore
-import * as reactRefreshBabel from 'react-refresh/babel';
 
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
 import { ITranspilationResult } from '../Transformer';
+import { loadPlugin, loadPreset } from './babel-plugin-registry';
 import { collectDependencies } from './dep-collector';
-
-const reactRefresh = reactRefreshBabel.default ?? reactRefreshBabel;
-
-babel.availablePlugins['react-refresh/babel'] = reactRefresh;
-babel.availablePresets['solid'] = solidBabelPreset;
 
 export interface ITransformData {
   code: string;
@@ -30,14 +23,18 @@ function getNameFromConfigEntry(entry: any): string | null {
 }
 
 // TODO: Normalize preset names
-function getPresets(presets: any) {
-  const result = ['env', 'typescript'];
+async function getPresets(presets: any): Promise<PluginItem[]> {
+  const result: PluginItem[] = ['env', 'typescript'];
   if (!Array.isArray(presets)) {
     return result;
   }
   for (const preset of presets) {
     const presetName = getNameFromConfigEntry(preset);
     if (presetName !== null) {
+      if (!babel.availablePresets[presetName]) {
+        babel.availablePresets[presetName] = await loadPreset(presetName);
+      }
+
       const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === presetName);
       if (foundIndex > -1) {
         result[foundIndex] = preset;
@@ -50,14 +47,18 @@ function getPresets(presets: any) {
 }
 
 // TODO: Normalize plugin names
-function getPlugins(requires: Set<string>, plugins: any) {
-  const result = [collectDependencies(requires)];
+async function getPlugins(requires: Set<string>, plugins: any): Promise<PluginItem[]> {
+  const result: PluginItem[] = [collectDependencies(requires)];
   if (!Array.isArray(plugins)) {
     return result;
   }
   for (const plugin of plugins) {
     const pluginName = getNameFromConfigEntry(plugin);
     if (pluginName !== null) {
+      if (!babel.availablePlugins[pluginName]) {
+        babel.availablePlugins[pluginName] = await loadPlugin(pluginName);
+      }
+
       const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === pluginName);
       if (foundIndex > -1) {
         result[foundIndex] = plugin;
@@ -73,8 +74,8 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
   const requires: Set<string> = new Set();
   const transformed = babel.transform(code, {
     filename: filepath,
-    presets: getPresets(config?.presets ?? []),
-    plugins: getPlugins(requires, config?.plugins ?? []),
+    presets: await getPresets(config?.presets ?? []),
+    plugins: await getPlugins(requires, config?.plugins ?? []),
     // no ast needed for now
     ast: false,
     sourceMaps: false,
