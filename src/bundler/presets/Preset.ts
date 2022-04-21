@@ -1,4 +1,5 @@
 import { Bundler } from '../bundler';
+import { DepMap } from '../module-registry';
 import { Module } from '../module/Module';
 import { Transformer } from '../transforms/Transformer';
 
@@ -41,5 +42,9 @@ export class Preset {
       }
       return [transformer, val[1]];
     });
+  }
+
+  augmentDependencies(dependencies: DepMap): DepMap {
+    return dependencies;
   }
 }

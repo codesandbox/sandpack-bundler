@@ -8,5 +8,10 @@ const PRESET_MAP: Map<string, Preset> = new Map([
 ]);
 
 export function getPreset(presetName: string): Preset {
-  return PRESET_MAP.get(presetName) ?? new ReactPreset();
+  const foundPreset = PRESET_MAP.get(presetName);
+  if (!foundPreset) {
+    console.warn(`Unknown preset ${presetName}, falling back to React`);
+    return new ReactPreset();
+  }
+  return foundPreset;
 }

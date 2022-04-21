@@ -1,4 +1,5 @@
 import { Bundler } from '../../bundler';
+import { DepMap } from '../../module-registry';
 import { Module } from '../../module/Module';
 import { BabelTransformer } from '../../transforms/babel';
 import { CSSTransformer } from '../../transforms/css';
@@ -71,5 +72,12 @@ export class ReactPreset extends Preset {
     }
 
     throw new Error(`No transformer for ${module.filepath}`);
+  }
+
+  augmentDependencies(dependencies: DepMap): DepMap {
+    if (dependencies['react'] && !dependencies['react-refresh']) {
+      dependencies['react-refresh'] = '^0.11.0';
+    }
+    return dependencies;
   }
 }

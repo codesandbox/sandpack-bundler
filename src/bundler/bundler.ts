@@ -162,10 +162,6 @@ export class Bundler {
 
     const dependencies = this.parsedPackageJSON.dependencies;
     if (dependencies) {
-      if (dependencies['react'] && !dependencies['react-refresh']) {
-        dependencies['react-refresh'] = '^0.11.0';
-      }
-
       await this.moduleRegistry.fetchManifest(dependencies);
 
       // Preload all modules
@@ -280,6 +276,10 @@ export class Bundler {
   }
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
+    if (!this.preset) {
+      throw new Error('Cannot compile before preset has been initialized');
+    }
+
     this.onStatusChangeEmitter.fire('installing-dependencies');
 
     // TODO: Have more fine-grained cache invalidation for the resolver
