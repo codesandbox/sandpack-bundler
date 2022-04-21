@@ -10,6 +10,7 @@ import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
+import { nullthrows } from '../utils/nullthrows';
 import { ModuleRegistry } from './module-registry';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
@@ -160,11 +161,12 @@ export class Bundler {
       throw new Error('No parsed pkg.json found!');
     }
 
-    const dependencies = this.parsedPackageJSON.dependencies;
+    let dependencies = this.parsedPackageJSON.dependencies;
     if (dependencies) {
-      if (dependencies['react'] && !dependencies['react-refresh']) {
-        dependencies['react-refresh'] = '^0.11.0';
-      }
+      dependencies = nullthrows(
+        this.preset,
+        'Preset needs to be defined when loading node modules'
+      ).augmentDependencies(dependencies);
 
       await this.moduleRegistry.fetchManifest(dependencies);
 
@@ -280,6 +282,10 @@ export class Bundler {
   }
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
+    if (!this.preset) {
+      throw new Error('Cannot compile before preset has been initialized');
+    }
+
     this.onStatusChangeEmitter.fire('installing-dependencies');
 
     // TODO: Have more fine-grained cache invalidation for the resolver
@@ -381,6 +387,7 @@ export class Bundler {
         }
 
         entryModule.evaluate();
+        this.isFirstLoad = false;
       } else {
         this.modules.forEach((module) => {
           if (module.hot.hmrConfig?.isDirty()) {
@@ -405,8 +412,6 @@ export class Bundler {
           return this.compile(files);
         }
       }
-
-      this.isFirstLoad = false;
     };
   }
 

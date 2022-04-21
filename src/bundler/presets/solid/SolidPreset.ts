@@ -3,15 +3,14 @@ import { DepMap } from '../../module-registry';
 import { Module } from '../../module/Module';
 import { BabelTransformer } from '../../transforms/babel';
 import { CSSTransformer } from '../../transforms/css';
-import { ReactRefreshTransformer } from '../../transforms/react-refresh';
 import { StyleTransformer } from '../../transforms/style';
 import { Preset } from '../Preset';
 
-export class ReactPreset extends Preset {
-  defaultHtmlBody = '<div id="root"></div>';
+export class SolidPreset extends Preset {
+  defaultHtmlBody = '<div id="app"></div>';
 
   constructor() {
-    super('react');
+    super('solid');
   }
 
   async init(bundler: Bundler): Promise<void> {
@@ -19,7 +18,6 @@ export class ReactPreset extends Preset {
 
     await Promise.all([
       this.registerTransformer(new BabelTransformer()),
-      this.registerTransformer(new ReactRefreshTransformer()),
       this.registerTransformer(new CSSTransformer()),
       this.registerTransformer(new StyleTransformer()),
     ]);
@@ -31,37 +29,15 @@ export class ReactPreset extends Preset {
         [
           'babel-transformer',
           {
-            presets: [
-              [
-                'react',
-                {
-                  runtime: 'automatic',
-                },
-              ],
-            ],
-            plugins: [['react-refresh/babel', { skipEnvCheck: true }]],
+            presets: ['solid'],
+            plugins: ['solid-refresh/babel'],
           },
         ],
-        ['react-refresh-transformer', {}],
       ];
     }
 
     if (/\.(m|c)?(t|j)sx?$/.test(module.filepath) && !module.filepath.endsWith('.d.ts')) {
-      return [
-        [
-          'babel-transformer',
-          {
-            presets: [
-              [
-                'react',
-                {
-                  runtime: 'automatic',
-                },
-              ],
-            ],
-          },
-        ],
-      ];
+      return [['babel-transformer', {}]];
     }
 
     if (/\.css$/.test(module.filepath)) {
@@ -75,8 +51,8 @@ export class ReactPreset extends Preset {
   }
 
   augmentDependencies(dependencies: DepMap): DepMap {
-    if (!dependencies['react-refresh']) {
-      dependencies['react-refresh'] = '^0.11.0';
+    if (!dependencies['solid-refresh']) {
+      dependencies['solid-refresh'] = '^0.4.0';
     }
     return dependencies;
   }

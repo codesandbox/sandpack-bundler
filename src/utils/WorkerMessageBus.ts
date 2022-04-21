@@ -85,6 +85,8 @@ export class WorkerMessageBus {
               result,
             });
           } catch (err) {
+            console.error(err);
+
             this.endpoint.postMessage({
               id: messageId,
               channel: this.channel,
