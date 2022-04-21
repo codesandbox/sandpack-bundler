@@ -381,6 +381,7 @@ export class Bundler {
         }
 
         entryModule.evaluate();
+        this.isFirstLoad = false;
       } else {
         this.modules.forEach((module) => {
           if (module.hot.hmrConfig?.isDirty()) {
@@ -405,8 +406,6 @@ export class Bundler {
           return this.compile(files);
         }
       }
-
-      this.isFirstLoad = false;
     };
   }
 
