@@ -75,7 +75,7 @@ export class ReactPreset extends Preset {
   }
 
   augmentDependencies(dependencies: DepMap): DepMap {
-    if (dependencies['react'] && !dependencies['react-refresh']) {
+    if (!dependencies['react-refresh']) {
       dependencies['react-refresh'] = '^0.11.0';
     }
     return dependencies;

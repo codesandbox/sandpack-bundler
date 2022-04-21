@@ -75,6 +75,15 @@
     json5 "^2.1.2"
     semver "^6.3.0"
 
+"@babel/generator@^7.16.0":
+  version "7.17.9"
+  resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.17.9.tgz#f4af9fd38fa8de143c29fce3f71852406fc1e2fc"
+  integrity sha512-rAdDousTwxbIxbz5I7GEQ3lUip+xVCXooZNbsydCWs3xA7ZsYOv+CFRdzGxRX78BmQHu9B1Eso59AOZQOJDEdQ==
+  dependencies:
+    "@babel/types" "^7.17.0"
+    jsesc "^2.5.1"
+    source-map "^0.5.0"
+
 "@babel/generator@^7.16.5":
   version "7.16.5"
   resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.16.5.tgz#26e1192eb8f78e0a3acaf3eede3c6fc96d22bedf"
@@ -5846,6 +5855,15 @@ slash@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
+
+solid-refresh@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/solid-refresh/-/solid-refresh-0.4.0.tgz#3db7ae479bd502ce26065aa8cf1b2489e39b2acc"
+  integrity sha512-5XCUz845n/sHPzKK2i2G2EeV61tAmzv6SqzqhXcPaYhrgzVy7nKTQaBpKK8InKrriq9Z2JFF/mguIU00t/73xw==
+  dependencies:
+    "@babel/generator" "^7.16.0"
+    "@babel/helper-module-imports" "^7.16.0"
+    "@babel/types" "^7.16.0"
 
 sonic-boom@^1.0.2:
   version "1.4.1"

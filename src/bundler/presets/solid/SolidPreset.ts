@@ -1,4 +1,5 @@
 import { Bundler } from '../../bundler';
+import { DepMap } from '../../module-registry';
 import { Module } from '../../module/Module';
 import { BabelTransformer } from '../../transforms/babel';
 import { CSSTransformer } from '../../transforms/css';
@@ -29,6 +30,7 @@ export class SolidPreset extends Preset {
           'babel-transformer',
           {
             presets: ['solid'],
+            plugins: ['solid-refresh/babel'],
           },
         ],
       ];
@@ -46,5 +48,12 @@ export class SolidPreset extends Preset {
     }
 
     throw new Error(`No transformer for ${module.filepath}`);
+  }
+
+  augmentDependencies(dependencies: DepMap): DepMap {
+    if (!dependencies['solid-refresh']) {
+      dependencies['solid-refresh'] = '^0.4.0';
+    }
+    return dependencies;
   }
 }

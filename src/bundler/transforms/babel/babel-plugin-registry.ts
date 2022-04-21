@@ -17,7 +17,14 @@ const BABEL_PLUGIN_LOADERS: Map<string, LoaderFn> = new Map([
     'react-refresh/babel',
     () => {
       // @ts-ignore
-      return import('react-refresh/babel').then((val) => val.default ?? val);
+      return import('react-refresh/babel');
+    },
+  ],
+  [
+    'solid-refresh/babel',
+    () => {
+      // @ts-ignore
+      return import('solid-refresh/babel');
     },
   ],
 ]);
@@ -25,7 +32,7 @@ const BABEL_PLUGIN_LOADERS: Map<string, LoaderFn> = new Map([
 function load(key: string, loader: LoaderFn): Promise<any> {
   let cached = loaderCache.get(key);
   if (!cached) {
-    cached = loader();
+    cached = loader().then((val) => val.default ?? val);
     loaderCache.set(key, cached);
   }
   return cached;

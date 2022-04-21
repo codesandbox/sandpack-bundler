@@ -47,8 +47,8 @@ async function getPresets(presets: any): Promise<PluginItem[]> {
 }
 
 // TODO: Normalize plugin names
-async function getPlugins(requires: Set<string>, plugins: any): Promise<PluginItem[]> {
-  const result: PluginItem[] = [collectDependencies(requires)];
+async function getPlugins(plugins: any): Promise<PluginItem[]> {
+  const result: PluginItem[] = [];
   if (!Array.isArray(plugins)) {
     return result;
   }
@@ -72,10 +72,13 @@ async function getPlugins(requires: Set<string>, plugins: any): Promise<PluginIt
 
 async function transform({ code, filepath, config }: ITransformData): Promise<ITranspilationResult> {
   const requires: Set<string> = new Set();
+  const presets = await getPresets(config?.presets ?? []);
+  const plugins = await getPlugins(config?.plugins ?? []);
+  plugins.push(collectDependencies(requires));
   const transformed = babel.transform(code, {
     filename: filepath,
-    presets: await getPresets(config?.presets ?? []),
-    plugins: await getPlugins(requires, config?.plugins ?? []),
+    presets,
+    plugins,
     // no ast needed for now
     ast: false,
     sourceMaps: false,

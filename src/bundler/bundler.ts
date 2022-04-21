@@ -10,6 +10,7 @@ import { Emitter } from '../utils/emitter';
 import { replaceHTML } from '../utils/html';
 import * as logger from '../utils/logger';
 import { NamedPromiseQueue } from '../utils/NamedPromiseQueue';
+import { nullthrows } from '../utils/nullthrows';
 import { ModuleRegistry } from './module-registry';
 import { Module } from './module/Module';
 import { Preset } from './presets/Preset';
@@ -160,8 +161,13 @@ export class Bundler {
       throw new Error('No parsed pkg.json found!');
     }
 
-    const dependencies = this.parsedPackageJSON.dependencies;
+    let dependencies = this.parsedPackageJSON.dependencies;
     if (dependencies) {
+      dependencies = nullthrows(
+        this.preset,
+        'Preset needs to be defined when loading node modules'
+      ).augmentDependencies(dependencies);
+
       await this.moduleRegistry.fetchManifest(dependencies);
 
       // Preload all modules
