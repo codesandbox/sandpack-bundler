@@ -37,11 +37,11 @@ export class Evaluation {
         specifier,
       });
 
-      throw new Error('Module not found');
+      throw new Error(`Dependency "${specifier}" not collected from "${this.module.filepath}"`);
     }
     const module = this.module.bundler.getModule(moduleFilePath);
     if (!module) {
-      throw new Error('Module not found');
+      throw new Error(`Module "${moduleFilePath}" has not been transpiled`);
     }
     return module.evaluate().context.exports ?? {};
   }
