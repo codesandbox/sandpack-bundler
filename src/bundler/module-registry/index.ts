@@ -44,13 +44,6 @@ export class ModuleRegistry {
     const module = await fetchModule(name, version);
     const processedNodeModule = new NodeModule(name, version, module.f, module.m);
     this.modules.set(name, processedNodeModule);
-    const promises = [];
-    for (const [fileName, value] of Object.entries(module.f)) {
-      if (typeof value === 'object') {
-        promises.push(this._writePrecompiledModule(`/node_modules/${name}/${fileName}`, value));
-      }
-    }
-    await Promise.all(promises);
     logger.debug('fetched module', name, version, module);
     return processedNodeModule;
   }
@@ -73,33 +66,34 @@ export class ModuleRegistry {
     return promise;
   }
 
-  private async _writePrecompiledModule(path: string, file: ICDNModuleFile): Promise<void> {
+  private _writePrecompiledModule(path: string, file: ICDNModuleFile): Array<() => Promise<void>> {
     if (this.bundler.modules.has(path)) {
-      return;
+      return [];
     }
 
     const module = new Module(path, file.c, true, this.bundler);
     this.bundler.modules.set(path, module);
-    await Promise.all(
-      file.d.map(async (dep) => {
+    return file.d.map((dep) => {
+      return async () => {
         await module.addDependency(dep);
 
         for (let dep of module.dependencies) {
           this.bundler.transformModule(dep);
         }
-      })
-    );
+      };
+    });
   }
 
-  async ensureModule(packageName: string): Promise<void> {
-    let foundModule = this.modules.get(packageName);
-    if (!foundModule) {
-      const resolvedModule = this.manifest.find((v) => v.n === packageName);
-      if (!resolvedModule) {
-        throw new Error(`Module not in package.json ${name}`);
+  async loadModuleDependencies() {
+    const depPromises = [];
+    for (let [moduleName, nodeModule] of this.modules) {
+      for (let [fileName, file] of Object.entries(nodeModule.files)) {
+        if (typeof file === 'object') {
+          const promises = this._writePrecompiledModule(`/node_modules/${moduleName}/${fileName}`, file);
+          depPromises.push(...promises);
+        }
       }
-
-      foundModule = await this.fetchNodeModule(resolvedModule.n, resolvedModule.v);
     }
+    await Promise.all(depPromises.map((fn) => fn()));
   }
 }
