@@ -61,7 +61,7 @@ export class ModuleRegistry {
     // as we don't allow multiple versions of the same module right now
     const foundModule = this.modules.get(name);
     if (foundModule) {
-      return Promise.resolve(foundModule);
+      return foundModule;
     }
 
     const cacheKey = `${name}::${version}`;
@@ -73,14 +73,14 @@ export class ModuleRegistry {
     return promise;
   }
 
-  private _writePrecompiledModule(path: string, file: ICDNModuleFile): Promise<void[] | void> {
+  private async _writePrecompiledModule(path: string, file: ICDNModuleFile): Promise<void> {
     if (this.bundler.modules.has(path)) {
-      return Promise.resolve();
+      return;
     }
 
     const module = new Module(path, file.c, true, this.bundler);
     this.bundler.modules.set(path, module);
-    return Promise.all(
+    await Promise.all(
       file.d.map(async (dep) => {
         await module.addDependency(dep);
 
