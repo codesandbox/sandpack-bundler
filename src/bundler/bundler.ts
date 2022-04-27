@@ -1,3 +1,4 @@
+import { BundlerError } from '../errors/BundlerError';
 import { FileSystem } from '../FileSystem';
 import { IFrameFSLayer } from '../FileSystem/layers/IFrameFSLayer';
 import { MemoryFSLayer } from '../FileSystem/layers/MemoryFSLayer';
@@ -28,6 +29,7 @@ interface IFSOptions {
 
 export class Bundler {
   private lastHTML: string | null = null;
+  private messageBus: IFrameParentMessageBus;
 
   fs: FileSystem;
   moduleRegistry: ModuleRegistry;
@@ -51,12 +53,13 @@ export class Bundler {
   private _previousDepString: string | null = null;
   private iFrameFsLayer: IFrameFSLayer;
 
-  constructor(opts: IBundlerOpts) {
+  constructor(options: IBundlerOpts) {
     this.transformationQueue = new NamedPromiseQueue(true, 50);
     this.moduleRegistry = new ModuleRegistry(this);
     const memoryFS = new MemoryFSLayer();
-    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, opts.messageBus);
+    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, options.messageBus);
     this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
+    this.messageBus = options.messageBus;
   }
 
   /** Reset all compilation data */
@@ -119,11 +122,11 @@ export class Bundler {
 
   async resolveEntryPoint(): Promise<string> {
     if (!this.parsedPackageJSON) {
-      throw new Error('No parsed pkg.json found!');
+      throw new BundlerError('No parsed package.json found!');
     }
 
     if (!this.preset) {
-      throw new Error('Preset has not been loaded yet');
+      throw new BundlerError('Preset has not been loaded yet');
     }
 
     const potentialEntries = new Set(
@@ -149,7 +152,7 @@ export class Bundler {
         }
       }
     }
-    throw new Error(
+    throw new BundlerError(
       `Could not resolve entry point, potential entrypoints: ${Array.from(potentialEntries).join(
         ', '
       )}. You can define one by changing the "main" field in package.json.`
@@ -158,7 +161,7 @@ export class Bundler {
 
   async loadNodeModules() {
     if (!this.parsedPackageJSON) {
-      throw new Error('No parsed pkg.json found!');
+      throw new BundlerError('No parsed pkg.json found!');
     }
 
     let dependencies = this.parsedPackageJSON.dependencies;
@@ -238,12 +241,12 @@ export class Bundler {
 
     const asset = this.modules.get(id);
     if (!asset) {
-      throw new Error(`Asset not in the compilation tree ${id}`);
+      throw new BundlerError(`Asset not in the compilation tree ${id}`);
     } else {
       if (asset.compilationError != null) {
         throw asset.compilationError;
       } else if (asset.compiled == null) {
-        throw new Error(`Asset ${id} has not been compiled`);
+        throw new BundlerError(`Asset ${id} has not been compiled`);
       }
     }
 
@@ -284,7 +287,7 @@ export class Bundler {
 
   async compile(files: ISandboxFile[]): Promise<() => any> {
     if (!this.preset) {
-      throw new Error('Cannot compile before preset has been initialized');
+      throw new BundlerError('Cannot compile before preset has been initialized');
     }
 
     this.onStatusChangeEmitter.fire('installing-dependencies');
@@ -372,6 +375,25 @@ export class Bundler {
 
     entryModule.isEntry = true;
 
+    const transpiledModules = Array.from(this.modules, ([name, value]) => {
+      return {
+        /**
+         * TODO: adds trailing for backwards compatibility
+         */
+        [name + ':']: {
+          source: {
+            isEntry: entryModule.filepath === value.filepath,
+            fileName: value.filepath,
+            compiledCode: value.compiled,
+          },
+        },
+      };
+    }).reduce((prev, curr) => {
+      return { ...prev, ...curr };
+    }, {});
+
+    this.messageBus.sendMessage('state', { state: { transpiledModules } });
+
     return () => {
       // Evaluate
       logger.info('Evaluating...');
@@ -380,7 +402,7 @@ export class Bundler {
         for (const runtime of this.runtimes) {
           const module = this.modules.get(runtime);
           if (!module) {
-            throw new Error(`Runtime ${runtime} is not defined`);
+            throw new BundlerError(`Runtime ${runtime} is not defined`);
           } else {
             logger.debug(`Loading runtime ${runtime}...`);
             module.evaluate();
@@ -424,7 +446,7 @@ export class Bundler {
       return this.fs.readFileSync(foundHTMLFilepath);
     } else {
       if (!this.preset) {
-        throw new Error('Bundler has not been initialized with a preset');
+        throw new BundlerError('Bundler has not been initialized with a preset');
       }
       return this.preset.defaultHtmlBody;
     }

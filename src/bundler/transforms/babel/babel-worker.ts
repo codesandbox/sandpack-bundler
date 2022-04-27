@@ -82,7 +82,7 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
     // no ast needed for now
     ast: false,
     sourceMaps: false,
-    compact: true,
+    compact: /node_modules/.test(filepath),
   });
 
   // no-op module
