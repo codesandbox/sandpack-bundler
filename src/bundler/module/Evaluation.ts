@@ -1,3 +1,4 @@
+import { nullthrows } from '../../utils/nullthrows';
 import evaluate from './eval';
 import { HotContext } from './hot';
 import { Module } from './Module';
@@ -26,7 +27,14 @@ export class Evaluation {
     const code = module.compiled + `\n//# sourceURL=${location.origin}${this.module.filepath}`;
 
     this.context = new EvaluationContext(this);
-    this.context.exports = evaluate(code, this.require.bind(this), this.context, {}, {});
+    this.context.exports = evaluate(
+      nullthrows(this.module.bundler.iframe.contentWindow),
+      code,
+      this.require.bind(this),
+      this.context,
+      {},
+      {}
+    );
   }
 
   require(specifier: string): any {

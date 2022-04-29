@@ -42,6 +42,7 @@ export class Bundler {
   hasHMR = false;
   isFirstLoad = true;
   preset: Preset | undefined;
+  iframe: HTMLIFrameElement;
 
   // Map from module id => parent module ids
   initiators = new Map<string, Set<string>>();
@@ -60,6 +61,8 @@ export class Bundler {
     this.iFrameFsLayer = new IFrameFSLayer(memoryFS, options.messageBus);
     this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
     this.messageBus = options.messageBus;
+    this.iframe = document.createElement('iframe');
+    document.body.appendChild(this.iframe);
   }
 
   /** Reset all compilation data */
@@ -170,6 +173,10 @@ export class Bundler {
         this.preset,
         'Preset needs to be defined when loading node modules'
       ).augmentDependencies(dependencies);
+
+      if (!dependencies['@swc/helpers']) {
+        dependencies['@swc/helpers'] = '^0.3.8';
+      }
 
       await this.moduleRegistry.fetchManifest(dependencies);
 
@@ -453,15 +460,19 @@ export class Bundler {
   }
 
   replaceHTML() {
+    const win = this.iframe.contentWindow;
     const html = this.getHTMLEntry() ?? '<div id="root"></div>';
-    if (this.lastHTML) {
+    if (!win || this.lastHTML) {
       if (this.lastHTML !== html) {
         window.location.reload();
       }
       return;
     } else {
       this.lastHTML = html;
-      replaceHTML(html);
+
+      win.document.open();
+      win.document.write(html);
+      win.document.close();
     }
   }
 }

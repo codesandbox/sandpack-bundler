@@ -1,29 +1,25 @@
 /* eslint-disable no-eval */
 // import buildProcess from "./utils/process";
 
-// @ts-ignore
-import * as swcHelpers from '@swc/helpers';
-
-const g = typeof window === 'undefined' ? self : window;
-
 const hasGlobalDeclaration = /^const global/m;
 
 /* eslint-disable no-unused-vars */
 export default function (
+  iframeWindow: Window,
   code: string,
   require: Function,
   context: { id: string; exports: any; hot?: any },
   env: Object = {},
   globals: Object = {}
 ) {
-  const global = g;
+  const global = iframeWindow;
   const process = {
     env: {
       NODE_ENV: 'development',
     },
   }; // buildProcess(env);
   // @ts-ignore
-  g.global = global;
+  global.global = global;
 
   const allGlobals: { [key: string]: any } = {
     require,
@@ -31,7 +27,6 @@ export default function (
     exports: context.exports,
     process,
     global,
-    swcHelpers,
     ...globals,
   };
 
@@ -43,9 +38,12 @@ export default function (
   const globalsCode = allGlobalKeys.length ? allGlobalKeys.join(', ') : '';
   const globalsValues = allGlobalKeys.map((k) => allGlobals[k]);
   try {
-    const newCode = `(function $csb$eval(` + globalsCode + `) {` + code + `\n})`;
+    const newCode =
+      `(function $csb$eval(` + globalsCode + `) {` + code + `\n})`;
     // @ts-ignore
-    (0, eval)(newCode).apply(allGlobals.global, globalsValues);
+    const wEval = iframeWindow.eval;
+
+    wEval.call(iframeWindow, newCode)(...globalsValues);
 
     return context.exports;
   } catch (err) {
