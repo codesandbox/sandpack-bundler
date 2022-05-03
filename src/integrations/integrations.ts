@@ -28,19 +28,15 @@ export class Integrations {
         const winEval = win.eval;
         const loader = this.registry.get(key);
 
-        window.addEventListener('message', (message) => {
-          console.log(message.data);
-          //   if (message.origin == win) {
-          //     window.parent.postMessage(message.data);
-          //   } else {
-          //     win.postMessage(message.data);
-          //   }
+        window.addEventListener('message', (evt) => {
+          if (evt.source === win) {
+            console.log('Forward to parent', evt.data);
+            window.parent.postMessage(evt.data);
+          } else if (evt.source === window.parent) {
+            console.log('Forward to iframe', evt.data);
+            win.postMessage(evt.data);
+          }
         });
-
-        // win.addEventListener('message', (message) => {
-        //   console.log('iframe:', message.data);
-        //   window.postMessage(message.data);
-        // });
 
         winEval.call(
           win,
