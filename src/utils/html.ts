@@ -18,36 +18,3 @@ export interface IHtmlHydrationState {
   head: string;
   body: string;
 }
-
-/**
- * TODO: Use a new iframe that contains the actual html and injects sandpack as a little script that runs in the correct order
- *
- * Example:
- * <html>
- *   <head>
- *     <script src="google.com/maps.js"></script>
- *   </head>
- *
- *   <body>
- *     <div id="root" />
- *
- *     <script>
- *       // Injected by sandpack - this ensures
- *       window.sandpack.evaluate();
- *     </script>
- *
- *     <script src="unpkg.com/jquery.min.js"></script>
- *   </body>
- * </html>
- */
-export async function replaceHTML(html: string): Promise<IHtmlHydrationState> {
-  const { head, body } = getHTMLParts(html);
-
-  // We only replace the body for now
-  document.body.innerHTML = body;
-
-  return {
-    head,
-    body,
-  };
-}

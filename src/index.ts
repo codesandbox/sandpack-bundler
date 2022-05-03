@@ -21,9 +21,8 @@ class SandpackInstance {
 
   constructor() {
     this.messageBus = new IFrameParentMessageBus();
-    this.integrations = new Integrations(this.messageBus);
-
     this.bundler = new Bundler({ messageBus: this.messageBus });
+    this.integrations = new Integrations(this.bundler.iframe.contentWindow, this.messageBus);
 
     const disposeOnMessage = this.messageBus.onMessage((msg) => {
       this.handleParentMessage(msg);
@@ -177,6 +176,14 @@ class SandpackInstance {
   dispose() {
     this.disposableStore.dispose();
   }
+}
+
+// @ts-ignore
+if (module.hot) {
+  // @ts-ignore
+  module.hot.dispose(() => {
+    window.location.reload();
+  });
 }
 
 new SandpackInstance();

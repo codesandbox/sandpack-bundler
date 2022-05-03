@@ -49,6 +49,7 @@
     "url-join": "^5.0.0"
   },
   "devDependencies": {
+    "@parcel/transformer-inline-string": "2.4.1",
     "@swc-node/jest": "^1.4.3",
     "@types/jest": "^27.4.1",
     "@types/micromatch": "^4.0.2",

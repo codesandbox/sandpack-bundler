@@ -11,18 +11,45 @@ const INTEGRATION_LIST = new Map<IntegrationsKeys, LoadIntegrationFn>([
 ]);
 
 export class Integrations {
-  private messageBus: IFrameParentMessageBus;
   private registry = INTEGRATION_LIST;
 
-  constructor(messageBus: IFrameParentMessageBus) {
+  private messageBus: IFrameParentMessageBus;
+  private iframeWindow: Window | null;
+
+  constructor(iframeWindow: Window | null, messageBus: IFrameParentMessageBus) {
+    this.iframeWindow = iframeWindow;
     this.messageBus = messageBus;
   }
 
   async load(key: IntegrationsKeys): Promise<undefined | Error> {
     if (this.registry.has(key)) {
       try {
-        const { default: integrationModule } = await this.registry.get(key)?.();
-        return integrationModule(this);
+        const win = this.iframeWindow;
+        const winEval = win.eval;
+        const loader = this.registry.get(key);
+
+        window.addEventListener('message', (message) => {
+          console.log(message.data);
+          //   if (message.origin == win) {
+          //     window.parent.postMessage(message.data);
+          //   } else {
+          //     win.postMessage(message.data);
+          //   }
+        });
+
+        // win.addEventListener('message', (message) => {
+        //   console.log('iframe:', message.data);
+        //   window.postMessage(message.data);
+        // });
+
+        winEval.call(
+          win,
+          `(function $integration_loader(loader, integrations) {
+            loader().then((value) => value.default(integrations));
+        })`
+        )(loader, this);
+
+        return;
       } catch (err) {
         throw new IntegrationError(err instanceof Error ? err.message : (err as string), key);
       }
