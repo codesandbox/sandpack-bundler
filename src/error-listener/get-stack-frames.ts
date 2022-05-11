@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { Bundler } from '../../bundler/bundler';
+import { Bundler } from '../bundler/bundler';
 import { map } from './mapper';
 import { parse } from './parser';
 import type { StackFrame } from './stack-frame';

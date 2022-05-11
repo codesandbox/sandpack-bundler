@@ -1,11 +1,11 @@
 import { Bundler } from '../bundler/bundler';
-import { getStackFrames } from './utils/get-stack-frames';
-import { permanentRegisterConsole, registerReactStack } from './utils/proxy-console';
-import StackFrame from './utils/stack-frame';
-import { registerStackTraceLimit } from './utils/stack-trace-limit';
-import { registerUnhandledError } from './utils/unhandled-error';
-import { registerUnhandledRejection } from './utils/unhandled-rejection';
-import { warningMessage } from './utils/warnings';
+import { getStackFrames } from './get-stack-frames';
+import { permanentRegisterConsole, registerReactStack } from './proxy-console';
+import StackFrame from './stack-frame';
+import { registerStackTraceLimit } from './stack-trace-limit';
+import { registerUnhandledError } from './unhandled-error';
+import { registerUnhandledRejection } from './unhandled-rejection';
+import { warningMessage } from './warnings';
 
 const CONTEXT_SIZE: number = 3;
 

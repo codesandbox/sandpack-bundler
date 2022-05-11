@@ -10,7 +10,7 @@
 // @ts-ignore
 import { settle } from 'settle-promise';
 
-import { Bundler } from '../../bundler/bundler';
+import { Bundler } from '../bundler/bundler';
 import { getLinesAround } from './get-lines-around';
 import { SourceMap, getSourceMap } from './get-source-map';
 import StackFrame from './stack-frame';
