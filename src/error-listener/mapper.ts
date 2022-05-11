@@ -37,8 +37,6 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
     fileNames.add(fileName.replace(location.origin, ''));
   });
 
-  console.log(fileNames);
-
   await settle(
     Array.from(fileNames).map(async (fileName) => {
       if (!fileName.startsWith('webpack')) {
