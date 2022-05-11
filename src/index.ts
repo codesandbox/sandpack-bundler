@@ -1,4 +1,5 @@
 import { Bundler } from './bundler/bundler';
+import { ErrorRecord, listenToRuntimeErrors } from './error-listener';
 import { BundlerError } from './errors/BundlerError';
 import { CompilationError } from './errors/CompilationError';
 import { errorMessage } from './errors/util';
@@ -31,6 +32,18 @@ class SandpackInstance {
     this.disposableStore.add(disposeOnMessage);
 
     this.init().catch(console.error);
+
+    listenToRuntimeErrors(this.bundler, (runtimeError: ErrorRecord) => {
+      this.messageBus.sendMessage('action', {
+        action: 'show-error',
+
+        title: 'Runtime Exception',
+        // @ts-ignore
+        path: runtimeError.error.path,
+        message: runtimeError.error.message,
+        payload: { frames: runtimeError.stackFrames },
+      });
+    });
   }
 
   handleParentMessage(message: any) {

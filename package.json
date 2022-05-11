@@ -44,6 +44,7 @@
     "react-devtools-inline": "^4.24.4",
     "react-devtools-inline_legacy": "npm:react-devtools-inline@4.4.0",
     "react-refresh": "^0.12.0",
+    "settle-promise": "^1.0.0",
     "solid-refresh": "^0.4.0",
     "strip-json-comments": "^4.0.0",
     "url-join": "^5.0.0"
