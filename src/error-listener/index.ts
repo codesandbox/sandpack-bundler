@@ -20,7 +20,6 @@ export const crashWithFrames = (bundler: Bundler, crash: (record: ErrorRecord) =
   return (error: Error, unhandledRejection = false) => {
     getStackFrames(bundler, error, CONTEXT_SIZE)
       .then((stackFrames) => {
-        console.log({stackFrames})
         crash({
           error,
           unhandledRejection,

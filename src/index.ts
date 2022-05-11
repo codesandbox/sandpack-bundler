@@ -34,10 +34,14 @@ class SandpackInstance {
     this.init().catch(console.error);
 
     listenToRuntimeErrors(this.bundler, (runtimeError: ErrorRecord) => {
+      const stackFrame = runtimeError.stackFrames[0] ?? {};
+
       this.messageBus.sendMessage('action', {
         action: 'show-error',
 
         title: 'Runtime Exception',
+        line: stackFrame._originalLineNumber,
+        column: stackFrame._originalColumnNumber,
         // @ts-ignore
         path: runtimeError.error.path,
         message: runtimeError.error.message,
