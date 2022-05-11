@@ -15,26 +15,26 @@ import { getLinesAround } from './get-lines-around';
 import { SourceMap, getSourceMap } from './get-source-map';
 import StackFrame from './stack-frame';
 
+interface MapCacheEntry {
+  filepath: string;
+  fileSource: string;
+  map?: SourceMap | null;
+}
+
 /**
  * Enhances a set of <code>StackFrame</code>s with their original positions and code (when available).
  * @param {StackFrame[]} frames A set of <code>StackFrame</code>s which contain (generated) code positions.
  * @param {number} [contextLines=3] The number of lines to provide before and after the line specified in the <code>StackFrame</code>.
  */
 async function map(bundler: Bundler, frames: StackFrame[], contextLines: number = 3): Promise<StackFrame[]> {
-  const cache: {
-    [filename: string]: {
-      filepath: string;
-      fileSource: string;
-      map?: SourceMap;
-    };
-  } = {};
+  const cache: Record<string, MapCacheEntry> = {};
   const fileNames: Set<string> = new Set();
   frames.forEach((frame) => {
     const { fileName } = frame;
     if (fileName == null) {
       return;
     }
-    fileNames.add(fileName.replace(location.origin, ''));
+    fileNames.add(fileName);
   });
 
   await settle(
@@ -47,13 +47,13 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
         //   );
         // }
 
-        const resolvedFilepath = await bundler.resolveAsync(fileName, '/index.js');
+        const resolvedFilepath = await bundler.resolveAsync(fileName.replace(location.origin, ''), '/index.js');
         const foundModule = bundler.getModule(resolvedFilepath);
 
         if (foundModule) {
-          const fileSource = foundModule.source && foundModule.compiled;
+          const fileSource = foundModule.compiled || foundModule.source;
           if (fileSource) {
-            const map = await getSourceMap(fileName, fileSource);
+            const map = await getSourceMap(fileName, fileSource).catch(() => null);
             cache[fileName] = { filepath: resolvedFilepath, fileSource, map };
           }
         }
@@ -77,7 +77,7 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
       return frame;
     }
 
-    // There is no map so we assume the positions are correct
+    // There is no map we assume the positions are correct
     if (map == null) {
       return new StackFrame(
         functionName,

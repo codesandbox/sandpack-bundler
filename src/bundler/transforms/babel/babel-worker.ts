@@ -81,7 +81,7 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
     plugins,
     // no ast needed for now
     ast: false,
-    sourceMaps: false,
+    sourceMaps: 'inline',
     compact: /node_modules/.test(filepath),
   });
 
