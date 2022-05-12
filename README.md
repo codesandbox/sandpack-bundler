@@ -2,7 +2,7 @@
 
 The sandpack bundler, this aims to eventually replace the current sandpack with a more streamlined and faster version.
 
-[Architecture chart](https://excalidraw.csb.dev/OF3psMUWe9WwUWgrevj5Es2JnDE3/1pzFeqkVTX12H8lmGuez)
+[Architecture chart](https://www.figma.com/file/I2Gm2pGCRdWMoBWxXrvYib/sandpack-bundler-architecture?node-id=0%3A1)
 
 ## Getting started
 
