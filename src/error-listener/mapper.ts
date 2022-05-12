@@ -95,7 +95,7 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
 
     // There is a sourcemap so we map to the original position
     const { source, line, column } = map.getOriginalPosition(lineNumber, columnNumber);
-    const originalSource = source == null ? [] : map.getSource(source);
+    const originalSource: string | string[] = source == null ? [] : map.getSource(source);
     return new StackFrame(
       functionName,
       fileName,
