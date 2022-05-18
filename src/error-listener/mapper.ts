@@ -73,28 +73,24 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
     const { map, fileSource, filepath } = cache[fileName] || {};
 
     // File not known to sandpack, returning original frame
-    if (!filepath || lineNumber == null || columnNumber == null) {
+    if (!filepath || lineNumber == null || columnNumber == null || filepath.includes('node_modules')) {
       return frame;
     }
 
     // There is no map we assume the positions are correct
     if (map == null) {
-      if (filepath.includes('node_modules')) {
-        return frame;
-      } else {
-        return new StackFrame(
-          functionName,
-          fileName,
-          lineNumber,
-          columnNumber,
-          getLinesAround(lineNumber, contextLines, fileSource),
-          functionName,
-          filepath,
-          lineNumber,
-          columnNumber,
-          getLinesAround(lineNumber, contextLines, fileSource)
-        );
-      }
+      return new StackFrame(
+        functionName,
+        fileName,
+        lineNumber,
+        columnNumber,
+        getLinesAround(lineNumber, contextLines, fileSource),
+        functionName,
+        filepath,
+        lineNumber,
+        columnNumber,
+        getLinesAround(lineNumber, contextLines, fileSource)
+      );
     }
 
     // There is a sourcemap so we map to the original position
