@@ -79,18 +79,22 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
 
     // There is no map we assume the positions are correct
     if (map == null) {
-      return new StackFrame(
-        functionName,
-        fileName,
-        lineNumber,
-        columnNumber,
-        getLinesAround(lineNumber, contextLines, fileSource),
-        functionName,
-        filepath,
-        lineNumber,
-        columnNumber,
-        getLinesAround(lineNumber, contextLines, fileSource)
-      );
+      if (filepath.includes('node_modules')) {
+        return frame;
+      } else {
+        return new StackFrame(
+          functionName,
+          fileName,
+          lineNumber,
+          columnNumber,
+          getLinesAround(lineNumber, contextLines, fileSource),
+          functionName,
+          filepath,
+          lineNumber,
+          columnNumber,
+          getLinesAround(lineNumber, contextLines, fileSource)
+        );
+      }
     }
 
     // There is a sourcemap so we map to the original position
