@@ -40,14 +40,8 @@ async function map(bundler: Bundler, frames: StackFrame[], contextLines: number 
   await settle(
     Array.from(fileNames).map(async (fileName) => {
       if (!fileName.startsWith('webpack')) {
-        // TODO: In case we ever support query parameters
-        // if (fileName.includes('?')) {
-        //   transpiledModule = manager.getTranspiledModuleByHash(
-        //     fileName.split('?')[1]
-        //   );
-        // }
-
-        const resolvedFilepath = await bundler.resolveAsync(fileName.replace(location.origin, ''), '/index.js');
+        const parsedUrl = new URL(fileName, location.origin);
+        const resolvedFilepath = await bundler.resolveAsync(parsedUrl.pathname, '/index.js');
         const foundModule = bundler.getModule(resolvedFilepath);
 
         if (foundModule) {
