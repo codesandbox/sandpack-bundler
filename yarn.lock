@@ -3009,7 +3009,7 @@ concat-map@0.0.1:
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
   integrity sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
 
-console-feed@^3.3.0:
+console-feed@3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/console-feed/-/console-feed-3.3.0.tgz#83669d512676b67662f297dfc21eef15bac59fea"
   integrity sha512-GS0EtpiLyAZGEYBtTih+uI3s3NDmOsfkgpNGhr7UWeM5BzDT+dKgit2nEMFwDb2w7NaT95774/cwAztA1BxrHQ==
