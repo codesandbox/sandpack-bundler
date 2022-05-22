@@ -1,4 +1,5 @@
-import { Encode, Hook } from 'console-feed';
+import Hook from 'console-feed/lib/Hook';
+import { Encode } from 'console-feed/lib/Transform';
 
 export function hookConsole(output: (log: any) => void) {
   Hook(window.console, async (log) => {
