@@ -3,6 +3,7 @@ import { ErrorRecord, listenToRuntimeErrors } from './error-listener';
 import { BundlerError } from './errors/BundlerError';
 import { CompilationError } from './errors/CompilationError';
 import { errorMessage } from './errors/util';
+import { handleEvaluate, hookConsole } from './integrations/console';
 import { Integrations } from './integrations/integrations';
 import { IFrameParentMessageBus } from './protocol/iframe';
 import { ICompileRequest } from './protocol/message-types';
@@ -47,6 +48,19 @@ class SandpackInstance {
         message: runtimeError.error.message,
         payload: { frames: runtimeError.stackFrames },
       });
+    });
+
+    // Console logic
+    hookConsole((log) => {
+      this.messageBus.sendMessage('console', { log });
+    });
+    this.messageBus.onMessage((data: any) => {
+      if (typeof data === 'object' && data.type === 'evaluate') {
+        const result = handleEvaluate(data.command);
+        if (result) {
+          this.messageBus.sendMessage('console', result);
+        }
+      }
     });
   }
 
