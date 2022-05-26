@@ -52,19 +52,19 @@ export class Bundler {
 
   private _previousDepString: string | null = null;
   private iFrameFsLayer: IFrameFSLayer;
-  private fileResolverId: string | undefined;
+  private clientId: string | undefined;
 
   constructor(options: IBundlerOpts) {
     this.transformationQueue = new NamedPromiseQueue(true, 50);
     this.moduleRegistry = new ModuleRegistry(this);
     const memoryFS = new MemoryFSLayer();
-    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, options.messageBus, () => this.fileResolverId);
+    this.iFrameFsLayer = new IFrameFSLayer(memoryFS, options.messageBus, () => this.clientId);
     this.fs = new FileSystem([memoryFS, this.iFrameFsLayer, new NodeModuleFSLayer(this.moduleRegistry)]);
     this.messageBus = options.messageBus;
   }
 
-  setFileResolverId(id: string): void {
-    this.fileResolverId = id;
+  setClientId(id: string): void {
+    this.clientId = id;
   }
 
   /** Reset all compilation data */

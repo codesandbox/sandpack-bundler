@@ -17,11 +17,7 @@ export interface ICompileRequest {
   showOpenInCodeSandbox?: boolean;
   skipEval?: boolean;
   logLevel?: SandpackLogLevel;
-  fileResolver?: {
-    id: string;
-    isFile: (path: string) => Promise<boolean>;
-    readFile: (path: string) => Promise<string>;
-  };
+  clientId?: string;
 }
 
 export type BundlerStatus =
