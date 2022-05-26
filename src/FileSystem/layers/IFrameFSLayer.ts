@@ -5,9 +5,16 @@ import { MemoryFSLayer } from './MemoryFSLayer';
 export class IFrameFSLayer extends FSLayer {
   private isBypassed = true;
   private isFileCache: Map<string, boolean> = new Map();
+  private getFileResolverId: () => string | undefined;
 
-  constructor(private memoryFS: MemoryFSLayer, private messageBus: IFrameParentMessageBus) {
+  constructor(
+    private memoryFS: MemoryFSLayer,
+    private messageBus: IFrameParentMessageBus,
+    getFileResolverId: () => string | undefined
+  ) {
     super('iframe-fs');
+
+    this.getFileResolverId = getFileResolverId;
   }
 
   enableIFrameFS(): void {
@@ -44,6 +51,7 @@ export class IFrameFSLayer extends FSLayer {
           const response = await this.messageBus.protocolRequest('file-resolver', {
             m: 'readFile',
             p: path,
+            id: this.getFileResolverId(),
           });
           if (typeof response === 'string') {
             return response;

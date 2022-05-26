@@ -119,6 +119,14 @@ class SandpackInstance {
       hasAsyncFileResolver: compileRequest.hasFileResolver,
     });
 
+    /**
+     * TODO: register file resolver id
+     * Does it have a better approach for it?
+     */
+    if (compileRequest.fileResolver) {
+      this.bundler.setFileResolverId(compileRequest.fileResolver.id);
+    }
+
     this.messageBus.sendMessage('start', {
       firstLoad: this.bundler.isFirstLoad,
     });
