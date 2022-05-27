@@ -48,14 +48,14 @@ export class NodeModuleFSLayer extends FSLayer {
     if (typeof cachedContent === 'string') {
       return cachedContent;
     }
-    throw new Error('File not found in unpkg cache');
+    throw new Error(`File not found in unpkg cache: ${moduleName}@${moduleVersion} - ${path}`);
   }
 
   /** Turns a path into [moduleName, relativePath] */
   private getModuleFromPath(path: string): [string, string] {
     const parts = path.match(MODULE_PATH_RE);
     if (!parts) {
-      throw new Error('Path is not a node_module');
+      throw new Error(`Path is not a node_module: ${path}`);
     }
     const moduleName = parts[1];
     const modulePath: string = parts[2] ?? '';
