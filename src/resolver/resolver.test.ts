@@ -37,6 +37,17 @@ describe('resolve', () => {
   });
 
   describe('file paths', () => {
+    it('should resolve relative file a level above', () => {
+      const resolved = resolveSync('../components', {
+        filename: '/app/index.js',
+        extensions: ['.js', '.tsx'],
+        isFile,
+        readFile,
+      });
+
+      expect(resolved).toBe('/src/components/index.js');
+    });
+
     it('should resolve relative file with an extension', () => {
       const resolved = resolveSync('../source/dist.js', {
         filename: '/packages/source-alias/other.js',

@@ -23,7 +23,7 @@
     },
     "test": {
       "name": "test",
-      "command": "yarn test",
+      "command": "yarn test --watch",
       "runAtStart": true
     }
   }
