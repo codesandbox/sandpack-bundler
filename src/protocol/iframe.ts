@@ -6,7 +6,7 @@ import { Emitter } from '../utils/emitter';
  * */
 export class IFrameParentMessageBus {
   private parentId: number | null = null;
-  private messageId = Date.now();
+  private messageId = 0;
 
   private messageEmitter = new Emitter();
   onMessage = this.messageEmitter.event;
@@ -50,7 +50,7 @@ export class IFrameParentMessageBus {
     const messageId = this.messageId++;
     return new Promise((resolve, reject) => {
       const disposable = this.onMessage((msg: any) => {
-        if (msg.msgId === messageId && msg.type === type) {
+        if (msg.msgId === messageId && msg.type === type && !msg.method) {
           disposable.dispose();
 
           if (msg.error) {
