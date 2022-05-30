@@ -41,10 +41,7 @@ export class IFrameFSLayer extends FSLayer {
       const isFile = this.getIsFileCache(path);
       if (isFile !== false) {
         try {
-          const response = await this.messageBus.protocolRequest('file-resolver', {
-            m: 'readFile',
-            p: path,
-          });
+          const response = await this.messageBus.protocolRequest('fs', 'readFile', [path]);
           if (typeof response === 'string') {
             return response;
           }
@@ -70,10 +67,7 @@ export class IFrameFSLayer extends FSLayer {
       }
 
       try {
-        const response = await this.messageBus.protocolRequest('file-resolver', {
-          m: 'isFile',
-          p: path,
-        });
+        const response = await this.messageBus.protocolRequest('fs', 'isFile', [path]);
         isFile = !!response;
         this.isFileCache.set(path, !!response);
         return !!response;
