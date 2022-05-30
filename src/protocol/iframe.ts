@@ -50,21 +50,21 @@ export class IFrameParentMessageBus {
     const messageId = this.messageId++;
     return new Promise((resolve, reject) => {
       const disposable = this.onMessage((msg: any) => {
-        if (msg.$msgId === messageId && msg.type === type) {
+        if (msg.msgId === messageId && msg.type === type) {
           disposable.dispose();
 
-          if (msg.$error) {
-            reject(new Error(msg.$error.message));
+          if (msg.error) {
+            reject(new Error(msg.error.message));
           } else {
-            resolve(msg.$result);
+            resolve(msg.result);
           }
         }
       });
 
       this.sendMessage(type, {
-        $msgId: messageId,
-        $method: method,
-        $params: params,
+        msgId: messageId,
+        method: method,
+        params: params,
       });
     });
   }
