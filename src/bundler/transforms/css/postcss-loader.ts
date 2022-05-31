@@ -1,9 +1,9 @@
-import postcss, { ProcessOptions } from 'postcss';
-import postcssImportPlugin from 'postcss-import';
+import postcss, { AcceptedPlugin, ProcessOptions } from 'postcss';
 
 import { extractModuleSpecifierParts, isModuleSpecifier } from '../../../resolver/utils/module-specifier';
 import { join as joinPaths } from '../../../utils/path';
 import { ITranspilationContext, ITranspilationResult } from '../Transformer';
+import postcssImportPlugin from './import-loader/index';
 
 async function resolveCSSFile(ctx: ITranspilationContext, path: string, basePath: string): Promise<string> {
   const isDependency = isModuleSpecifier(path);
@@ -30,27 +30,25 @@ async function resolveCSSFile(ctx: ITranspilationContext, path: string, basePath
 
 export default async function (ctx: ITranspilationContext): Promise<ITranspilationResult> {
   const dependencies = new Set<string>();
-  const plugins = [
+  const plugins: AcceptedPlugin[] = [];
+  const options: ProcessOptions = {
+    to: ctx.module.filepath,
+    from: ctx.module.filepath,
+    map: false,
+  };
+
+  // Explicitly give undefined if code is null, otherwise postcss crashes
+  const result = await postcss([
+    ...plugins,
     postcssImportPlugin({
       resolve: (id: string, root: string) => resolveCSSFile(ctx, id, root),
       load: (filename: string) => {
         dependencies.add(filename);
         return ctx.module.bundler.fs.readFileAsync(filename);
       },
+      plugins,
     }),
-  ];
-
-  const options: ProcessOptions = {
-    to: ctx.module.filepath,
-    from: ctx.module.filepath,
-    map: {
-      inline: true,
-      annotation: true,
-    },
-  };
-
-  // Explicitly give undefined if code is null, otherwise postcss crashes
-  const result = await postcss(plugins).process(ctx.code, options);
+  ]).process(ctx.code, options);
   if (result.messages) {
     const messages = result.messages as any[];
     await Promise.all(
