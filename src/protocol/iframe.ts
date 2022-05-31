@@ -6,14 +6,10 @@ import { Emitter } from '../utils/emitter';
  * */
 export class IFrameParentMessageBus {
   private parentId: number | null = null;
-  private messageId = Date.now();
+  private messageId = 0;
 
-  // TODO: Type messages
   private messageEmitter = new Emitter();
   onMessage = this.messageEmitter.event;
-
-  private rawMessageEmitter = new Emitter();
-  private onRawMessage = this.rawMessageEmitter.event;
 
   constructor() {
     this._messageListener = this._messageListener.bind(this);
@@ -24,10 +20,9 @@ export class IFrameParentMessageBus {
   private _messageListener(evt: any) {
     const data = evt.data;
 
-    this.rawMessageEmitter.fire(data);
-
     if (data.type === 'register-frame') {
       this.parentId = data.id;
+      return;
     }
 
     if (!data.codesandbox) {
@@ -50,29 +45,26 @@ export class IFrameParentMessageBus {
     });
   }
 
-  protocolRequest(protocol: string, data: Record<string, any> = {}): Promise<any> {
-    const type = `p-${protocol}`;
+  protocolRequest(protocolName: string, method: string, params: Array<any>): Promise<any> {
+    const type = `protocol-${protocolName}`;
     const messageId = this.messageId++;
     return new Promise((resolve, reject) => {
-      const disposable = this.onRawMessage((msg: any) => {
-        if (msg.$id === messageId && msg.$type === type) {
+      const disposable = this.onMessage((msg: any) => {
+        if (msg.msgId === messageId && msg.type === type && !msg.method) {
           disposable.dispose();
 
-          if (msg.$error) {
-            reject(new Error(msg.$error.message));
+          if (msg.error) {
+            reject(new Error(msg.error.message));
           } else {
-            resolve(msg.$data);
+            resolve(msg.result);
           }
         }
       });
 
-      this._postMessage({
-        $type: type,
-        codesandbox: true,
-        $data: data,
-        // !!! This is really dangerous, overlap with channelId...
-        // Should've named this msgId...
-        $id: messageId,
+      this.sendMessage(type, {
+        msgId: messageId,
+        method: method,
+        params: params,
       });
     });
   }
