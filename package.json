@@ -52,6 +52,7 @@
     "url-join": "^5.0.0"
   },
   "devDependencies": {
+    "@octokit/rest": "^18.12.0",
     "@swc-node/jest": "^1.4.3",
     "@types/jest": "^27.4.1",
     "@types/micromatch": "^4.0.2",
