@@ -1,9 +1,9 @@
-import type { PluginItem } from '@babel/core';
-import * as babel from '@babel/standalone';
+import type { PluginItem, PluginOptions } from '@babel/core';
 
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
 import { ITranspilationResult } from '../Transformer';
 import { loadPlugin, loadPreset } from './babel-plugin-registry';
+import * as babel from './babel-transform-runner';
 import { collectDependencies } from './dep-collector';
 
 export interface ITransformData {
@@ -22,63 +22,83 @@ function getNameFromConfigEntry(entry: any): string | null {
   }
 }
 
+export type MappedPluginTarget = object | ((...args: any[]) => any);
+export type MappedPluginItem = MappedPluginTarget | [MappedPluginTarget, PluginOptions];
+
+function getDefaultExport(module: any) {
+  if (typeof module.default !== 'undefined') {
+    return module.default;
+  } else {
+    return module;
+  }
+}
+
+function mapPluginItem(item: string | [string, PluginOptions], plugin: MappedPluginTarget): MappedPluginItem {
+  if (Array.isArray(item)) {
+    return [getDefaultExport(plugin), item[1]];
+  } else {
+    return plugin;
+  }
+}
+
 // TODO: Normalize preset names
-async function getPresets(presets: any): Promise<PluginItem[]> {
-  const result: PluginItem[] = [
-    [
-      'env',
-      {
-        targets: '> 2.5%, not ie 11, not dead, not op_mini all',
-        useBuiltIns: 'usage',
-        corejs: '3.22',
-        exclude: ['@babel/plugin-transform-regenerator'],
-      },
-    ],
+async function getPresets(presets: PluginItem[] = []): Promise<MappedPluginItem[]> {
+  const input: PluginItem[] = [
+    // [
+    //   'env',
+    //   {
+    //     targets: '> 2.5%, not ie 11, not dead, not op_mini all',
+    //     useBuiltIns: 'usage',
+    //     corejs: '3.22',
+    //     exclude: ['@babel/plugin-transform-regenerator'],
+    //   },
+    // ],
+    ...presets,
+    'flow',
     'typescript',
   ];
-  if (!Array.isArray(presets)) {
-    return result;
-  }
-  for (const preset of presets) {
-    const presetName = getNameFromConfigEntry(preset);
-    if (presetName !== null) {
-      if (!babel.availablePresets[presetName]) {
-        babel.availablePresets[presetName] = await loadPreset(presetName);
-      }
 
-      const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === presetName);
-      if (foundIndex > -1) {
-        result[foundIndex] = preset;
-        continue;
+  return Promise.all<MappedPluginItem[]>(
+    input.map(async (preset) => {
+      const presetName = getNameFromConfigEntry(preset);
+      if (presetName !== null) {
+        const loadedPreset = await loadPreset(presetName);
+        return mapPluginItem(preset as any, loadedPreset);
+      } else {
+        return preset as MappedPluginItem;
       }
-    }
-    result.push(preset);
-  }
-  return result;
+    })
+  );
 }
 
 // TODO: Normalize plugin names
-async function getPlugins(plugins: any): Promise<PluginItem[]> {
-  const result: PluginItem[] = [];
-  if (!Array.isArray(plugins)) {
-    return result;
-  }
-  for (const plugin of plugins) {
-    const pluginName = getNameFromConfigEntry(plugin);
-    if (pluginName !== null) {
-      if (!babel.availablePlugins[pluginName]) {
-        babel.availablePlugins[pluginName] = await loadPlugin(pluginName);
-      }
+async function getPlugins(plugins: PluginItem[] = []): Promise<PluginItem[]> {
+  const input: PluginItem[] = [
+    ...plugins,
+    'transform-modules-commonjs',
+    [
+      'polyfill-corejs3',
+      {
+        method: 'usage-global',
+        version: '3.22',
+        // maybe?
+        // proposals: true,
+        shippedProposals: true,
+      },
+    ],
+  ];
 
-      const foundIndex = result.findIndex((v) => getNameFromConfigEntry(v) === pluginName);
-      if (foundIndex > -1) {
-        result[foundIndex] = plugin;
-        continue;
+  return Promise.all<MappedPluginItem[]>(
+    input.map(async (plugin) => {
+      const pluginName = getNameFromConfigEntry(plugin);
+      if (pluginName !== null) {
+        const loadedPlugin = await loadPlugin(pluginName);
+        return mapPluginItem(plugin as any, loadedPlugin);
+      } else {
+        return plugin as MappedPluginItem;
       }
-    }
-    result.push(plugin);
-  }
-  return result;
+    })
+  );
 }
 
 async function transform({ code, filepath, config }: ITransformData): Promise<ITranspilationResult> {
@@ -95,6 +115,10 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
     sourceMaps: 'inline',
     compact: /node_modules/.test(filepath),
   });
+
+  if (!transformed) {
+    throw new Error('Babel transform returned null');
+  }
 
   // no-op module
   if (!transformed.code) {

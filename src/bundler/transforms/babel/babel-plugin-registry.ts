@@ -1,32 +1,28 @@
+// @ts-nocheck
+import transformCommonJSPlugin from '@babel/plugin-transform-modules-commonjs';
+import flowPreset from '@babel/preset-flow';
+import reactPreset from '@babel/preset-react';
+import typescriptPreset from '@babel/preset-typescript';
+import typescriptPreset from '@babel/preset-typescript';
+import polyfillCoreJS3Plugin from 'babel-plugin-polyfill-corejs3';
+import reactRefreshPlugin from 'react-refresh/babel';
+
 type LoaderFn = () => Promise<any>;
 
 const loaderCache: Map<string, Promise<any>> = new Map();
 
 const BABEL_PRESET_LOADERS: Map<string, LoaderFn> = new Map([
-  [
-    'solid',
-    () => {
-      // @ts-ignore
-      return import('babel-preset-solid');
-    },
-  ],
+  ['solid', () => import('babel-preset-solid')],
+  ['typescript', () => Promise.resolve(typescriptPreset)],
+  ['react', () => Promise.resolve(reactPreset)],
+  ['flow', () => Promise.resolve(flowPreset)],
 ]);
 
 const BABEL_PLUGIN_LOADERS: Map<string, LoaderFn> = new Map([
-  [
-    'react-refresh/babel',
-    () => {
-      // @ts-ignore
-      return import('react-refresh/babel');
-    },
-  ],
-  [
-    'solid-refresh/babel',
-    () => {
-      // @ts-ignore
-      return import('solid-refresh/babel');
-    },
-  ],
+  ['react-refresh/babel', () => Promise.resolve(reactRefreshPlugin)],
+  ['solid-refresh/babel', () => import('solid-refresh/babel')],
+  ['polyfill-corejs3', () => Promise.resolve(polyfillCoreJS3Plugin)],
+  ['transform-modules-commonjs', () => Promise.resolve(transformCommonJSPlugin)],
 ]);
 
 function load(key: string, loader: LoaderFn): Promise<any> {
