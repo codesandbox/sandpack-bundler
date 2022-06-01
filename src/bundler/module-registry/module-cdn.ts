@@ -14,7 +14,7 @@ export interface IResolvedDependency {
   d: number;
 }
 
-const CDN_VERSION = 3;
+const CDN_VERSION = 4;
 
 function encodePayload(payload: string): string {
   return btoa(`${CDN_VERSION}(${payload})`);
