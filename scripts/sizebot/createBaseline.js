@@ -14,16 +14,20 @@ function calcGzipSize(filePath) {
 }
 
 const createBaseline = async () => {
-  glob('dist/**/*.js', {}, function (er, files) {
-    const currentSizes = {};
+  return new Promise((resolve) => {
+    glob('dist/**/*.js', {}, function (er, files) {
+      const currentSizes = {};
 
-    files.forEach((path) => {
-      const size = calcGzipSize(path);
+      files.forEach((path) => {
+        const size = calcGzipSize(path);
 
-      currentSizes[path.replace('dist/', '')] = size;
+        currentSizes[path.replace('dist/', '')] = size;
+      });
+
+      resolve(currentSizes);
+
+      fs.writeFile('./scripts/sizebot/sizebot.json', JSON.stringify(currentSizes), console.error);
     });
-
-    fs.writeFile('./scripts/sizebot/sizebot.json', JSON.stringify(currentSizes), console.error);
   });
 };
 

@@ -1,11 +1,11 @@
-// import { Octokit } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import fetch from 'node-fetch';
 
 import createBaseline from './createBaseline.js';
 
-// const octokit = new Octokit({
-//   auth: process.env.GH_TOKEN,
-// });
+const octokit = new Octokit({
+  auth: process.env.GH_TOKEN,
+});
 
 function format(bytes) {
   var sizes = ['bytes', 'kb', 'mb'];
@@ -43,88 +43,82 @@ const findComment = async (parameters) => {
 (async () => {
   const currentSizes = await createBaseline();
 
-  // const loadBaseFile = async () => {
-  //   const data = await fetch(
-  //     'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/main/scripts/sizebot/sizebot.json'
-  //   );
-  //   return await data.json();
-  // };
-  // const baseSizes = await loadBaseFile();
+  const loadBaseFile = async () => {
+    const data = await fetch(
+      'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/sizebot/scripts/sizebot/sizebot.json'
+      // 'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/main/scripts/sizebot/sizebot.json'
+    );
+    return await data.json();
+  };
+  const baseSizes = await loadBaseFile();
 
-  const baseSizes = await import('./sizebot.json');
+  const removedFiles = Object.keys(baseSizes)
+    .map((base) => {
+      const fileStillExist = currentSizes[base];
+      if (fileStillExist) return undefined;
 
-  console.log(baseSizes);
+      return `| \`${base}\` | ${format(baseSizes[base])} | File removed | ⚠️ | \n`;
+    })
+    .filter(Boolean);
 
-  //   const content = baseSizes.map(([name, current]) => {
-  //     const baseDeps = baseSizes[name].assets;
+  const tableContent = Object.keys(currentSizes).map((currentName) => {
+    const baseFile = baseSizes[currentName];
 
-  //     const removedFiles = baseDeps
-  //       .map((base) => {
-  //         const fileStillExist = current.assets.find((e) => e.name === base.name);
-  //         if (fileStillExist) return undefined;
+    if (!baseFile) {
+      return `| \`${currentName}\` | New file | ${format(currentSizes[currentName])} | ⚠️ | \n`;
+    }
 
-  //         const fileName = base.name.replace(`./${name}/dist/esm/`, '');
-  //         return `| \`${fileName}\` | ${format(base.size)} | File removed | ⚠️ | \n`;
-  //       })
-  //       .filter(Boolean);
+    const baseSize = baseSizes[currentName];
+    const currentFormat = format(currentSizes[currentName]);
+    const baseFormat = format(baseSize);
+    const ratioFormat = ratio(baseSize, currentSizes[currentName]);
 
-  //     const tableContent = current.assets.map((item) => {
-  //       const baseFile = baseDeps.find((p) => p.name === item.name);
-  //       const fileName = item.name.replace(`./${name}/dist/esm/`, '');
+    return `| \`${currentName}\` | ${baseFormat} | ${currentFormat} |  ${ratioFormat} | \n`;
+  });
 
-  //       if (!baseFile) {
-  //         return `| \`${fileName}\` | New file | ${format(item.size)} | ⚠️ | \n`;
-  //       }
+  const sumBase = Object.values(baseSizes).reduce((p, c) => p + c, 0);
+  const sumCurrent = Object.values(currentSizes).reduce((p, c) => p + c, 0);
 
-  //       const baseSize = baseFile.size;
-  //       const currentFormat = format(item.size);
-  //       const baseFormat = format(baseSize);
-  //       const ratioFormat = ratio(baseSize, item.size);
+  const baseFormat = format(sumBase);
+  const currentFormat = format(sumCurrent);
 
-  //       return `| \`${fileName}\` | ${baseFormat} | ${currentFormat} |  ${ratioFormat} | \n`;
-  //     });
+  // Future usage
+  //   <details>
+  //   <summary>Details</summary>
+  //  | Dependency name / file | Base | Current | +/- |
+  //  | - | - | - | - |
+  //  ${removedFiles.join('')}${tableContent.join('')} \n\n
+  //  </details>
 
-  //     const baseFormat = format(baseSizes[name].gzip);
-  //     const currentFormat = format(current.gzip);
-
-  //     return `### ${name}
-  // | Total base (gzip) | Total current (gzip) | +/- |
-  // | - | - | - |
-  // | ${baseFormat} | ${currentFormat} | ${ratio(baseSizes[name].gzip, current.gzip)} |
-  // <details>
-  //  <summary>Details</summary>
-  // | Dependency name / file | Base | Current | +/- |
-  // | - | - | - | - |
-  // ${removedFiles.join('')}${tableContent.join('')} \n\n
-  // </details>
-  // `;
-  //   });
-
-  //   console.log(content);
+  const content = `### Sandpack bundler
+  | Total base (gzip) | Total current (gzip) | +/- |
+  | - | - | - |
+  | ${baseFormat} | ${currentFormat} | ${ratio(sumBase, sumCurrent)} |
+`;
 
   /**
    * Creating comment
    */
-  // const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-  // const issue_number = process.env.GITHUB_REF.split('refs/pull/')[1].split('/')[0];
+  const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
+  const issue_number = process.env.GITHUB_REF.split('refs/pull/')[1].split('/')[0];
 
-  // const comment = await findComment({ owner, repo, issue_number });
+  const comment = await findComment({ owner, repo, issue_number });
 
-  // if (comment) {
-  //   await octokit.rest.issues.updateComment({
-  //     owner,
-  //     repo,
-  //     comment_id: comment.id,
-  //     body: `## Size changes
-  // ${content.join('')}`,
-  //   });
-  // } else {
-  //   await octokit.rest.issues.createComment({
-  //     owner,
-  //     repo,
-  //     issue_number,
-  //     body: `## Size changes
-  // ${content.join('')}`,
-  //   });
-  // }
+  if (comment) {
+    await octokit.rest.issues.updateComment({
+      owner,
+      repo,
+      comment_id: comment.id,
+      body: `## Size changes
+  ${content.join('')}`,
+    });
+  } else {
+    await octokit.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number,
+      body: `## Size changes
+  ${content.join('')}`,
+    });
+  }
 })();
