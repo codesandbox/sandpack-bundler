@@ -90,7 +90,8 @@ const findComment = async (parameters) => {
   //  ${removedFiles.join('')}${tableContent.join('')} \n\n
   //  </details>
 
-  const content = `### Sandpack bundler
+  const content = `## Size changes
+
   | Total base (gzip) | Total current (gzip) | +/- |
   | - | - | - |
   | ${baseFormat} | ${currentFormat} | ${ratio(sumBase, sumCurrent)} |
@@ -109,16 +110,14 @@ const findComment = async (parameters) => {
       owner,
       repo,
       comment_id: comment.id,
-      body: `## Size changes
-  ${content.join('')}`,
+      body: content,
     });
   } else {
     await octokit.rest.issues.createComment({
       owner,
       repo,
       issue_number,
-      body: `## Size changes
-  ${content.join('')}`,
+      body: content,
     });
   }
 })();
