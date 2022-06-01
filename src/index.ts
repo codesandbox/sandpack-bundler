@@ -71,6 +71,7 @@ class SandpackInstance {
         break;
       case 'refresh':
         window.location.reload();
+        this.messageBus.sendMessage('refresh');
         break;
     }
   }
