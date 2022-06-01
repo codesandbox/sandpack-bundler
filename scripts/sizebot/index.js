@@ -45,8 +45,7 @@ const findComment = async (parameters) => {
 
   const loadBaseFile = async () => {
     const data = await fetch(
-      'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/sizebot/scripts/sizebot/sizebot.json'
-      // 'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/main/scripts/sizebot/sizebot.json'
+      'https://raw.githubusercontent.com/codesandbox/sandpack-bundler/main/scripts/sizebot/sizebot.json'
     );
     return await data.json();
   };
