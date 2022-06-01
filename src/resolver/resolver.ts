@@ -4,6 +4,7 @@ import micromatch from 'micromatch';
 import { ModuleNotFoundError } from '../errors/ModuleNotFound';
 import * as pathUtils from '../utils/path';
 import { FnIsFile, FnReadFile, getParentDirectories, isFile } from './utils/fs';
+import { extractModuleSpecifierParts } from './utils/module-specifier';
 import { ProcessedPackageJSON, processPackageJSON } from './utils/pkg-json';
 import { ProcessedTSConfig, getPotentialPathsFromTSConfig, processTSConfig } from './utils/tsconfig';
 
@@ -141,17 +142,8 @@ function* resolveModule(moduleSpecifier: string, opts: IResolveOptions): Generat
   return resolveAlias(pkgJson, filename);
 }
 
-const extractPkgSpecifierParts = (specifier: string) => {
-  const parts = specifier.split('/');
-  const pkgName = parts[0][0] === '@' ? parts.splice(0, 2).join('/') : parts.shift();
-  return {
-    pkgName,
-    filepath: parts.join('/'),
-  };
-};
-
 function* resolveNodeModule(moduleSpecifier: string, opts: IResolveOptions): Generator<any, string, any> {
-  const pkgSpecifierParts = extractPkgSpecifierParts(moduleSpecifier);
+  const pkgSpecifierParts = extractModuleSpecifierParts(moduleSpecifier);
   const directories = getParentDirectories(opts.filename);
   for (const modulesPath of opts.moduleDirectories) {
     for (const directory of directories) {

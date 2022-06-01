@@ -179,11 +179,15 @@ export class Bundler {
     }
   }
 
-  async resolveAsync(specifier: string, filename: string): Promise<string> {
+  async resolveAsync(
+    specifier: string,
+    filename: string,
+    extensions: string[] = ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx']
+  ): Promise<string> {
     try {
       const resolved = await resolveAsync(specifier, {
         filename,
-        extensions: ['.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx'],
+        extensions,
         isFile: this.fs.isFile,
         readFile: this.fs.readFile,
         resolverCache: this.resolverCache,
