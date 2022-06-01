@@ -78,6 +78,7 @@ export class ReactPreset extends Preset {
     if (!dependencies['react-refresh']) {
       dependencies['react-refresh'] = '^0.11.0';
     }
+    dependencies['core-js'] = '3.22.7';
     return dependencies;
   }
 }

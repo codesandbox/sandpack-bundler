@@ -24,7 +24,18 @@ function getNameFromConfigEntry(entry: any): string | null {
 
 // TODO: Normalize preset names
 async function getPresets(presets: any): Promise<PluginItem[]> {
-  const result: PluginItem[] = ['env', 'typescript'];
+  const result: PluginItem[] = [
+    [
+      'env',
+      {
+        targets: '> 2.5%, not ie 11, not dead, not op_mini all',
+        useBuiltIns: 'usage',
+        corejs: '3.22',
+        exclude: ['@babel/plugin-transform-regenerator'],
+      },
+    ],
+    'typescript',
+  ];
   if (!Array.isArray(presets)) {
     return result;
   }

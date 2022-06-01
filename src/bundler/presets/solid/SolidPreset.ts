@@ -54,6 +54,7 @@ export class SolidPreset extends Preset {
     if (!dependencies['solid-refresh']) {
       dependencies['solid-refresh'] = '^0.4.0';
     }
+    dependencies['core-js'] = '3.22.7';
     return dependencies;
   }
 }
