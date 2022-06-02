@@ -272,7 +272,6 @@ export class Bundler {
   /** writes any new files and returns a list of updated modules */
   writeNewFiles(files: ISandboxFile[]): string[] {
     const res: string[] = [];
-
     for (let file of files) {
       try {
         const content = this.fs.readFileSync(file.path);
@@ -282,10 +281,9 @@ export class Bundler {
       } catch (err) {
         // file does not exist
       }
-
+      
       this.fs.writeFile(file.path, file.code);
     }
-
     return res;
   }
 
@@ -330,8 +328,8 @@ export class Bundler {
         const module = this.getModule(changedFile);
         if (module) {
           module.resetCompilation();
+          promises.push(this.transformModule(changedFile));
         }
-        promises.push(this.transformModule(changedFile));
       }
       await Promise.all(promises);
     }

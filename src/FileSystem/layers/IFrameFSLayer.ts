@@ -43,6 +43,7 @@ export class IFrameFSLayer extends FSLayer {
         try {
           const response = await this.messageBus.protocolRequest('fs', 'readFile', [path]);
           if (typeof response === 'string') {
+            this.writeFile(path, response);
             return response;
           }
         } catch (err) {
