@@ -1,8 +1,9 @@
-/* eslint-disable no-eval */
-// import buildProcess from "./utils/process";
-
 // @ts-ignore
 import * as swcHelpers from '@swc/helpers';
+
+/* eslint-disable no-eval */
+// import buildProcess from "./utils/process";
+import * as logger from '../../utils/logger';
 
 const g = typeof window === 'undefined' ? self : window;
 
@@ -49,8 +50,8 @@ export default function (
 
     return context.exports;
   } catch (err) {
-    console.error(err);
-    console.error(code);
+    logger.error(err);
+    logger.error(code);
 
     let error = err;
     if (typeof err === 'string') {

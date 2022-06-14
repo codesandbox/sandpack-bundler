@@ -1,4 +1,5 @@
 import { CompilationError } from '../../../errors/CompilationError';
+import * as logger from '../../../utils/logger';
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
 import { ITranspilationContext, ITranspilationResult, Transformer } from '../Transformer';
 import { ITransformData } from './babel-worker';
@@ -22,7 +23,7 @@ export class BabelTransformer extends Transformer {
       handleNotification: () => Promise.resolve(),
       handleRequest: () => Promise.reject(new Error('Unknown method')),
       handleError: (err) => {
-        console.error(err);
+        logger.error(err);
         return Promise.resolve();
       },
       timeoutMs: 30000,

@@ -16,7 +16,8 @@
     "build": "parcel build ./src/index.html --no-scope-hoist",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"./src/**/*.{ts,tsx,js,jsx,json}\""
+    "format": "prettier --write \"./src/**/*.{ts,tsx,js,jsx,json}\"",
+    "lint": "eslint '**/*.ts?(x)'"
   },
   "importSort": {
     ".js, .jsx, .ts, .tsx": {
@@ -59,9 +60,14 @@
     "@types/postcss-url": "^10.0.0",
     "@types/url-join": "^4.0.1",
     "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.28.0",
+    "@typescript-eslint/parser": "^5.28.0",
     "assert": "^2.0.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "eslint": "^7.32.0 || ^8.2.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.2",
     "events": "^3.3.0",
     "fastify": "^3.28.0",
     "fastify-static": "^4.6.1",

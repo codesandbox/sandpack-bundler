@@ -1,3 +1,4 @@
+import * as logger from '../../utils/logger';
 import evaluate from './eval';
 import { HotContext } from './hot';
 import { Module } from './Module';
@@ -32,7 +33,7 @@ export class Evaluation {
   require(specifier: string): any {
     const moduleFilePath = this.module.dependencyMap.get(specifier);
     if (!moduleFilePath) {
-      console.debug('Require', {
+      logger.debug('Require', {
         dependencies: this.module.dependencyMap,
         specifier,
       });

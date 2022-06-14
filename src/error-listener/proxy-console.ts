@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 // Based on https://github.com/facebook/create-react-app/tree/main/packages/react-error-overlay
 
 type ReactFrame = {

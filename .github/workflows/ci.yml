@@ -16,6 +16,9 @@ jobs:
 
       - name: Setup | Yarn
         uses: bahmutov/npm-install@v1
+        
+      - name: Lint | Eslint Check
+        run: yarn lint
 
       - name: Format | Prettier Check
         run: yarn format --check
