@@ -1,5 +1,5 @@
-import * as logger from '../../utils/logger';
 import { Bundler } from '../bundler/bundler';
+import * as logger from '../utils/logger';
 import { getStackFrames } from './get-stack-frames';
 import { permanentRegisterConsole, registerReactStack } from './proxy-console';
 import StackFrame from './stack-frame';
