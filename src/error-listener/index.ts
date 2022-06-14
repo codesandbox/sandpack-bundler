@@ -29,7 +29,7 @@ export const crashWithFrames = (bundler: Bundler, crash: (record: ErrorRecord) =
         });
       })
       .catch((e) => {
-        logger.log('Could not get the stack frames of error:', e);
+        logger.error('Could not get the stack frames of error:', e);
       });
   };
 };
