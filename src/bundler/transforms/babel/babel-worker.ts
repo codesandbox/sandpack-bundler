@@ -1,6 +1,7 @@
 import type { PluginItem } from '@babel/core';
 import * as babel from '@babel/standalone';
 
+import * as logger from '../../../utils/logger';
 import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
 import { ITranspilationResult } from '../Transformer';
 import { loadPlugin, loadPreset } from './babel-plugin-registry';
@@ -120,7 +121,7 @@ new WorkerMessageBus({
     }
   },
   handleError: (err) => {
-    console.error(err);
+    logger.error(err);
     return Promise.resolve();
   },
   timeoutMs: 30000,

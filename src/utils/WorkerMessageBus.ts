@@ -2,6 +2,8 @@ export type RequestHandlerFn = (method: string, ...params: any[]) => Promise<any
 export type NotificationHandlerFn = (method: string, data: any) => Promise<any>;
 export type ErrorHandlerFn = (error: Error) => Promise<any>;
 
+import * as logger from '../utils/logger';
+
 export interface MessageEndpoint {
   postMessage(message: any, ...params: any[]): void;
   addEventListener(type: string, listener: (ev: any) => any): any;
@@ -85,7 +87,7 @@ export class WorkerMessageBus {
               result,
             });
           } catch (err) {
-            console.error(err);
+            logger.error(err);
 
             this.endpoint.postMessage({
               id: messageId,

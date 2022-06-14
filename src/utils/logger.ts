@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 export enum SandpackLogLevel {
   None = 0,
   Error = 10,

@@ -1,3 +1,4 @@
+import * as logger from '../utils/logger';
 import { Emitter } from './emitter';
 
 export interface IDisposable {
@@ -92,7 +93,7 @@ export class DisposableStore implements IDisposable {
 
     if (this._isDisposed) {
       if (!DisposableStore.DISABLE_DISPOSED_WARNING) {
-        console.warn(
+        logger.warn(
           new Error(
             'Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!'
           ).stack

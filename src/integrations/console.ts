@@ -1,6 +1,8 @@
 import Hook from 'console-feed/lib/Hook';
 import { Encode } from 'console-feed/lib/Transform';
 
+import * as logger from '../utils/logger';
+
 export function hookConsole(output: (log: any) => void) {
   Hook(window.console, async (log) => {
     output(log);
@@ -39,6 +41,6 @@ export function handleEvaluate(command: string): { error: boolean; result: any }
       result: Encode(result),
     };
   } catch (e) {
-    console.error(e);
+    logger.error(e);
   }
 }

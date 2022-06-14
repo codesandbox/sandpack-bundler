@@ -32,7 +32,7 @@ class SandpackInstance {
     });
     this.disposableStore.add(disposeOnMessage);
 
-    this.init().catch(console.error);
+    this.init().catch(logger.error);
 
     listenToRuntimeErrors(this.bundler, (runtimeError: ErrorRecord) => {
       const stackFrame = runtimeError.stackFrames[0] ?? {};
@@ -67,7 +67,7 @@ class SandpackInstance {
   handleParentMessage(message: any) {
     switch (message.type) {
       case 'compile':
-        this.compileDebouncer.debounce(() => this.handleCompile(message).catch(console.error));
+        this.compileDebouncer.debounce(() => this.handleCompile(message).catch(logger.error));
         break;
       case 'refresh':
         window.location.reload();

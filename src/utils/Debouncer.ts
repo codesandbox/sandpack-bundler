@@ -1,3 +1,5 @@
+import * as logger from '../utils/logger';
+
 export class Debouncer {
   timeoutRef: NodeJS.Timeout | null = null;
   debounceTimeMs: number;
@@ -21,7 +23,7 @@ export class Debouncer {
       try {
         await callback();
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       }
       this.isRunning = false;
     }, this.debounceTimeMs);

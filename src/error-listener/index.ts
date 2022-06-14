@@ -1,4 +1,5 @@
 import { Bundler } from '../bundler/bundler';
+import * as logger from '../utils/logger';
 import { getStackFrames } from './get-stack-frames';
 import { permanentRegisterConsole, registerReactStack } from './proxy-console';
 import StackFrame from './stack-frame';
@@ -28,7 +29,7 @@ export const crashWithFrames = (bundler: Bundler, crash: (record: ErrorRecord) =
         });
       })
       .catch((e) => {
-        console.log('Could not get the stack frames of error:', e);
+        logger.error('Could not get the stack frames of error:', e);
       });
   };
 };

@@ -1,4 +1,5 @@
 import { IFrameParentMessageBus } from '../../protocol/iframe';
+import * as logger from '../../utils/logger';
 import { FSLayer } from '../FSLayer';
 import { MemoryFSLayer } from './MemoryFSLayer';
 
@@ -73,7 +74,7 @@ export class IFrameFSLayer extends FSLayer {
         this.isFileCache.set(path, !!response);
         return !!response;
       } catch (err) {
-        console.error(err);
+        logger.error(err);
       }
     }
     return isFile;
