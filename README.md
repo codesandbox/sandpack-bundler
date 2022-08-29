@@ -2,8 +2,6 @@
 
 The sandpack bundler, this aims to eventually replace the current sandpack with a more streamlined and faster version.
 
-[Architecture chart](https://www.figma.com/file/I2Gm2pGCRdWMoBWxXrvYib/sandpack-bundler-architecture?node-id=0%3A1)
-
 ## Getting started
 
 1. Run `yarn` to install dependencies.
