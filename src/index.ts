@@ -148,10 +148,11 @@ class SandpackInstance {
     logger.info(logger.logFactory('Integrations', `finished in ${Date.now() - initStartTimeIntegration}ms`));
 
     // --- Load preset
-    logger.info(logger.logFactory('Preset and transformers'));
+    logger.groupCollapsed(logger.logFactory('Preset and transformers'));
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
     logger.info(logger.logFactory('Preset and transformers', `finished in ${Date.now() - initStartTime}ms`));
+    logger.groupEnd();
 
     // --- Bundling / Compiling
     logger.groupCollapsed(logger.logFactory('Bundling'));
