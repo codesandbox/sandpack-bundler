@@ -301,12 +301,12 @@ export class Bundler {
 
     let changedFiles: string[] = [];
     if (!this.isFirstLoad) {
-      logger.info('Started incremental compilation');
+      logger.debug('Started incremental compilation');
 
       changedFiles = this.writeNewFiles(files);
 
       if (!changedFiles.length) {
-        logger.info('Skipping compilation, no changes detected');
+        logger.debug('Skipping compilation, no changes detected');
         return () => {};
       }
 
@@ -345,7 +345,7 @@ export class Bundler {
         .join(',');
 
       if (this._previousDepString != null && depString !== this._previousDepString) {
-        logger.info('Dependencies changed, reloading');
+        logger.debug('Dependencies changed, reloading');
         location.reload();
         return () => {};
       }
@@ -398,7 +398,7 @@ export class Bundler {
 
     return () => {
       // Evaluate
-      logger.info('Evaluating...');
+      logger.debug('Evaluating...');
 
       if (this.isFirstLoad) {
         for (const runtime of this.runtimes) {

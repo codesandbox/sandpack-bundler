@@ -41,12 +41,6 @@ export function debug(...data: any[]) {
   }
 }
 
-export function info(...data: any[]) {
-  if (shouldLog(SandpackLogLevel.Info)) {
-    console.log(...data);
-  }
-}
-
 export function warn(...data: any[]) {
   if (shouldLog(SandpackLogLevel.Warning)) {
     console.warn(...data);
