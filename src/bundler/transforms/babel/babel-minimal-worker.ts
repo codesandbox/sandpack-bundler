@@ -20,7 +20,7 @@ async function transform({ code, filepath }: ITransformData): Promise<ITranspila
   let transformed = transformSync(code, {
     filename: filepath,
     presets: [[presetReact, { runtime: 'automatic' }]],
-    plugins: [pluginReactRefresh, pluginCommonJs, collectDependencies(requires)],
+    plugins: [[pluginReactRefresh, { skipEnvCheck: true }], pluginCommonJs, collectDependencies(requires)],
     // no ast needed for now
     ast: false,
     sourceMaps: 'inline',
