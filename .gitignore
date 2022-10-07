@@ -3,3 +3,4 @@ dist
 .parcel-cache
 *.log
 .DS_Store
+parcel-bundle-reports

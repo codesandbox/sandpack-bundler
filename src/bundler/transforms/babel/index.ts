@@ -13,8 +13,13 @@ export class BabelTransformer extends Transformer {
   }
 
   async init() {
-    // TODO
-    this.worker = new Worker(new URL('./babel-minimal-worker', import.meta.url), {
+    // const babelSettingFromUrl = window.location.search.match(/\?babel=(.+)/)?.[1] ?? 'default';
+    // const babelWorkerUrl = {
+    //   minimal: new URL('./babel-minimal-worker', import.meta.url),
+    //   default: new URL('./babel-worker', import.meta.url),
+    // }[babelSettingFromUrl];
+
+    this.worker = new Worker(new URL('./babel-worker', import.meta.url), {
       type: 'module',
     });
 
