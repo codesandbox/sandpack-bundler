@@ -12,6 +12,8 @@ import { DisposableStore } from './utils/Disposable';
 import { getDocumentHeight } from './utils/document';
 import * as logger from './utils/logger';
 
+const bundlerStartTime = Date.now();
+
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
   private disposableStore = new DisposableStore();
@@ -149,7 +151,7 @@ class SandpackInstance {
     logger.info(logger.logFactory('Preset and transformers', `finished in ${Date.now() - initStartTime}ms`));
 
     // --- Bundling / Compiling
-    logger.info(logger.logFactory('Bundling'));
+    logger.groupCollapsed(logger.logFactory('Bundling'));
     const bundlingStartTime = Date.now();
     const files = Object.values(compileRequest.modules);
     const evaluate = await this.bundler
@@ -172,6 +174,7 @@ class SandpackInstance {
       })
       .finally(() => {
         logger.info(logger.logFactory('Bundling', `finished in  ${Date.now() - bundlingStartTime}ms`));
+        logger.groupEnd();
       });
 
     // --- Replace HTML
@@ -182,10 +185,11 @@ class SandpackInstance {
       this.messageBus.sendMessage('status', { status: 'evaluating' });
 
       try {
-        logger.info(logger.logFactory('Evaluation'));
+        logger.groupCollapsed(logger.logFactory('Evaluation'));
         const evalStartTime = Date.now();
         evaluate();
         logger.info(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
+        logger.groupEnd();
 
         /**
          * Send an event right away it's initialized
@@ -203,6 +207,7 @@ class SandpackInstance {
       }
     }
 
+    logger.info(logger.logFactory('Finished', `in ${Date.now() - bundlerStartTime}ms`));
     this.messageBus.sendMessage('status', { status: 'idle' });
   }
 
@@ -211,4 +216,5 @@ class SandpackInstance {
   }
 }
 
+logger.debug(logger.logFactory('Init'));
 new SandpackInstance();
