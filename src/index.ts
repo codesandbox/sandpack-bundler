@@ -117,6 +117,8 @@ class SandpackInstance {
       logger.setLogLevel(compileRequest.logLevel);
     }
 
+    // -- FileSystem
+    const initStartTimeFileSystem = Date.now();
     logger.debug(logger.logFactory('FileSystem'));
     this.bundler.configureFS({
       hasAsyncFileResolver: compileRequest.hasFileResolver,
@@ -131,6 +133,7 @@ class SandpackInstance {
     if (this.bundler.isFirstLoad) {
       this.bundler.resetModules();
     }
+    logger.info(logger.logFactory('FileSystem', `finished in ${Date.now() - initStartTimeFileSystem}ms`));
 
     // -- Load integrations
     logger.info(logger.logFactory('Integrations'));
