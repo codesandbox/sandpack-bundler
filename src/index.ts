@@ -12,6 +12,8 @@ import { DisposableStore } from './utils/Disposable';
 import { getDocumentHeight } from './utils/document';
 import * as logger from './utils/logger';
 
+const bundlerStartTime = Date.now();
+
 class SandpackInstance {
   private messageBus: IFrameParentMessageBus;
   private disposableStore = new DisposableStore();
@@ -115,7 +117,7 @@ class SandpackInstance {
       logger.setLogLevel(compileRequest.logLevel);
     }
 
-    logger.debug('Configuring FileSystem...');
+    logger.debug(logger.logFactory('FileSystem'));
     this.bundler.configureFS({
       hasAsyncFileResolver: compileRequest.hasFileResolver,
     });
@@ -131,7 +133,7 @@ class SandpackInstance {
     }
 
     // -- Load integrations
-    logger.info('Loading integration...');
+    logger.info(logger.logFactory('Integrations'));
     const initStartTimeIntegration = Date.now();
     if (compileRequest.reactDevTools) {
       try {
@@ -140,16 +142,16 @@ class SandpackInstance {
         logger.error(err);
       }
     }
-    logger.info(`Finished loading integration in ${Date.now() - initStartTimeIntegration}ms`);
+    logger.info(logger.logFactory('Integrations', `finished in ${Date.now() - initStartTimeIntegration}ms`));
 
     // --- Load preset
-    logger.info('Loading preset and transformers...');
+    logger.info(logger.logFactory('Preset and transformers'));
     const initStartTime = Date.now();
     await this.bundler.initPreset(compileRequest.template);
-    logger.info(`Finished loading preset in ${Date.now() - initStartTime}ms`);
+    logger.info(logger.logFactory('Preset and transformers', `finished in ${Date.now() - initStartTime}ms`));
 
     // --- Bundling / Compiling
-    logger.info('Started bundling');
+    logger.groupCollapsed(logger.logFactory('Bundling'));
     const bundlingStartTime = Date.now();
     const files = Object.values(compileRequest.modules);
     const evaluate = await this.bundler
@@ -171,7 +173,8 @@ class SandpackInstance {
         });
       })
       .finally(() => {
-        logger.info(`Finished bundling in ${Date.now() - bundlingStartTime}ms`);
+        logger.info(logger.logFactory('Bundling', `finished in  ${Date.now() - bundlingStartTime}ms`));
+        logger.groupEnd();
       });
 
     // --- Replace HTML
@@ -182,10 +185,11 @@ class SandpackInstance {
       this.messageBus.sendMessage('status', { status: 'evaluating' });
 
       try {
-        logger.info('Start evaluation');
+        logger.groupCollapsed(logger.logFactory('Evaluation'));
         const evalStartTime = Date.now();
         evaluate();
-        logger.info(`Finished evaluation in ${Date.now() - evalStartTime}ms`);
+        logger.info(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
+        logger.groupEnd();
 
         /**
          * Send an event right away it's initialized
@@ -203,6 +207,7 @@ class SandpackInstance {
       }
     }
 
+    logger.info(logger.logFactory('Finished', `in ${Date.now() - bundlerStartTime}ms`));
     this.messageBus.sendMessage('status', { status: 'idle' });
   }
 
@@ -211,4 +216,5 @@ class SandpackInstance {
   }
 }
 
+logger.debug(logger.logFactory('Init'));
 new SandpackInstance();

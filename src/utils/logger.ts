@@ -1,5 +1,22 @@
 /* eslint-disable no-console */
 
+const steps = [
+  'Init',
+  'FileSystem',
+  'Integrations',
+  'Preset and transformers',
+  'Bundling',
+  'Evaluation',
+  'Finished',
+] as const;
+
+export const logFactory = (step: typeof steps[number], details = '') => {
+  const currentStep = steps.findIndex((name) => name === step) + 1;
+  const total = steps.length;
+
+  return `[${currentStep}/${total}]: ${step} ${details}`;
+};
+
 export enum SandpackLogLevel {
   None = 0,
   Error = 10,
@@ -39,5 +56,17 @@ export function warn(...data: any[]) {
 export function error(...data: any[]) {
   if (shouldLog(SandpackLogLevel.Error)) {
     console.error(...data);
+  }
+}
+
+export function groupCollapsed(...data: any[]) {
+  if (shouldLog(SandpackLogLevel.Debug)) {
+    console.groupCollapsed(...data);
+  }
+}
+
+export function groupEnd() {
+  if (shouldLog(SandpackLogLevel.Debug)) {
+    console.groupEnd();
   }
 }
