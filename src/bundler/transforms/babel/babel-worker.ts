@@ -87,7 +87,6 @@ async function transform({ code, filepath, config }: ITransformData): Promise<IT
   const presets = await getPresets(config?.presets ?? []);
   const plugins = await getPlugins(config?.plugins ?? []);
   plugins.push(collectDependencies(requires));
-  console.log(presets);
   const transformed = babel.transform(code, {
     filename: filepath,
     presets,

@@ -8,7 +8,6 @@ export function collectDependencies(requires: Set<string>) {
           if (!path.scope.hasBinding(callee.node.name)) {
             const arg = path.get('arguments.0');
             const evaluated = arg.evaluate();
-
             requires.add(evaluated.value);
           }
         }
