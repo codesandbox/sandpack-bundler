@@ -13,7 +13,8 @@ export class BabelTransformer extends Transformer {
   }
 
   async init() {
-    this.worker = new Worker(new URL('./babel-worker', import.meta.url), {
+    // TODO
+    this.worker = new Worker(new URL('./babel-minimal-worker', import.meta.url), {
       type: 'module',
     });
 
