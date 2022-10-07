@@ -398,6 +398,8 @@ export class Bundler {
 
     return () => {
       // Evaluate
+      logger.info('Evaluating...');
+
       if (this.isFirstLoad) {
         for (const runtime of this.runtimes) {
           const module = this.modules.get(runtime);
