@@ -1,3 +1,4 @@
+import { decode as decodeMsgPack } from '@msgpack/msgpack';
 import urlJoin from 'url-join';
 
 import { retryFetch } from '../../utils/fetch';
@@ -14,7 +15,7 @@ export interface IResolvedDependency {
   d: number;
 }
 
-const CDN_VERSION = 4;
+const CDN_VERSION = 5;
 
 function encodePayload(payload: string): string {
   return btoa(`${CDN_VERSION}(${payload})`);
@@ -26,7 +27,8 @@ export async function fetchManifest(deps: DepMap): Promise<IResolvedDependency[]
     maxRetries: 5,
     retryDelay: 1000,
   });
-  return result.json();
+  const buffer = await result.arrayBuffer();
+  return decodeMsgPack(buffer) as IResolvedDependency[];
 }
 
 export type CDNModuleFileType = ICDNModuleFile | number;
@@ -51,5 +53,6 @@ export async function fetchModule(name: string, version: string): Promise<ICDNMo
   const specifier = `${name}@${version}`;
   const encoded_specifier = encodePayload(specifier);
   const result = await retryFetch(urlJoin(CDN_ROOT, `/package/${encoded_specifier}`), { maxRetries: 5 });
-  return result.json();
+  const buffer = await result.arrayBuffer();
+  return decodeMsgPack(buffer) as ICDNModule;
 }
