@@ -3,10 +3,10 @@ import pluginCommonJs from '@babel/plugin-transform-modules-commonjs';
 import presetReact from '@babel/preset-react';
 import pluginReactRefresh from 'react-refresh/babel';
 
-import * as logger from '../../../utils/logger';
-import { WorkerMessageBus } from '../../../utils/WorkerMessageBus';
-import { ITranspilationResult } from '../Transformer';
-import { collectDependencies } from './dep-collector';
+import { collectDependencies } from './bundler/transforms/babel/dep-collector';
+import { ITranspilationResult } from './bundler/transforms/Transformer';
+import * as logger from './utils/logger';
+import { WorkerMessageBus } from './utils/WorkerMessageBus';
 
 export interface ITransformData {
   code: string;

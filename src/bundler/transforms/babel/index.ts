@@ -19,7 +19,7 @@ export class BabelTransformer extends Transformer {
     //   default: new URL('./babel-worker', import.meta.url),
     // }[babelSettingFromUrl];
 
-    this.worker = new Worker(new URL('./babel-worker', import.meta.url), {
+    this.worker = new Worker(new URL('../../../babel-minimal-worker.cjs.js', import.meta.url), {
       type: 'module',
     });
 
