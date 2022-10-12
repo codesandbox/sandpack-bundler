@@ -17,7 +17,7 @@ export class BabelTransformer extends Transformer {
     //   type: 'module',
     // });
 
-    this.worker = new Worker(new URL('./babel-minimal', import.meta.url), {
+    this.worker = new Worker(new URL('./babel-minimal.minify.js', import.meta.url), {
       type: 'module',
     });
 

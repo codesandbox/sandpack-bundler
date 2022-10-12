@@ -17,10 +17,14 @@ export interface ITransformData {
 async function transform({ code, filepath }: ITransformData): Promise<ITranspilationResult> {
   const requires: Set<string> = new Set();
 
+  const presets = [[presetReact, { runtime: 'automatic' }]];
+  const plugins = [[pluginReactRefresh, { skipEnvCheck: true }], pluginCommonJs, collectDependencies(requires)];
+
   let transformed = transformSync(code, {
+    babelrc: false,
     filename: filepath,
-    presets: [[presetReact, { runtime: 'automatic' }]],
-    plugins: [[pluginReactRefresh, { skipEnvCheck: true }], pluginCommonJs, collectDependencies(requires)],
+    presets,
+    plugins,
     // no ast needed for now
     ast: false,
     sourceMaps: 'inline',
