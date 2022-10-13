@@ -188,14 +188,12 @@ class SandpackInstance {
 
     // --- Evaluation
     if (evaluate) {
+      logger.groupCollapsed(logger.logFactory('Evaluation'));
+      const evalStartTime = Date.now();
       this.messageBus.sendMessage('status', { status: 'evaluating' });
 
       try {
-        logger.groupCollapsed(logger.logFactory('Evaluation'));
-        const evalStartTime = Date.now();
         evaluate();
-        logger.debug(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
-        logger.groupEnd();
 
         /**
          * Send an event right away it's initialized
@@ -203,6 +201,9 @@ class SandpackInstance {
         this.sendResizeEvent();
 
         this.messageBus.sendMessage('success');
+
+        logger.debug(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
+        logger.groupEnd();
       } catch (error: unknown) {
         logger.error(error);
 
