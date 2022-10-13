@@ -13,13 +13,12 @@ export class BabelTransformer extends Transformer {
   }
 
   async init() {
-    // TODO: Jasper, help me out: how to dynamically use diferent URLs?
-    const regularUrl = new URL('./babel-worker', import.meta.url);
-    const minimalUrl = new URL('./babel-minimal.minify.js', import.meta.url);
+    const loadRegularBabelWorker = () => import('./load-babel-standalone');
+    const loadMinimalBabelWorker = () => import('./load-babel-minimal');
 
     const babelSetting = /babel=minimal/.test(window.location.search);
-
-    this.worker = new Worker(babelSetting ? minimalUrl : regularUrl, { type: 'module' });
+    let loadWorker = await (babelSetting ? loadMinimalBabelWorker() : loadRegularBabelWorker());
+    this.worker = loadWorker.default();
 
     this.messageBus = new WorkerMessageBus({
       channel: 'sandpack-babel',
