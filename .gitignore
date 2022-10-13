@@ -3,4 +3,4 @@ dist
 .parcel-cache
 *.log
 .DS_Store
-babel-minimal.minify.js
+babel-minimal-worker.min.js
