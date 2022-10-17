@@ -3,30 +3,30 @@ type LoaderFn = () => Promise<any>;
 const loaderCache: Map<string, Promise<any>> = new Map();
 
 const BABEL_PRESET_LOADERS: Map<string, LoaderFn> = new Map([
-  [
-    'solid',
-    () => {
-      // @ts-ignore
-      return import('babel-preset-solid');
-    },
-  ],
+  // [
+  //   'solid',
+  //   () => {
+  //     // @ts-ignore
+  //     return import('babel-preset-solid');
+  //   },
+  // ],
 ]);
 
 const BABEL_PLUGIN_LOADERS: Map<string, LoaderFn> = new Map([
-  [
-    'react-refresh/babel',
-    () => {
-      // @ts-ignore
-      return import('react-refresh/babel');
-    },
-  ],
-  [
-    'solid-refresh/babel',
-    () => {
-      // @ts-ignore
-      return import('solid-refresh/babel');
-    },
-  ],
+  // [
+  //   'react-refresh/babel',
+  //   () => {
+  //     // @ts-ignore
+  //     return import('react-refresh/babel');
+  //   },
+  // ],
+  // [
+  //   'solid-refresh/babel',
+  //   () => {
+  //     // @ts-ignore
+  //     return import('solid-refresh/babel');
+  //   },
+  // ],
 ]);
 
 function load(key: string, loader: LoaderFn): Promise<any> {
