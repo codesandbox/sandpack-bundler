@@ -13,7 +13,7 @@
     "prepare": "husky install",
     "dev": "parcel ./src/index.html",
     "start": "node ./server.js",
-    "build": "yarn build:worker && parcel build ./src/index.html --no-source-maps && cp _headers dist/_headers && node src/parcel.postbuild.js",
+    "build": "yarn build:worker && parcel build ./src/index.html --no-source-maps && cp _headers dist/_headers",
     "build:worker": "rollup --config rollup.config.js --bundleConfigAsCjs",
     "test": "jest",
     "typecheck": "tsc --noEmit",
