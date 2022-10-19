@@ -106,7 +106,7 @@ class SandpackInstance {
 
   async init() {
     this.messageBus.sendMessage('initialized');
-    this.initResizeEvent();
+
     this.bundler.onStatusChange((newStatus) => {
       this.messageBus.sendMessage('status', { status: newStatus });
     });
@@ -195,11 +195,6 @@ class SandpackInstance {
       try {
         evaluate();
 
-        /**
-         * Send an event right away it's initialized
-         */
-        this.sendResizeEvent();
-
         this.messageBus.sendMessage('success');
 
         logger.debug(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
@@ -213,6 +208,8 @@ class SandpackInstance {
         );
       }
     }
+
+    this.initResizeEvent();
 
     logger.debug(logger.logFactory('Finished', `in ${Date.now() - bundlerStartTime}ms`));
     this.messageBus.sendMessage('status', { status: 'idle' });
