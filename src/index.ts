@@ -106,7 +106,7 @@ class SandpackInstance {
 
   async init() {
     this.messageBus.sendMessage('initialized');
-    this.initResizeEvent();
+
     this.bundler.onStatusChange((newStatus) => {
       this.messageBus.sendMessage('status', { status: newStatus });
     });
