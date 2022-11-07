@@ -193,16 +193,13 @@ class SandpackInstance {
       try {
         logger.groupCollapsed(logger.logFactory('Evaluation'));
         const evalStartTime = Date.now();
-        evaluate();
-        logger.debug(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
-        logger.groupEnd();
 
-        /**
-         * Send an event right away it's initialized
-         */
-        this.sendResizeEvent();
+        evaluate();
 
         this.messageBus.sendMessage('success');
+
+        logger.debug(logger.logFactory('Evaluation', `finished in ${Date.now() - evalStartTime}ms`));
+        logger.groupEnd();
       } catch (error: unknown) {
         logger.error(error);
 
@@ -211,6 +208,8 @@ class SandpackInstance {
           errorMessage(error as BundlerError) // TODO: create a evaluation error
         );
       }
+
+      this.initResizeEvent();
     }
 
     logger.debug(logger.logFactory('Finished', `in ${Date.now() - bundlerStartTime}ms`));
