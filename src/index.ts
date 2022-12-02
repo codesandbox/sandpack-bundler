@@ -97,11 +97,14 @@ class SandpackInstance {
       this.resizePollingTimer = setInterval(this.sendResizeEvent, 300);
     };
 
-    /**
-     * Ideally we should use a `MutationObserver` to trigger a resize event,
-     * however, we noted that it's not reliable, so we went for polling strategy
-     */
     resizePolling();
+
+    /**
+     * Ideally we should only use a `MutationObserver` to trigger a resize event,
+     * however, we noted that it's not 100% reliable, so we went for polling strategy as well
+     */
+    const observer = new MutationObserver(this.sendResizeEvent);
+    observer.observe(document, { attributes: true, childList: true, subtree: true });
   }
 
   async init() {
