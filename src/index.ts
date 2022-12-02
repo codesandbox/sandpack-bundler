@@ -103,7 +103,16 @@ class SandpackInstance {
      * Ideally we should only use a `MutationObserver` to trigger a resize event,
      * however, we noted that it's not 100% reliable, so we went for polling strategy as well
      */
-    const observer = new MutationObserver(this.sendResizeEvent);
+    let throttle: NodeJS.Timeout | undefined;
+    const observer = new MutationObserver(() => {
+      if (throttle === undefined) {
+        this.sendResizeEvent();
+
+        throttle = setTimeout(() => {
+          throttle = undefined;
+        }, 300);
+      }
+    });
     observer.observe(document, { attributes: true, childList: true, subtree: true });
   }
 
