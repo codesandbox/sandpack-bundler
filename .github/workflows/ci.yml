@@ -45,8 +45,6 @@ jobs:
 
       - name: Build | Build application
         run: yarn build
-
-      - name: Sizebot | Generate diagnostic
-        run: node scripts/sizebot/index.js
+        
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
