@@ -41,7 +41,7 @@
     "gensync": "^1.0.0-beta.2",
     "micromatch": "^4.0.5",
     "p-queue": "^6.6.2",
-    "postcss": "^8.4.14",
+    "postcss": "^8.4.31",
     "postcss-url": "^10.1.3",
     "postcss-value-parser": "^4.2.0",
     "react": "^18.0.0",
