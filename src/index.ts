@@ -225,7 +225,7 @@ class SandpackInstance {
     }
 
     logger.debug(logger.logFactory('Finished', `in ${Date.now() - bundlerStartTime}ms`));
-    this.messageBus.sendMessage('status', { status: 'idle' });
+    this.messageBus.sendMessage('status', { status: 'done' });
   }
 
   dispose() {
