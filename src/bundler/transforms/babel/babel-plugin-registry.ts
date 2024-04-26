@@ -27,6 +27,13 @@ const BABEL_PLUGIN_LOADERS: Map<string, LoaderFn> = new Map([
       return import('solid-refresh/babel');
     },
   ],
+  [
+    '@babel/plugin-proposal-explicit-resource-management',
+    () => {
+      // @ts-ignore
+      return import('@babel/plugin-proposal-explicit-resource-management');
+    },
+  ],
 ]);
 
 function load(key: string, loader: LoaderFn): Promise<any> {

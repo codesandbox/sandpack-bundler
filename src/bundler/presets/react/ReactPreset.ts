@@ -39,7 +39,10 @@ export class ReactPreset extends Preset {
                 },
               ],
             ],
-            plugins: [['react-refresh/babel', { skipEnvCheck: true }]],
+            plugins: [
+              ['react-refresh/babel', { skipEnvCheck: true }],
+              '@babel/plugin-proposal-explicit-resource-management',
+            ],
           },
         ],
         ['react-refresh-transformer', {}],
