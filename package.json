@@ -32,7 +32,8 @@
   },
   "browserslist": "> 2.5%, not ie 11, not dead, not op_mini all",
   "dependencies": {
-    "@babel/standalone": "7.18.4",
+    "@babel/plugin-proposal-explicit-resource-management": "7.24.1",
+    "@babel/standalone": "7.24.1",
     "@msgpack/msgpack": "^2.8.0",
     "@swc/helpers": "^0.3.8",
     "@types/babel__standalone": "7.1.4",

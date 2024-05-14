@@ -91,7 +91,7 @@ class SandpackInstance {
   initResizeEvent() {
     const resizePolling = () => {
       if (this.resizePollingTimer) {
-        clearInterval(this.resizePollingTimer);
+        clearInterval(this.resizePollingTimer as NodeJS.Timeout);
       }
 
       this.resizePollingTimer = setInterval(this.sendResizeEvent, 300);
