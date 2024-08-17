@@ -218,4 +218,4 @@ class SandpackInstance {
   }
 }
 
-new SandpackInstance();
+window.__SANDPACK__ = new SandpackInstance();
